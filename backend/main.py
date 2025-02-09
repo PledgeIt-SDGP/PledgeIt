@@ -3,15 +3,17 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 
 # Connect to MongoDB
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI")
 client = AsyncIOMotorClient(MONGO_URI)
-db = client["mydatabase"]
+db = client["pledgeit_database"]
+collection = db["events"]
 
 @app.get("/")
 async def root():
-    return {"message": "FastAPI is working!"}
+    return {"message": "MongoDB Atlas connected successfully!"}
