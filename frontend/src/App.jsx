@@ -1,12 +1,18 @@
-import "./App.css";
+import "./styles/App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Hero from "./components/Hero";
+import HomePage from "./views/HomePage";
+import EventMap from "./views/EventMap";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hero />} />
+        {/* Hero Section (Landing Page) */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Events Page with Interactive Map */}
+        <Route path="/events" element={<EventMap />} />
+
       </Routes>
     </Router>
   );
