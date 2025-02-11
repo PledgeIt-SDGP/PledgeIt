@@ -1,6 +1,6 @@
 import "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 function heroContent() {
   return (
