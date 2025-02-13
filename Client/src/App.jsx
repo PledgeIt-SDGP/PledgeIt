@@ -11,11 +11,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Hero />} />
-        <Route path="/signup" element={<VolunteerSignUpPage/>}/>
+        <Route path="/signup" element={<VolunteerSignUpPage />} />
         {/* <Route path="/orgSignup" element={<OrgSignUp/>} /> */}
         <Route path="/event" element={<Search />} />
       </Routes>
-      <FooterWithSitemap />
+      {/* <FooterWithSitemap /> */}
     </Router>
   );
 }
