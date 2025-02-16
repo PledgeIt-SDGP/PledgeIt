@@ -45,7 +45,7 @@ const LazyEventMap = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/events`)
+      .get(`${API_URL}`)
       .then((response) => {
         setEvents(response.data);
         setFilteredEvents(response.data);
@@ -60,6 +60,12 @@ const LazyEventMap = () => {
 
   const applyFilters = useCallback(() => {
     let filtered = events;
+
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((event) =>
+        event.event_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((event) => selectedCategories.includes(event.category));
@@ -88,15 +94,7 @@ const LazyEventMap = () => {
     }
 
     setFilteredEvents(filtered);
-  }, [
-    events,
-    selectedCategories,
-    selectedStatus,
-    selectedDate,
-    selectedOrganization,
-    selectedSkills,
-    selectedVenue,
-  ]);
+  }, [events, searchTerm, selectedCategories, selectedStatus, selectedDate, selectedOrganization, selectedSkills, selectedVenue]);
 
   return (
     <div className="relative flex flex-col items-center w-full min-h-screen p-6 bg-gray-50 text-black transition-all duration-300">

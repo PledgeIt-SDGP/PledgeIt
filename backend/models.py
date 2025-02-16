@@ -16,9 +16,11 @@ class Event(BaseModel):
     venue: str
     city: str
     address: str
+    latitude: Optional[float] = None  # New field
+    longitude: Optional[float] = None  # New field
     duration: str
     volunteer_requirements: str
-    skills_required: str
+    skills_required: List[str]
     contact_email: str
     contact_person: ContactPerson
     image_url: str
