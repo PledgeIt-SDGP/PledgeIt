@@ -1,17 +1,20 @@
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useCallback } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
-import { Icon } from "leaflet";
 import axios from "axios";
-import Fuse from "fuse.js";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import EventMarker from "../components/map/EventMarker";
 import MapControls from "../components/map/MapControls";
 import "leaflet/dist/leaflet.css";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import { CircularProgress, FormControlLabel, Radio, RadioGroup } from "@mui/material";
+import Select from "react-select";
 
 // Fix for default marker icons in react-leaflet
+import { Icon } from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png"; 
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 delete Icon.Default.prototype._getIconUrl;
 Icon.Default.mergeOptions({
@@ -20,54 +23,42 @@ Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const CENTER_POSITION = [7.8731, 80.7718]; // Sri Lanka's center
+// API Base URL
+const API_URL = "http://127.0.0.1:8000/events";
 
-const CATEGORIES = [
-  { category_id: 1, category_name: "Environmental" },
-  { category_id: 2, category_name: "Community Service" },
-  { category_id: 3, category_name: "Education" },
-  { category_id: 4, category_name: "Healthcare" },
-  { category_id: 5, category_name: "Animal Welfare" },
-  { category_id: 6, category_name: "Disaster Relief" },
-  { category_id: 7, category_name: "Sports & Recreation" },
-  { category_id: 8, category_name: "Arts & Culture" },
-  { category_id: 9, category_name: "Technology & Innovation" },
-  { category_id: 10, category_name: "Fundraising & Charity" },
-  { category_id: 11, category_name: "Elderly Care" },
-  { category_id: 12, category_name: "Women & Youth Empowerment" },
-  { category_id: 13, category_name: "Rural Development" },
-];
+// Default map position (Sri Lanka)
+const CENTER_POSITION = [7.8731, 80.7718];
 
 const LazyEventMap = () => {
   const [events, setEvents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedOrganization, setSelectedOrganization] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Track API errors
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/events") 
+      .get(`${API_URL}/events`)
       .then((response) => {
         setEvents(response.data);
         setFilteredEvents(response.data);
+        setLoading(false);
       })
-      .catch((error) => console.error("Error fetching events:", error));
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+        setError("Failed to load events. Please check the backend.");
+        setLoading(false);
+      });
   }, []);
 
-  useEffect(() => {
-    const fuse = new Fuse(events, {
-      keys: ["event_name", "city"],
-      threshold: 0.3,
-    });
-
-    const results = searchTerm ? fuse.search(searchTerm).map((result) => result.item) : events;
-    setFilteredEvents(results);
-  }, [searchTerm, events]);
-
-  useEffect(() => {
+  const applyFilters = useCallback(() => {
     let filtered = events;
 
     if (selectedCategories.length > 0) {
@@ -82,26 +73,36 @@ const LazyEventMap = () => {
       filtered = filtered.filter((event) => event.date === selectedDate);
     }
 
-    setFilteredEvents(filtered);
-  }, [selectedCategories, selectedStatus, selectedDate, events]);
-
-  const handleCategoryChange = (category) => {
-    setSelectedCategories((prevCategories) =>
-      prevCategories.includes(category)
-        ? prevCategories.filter((c) => c !== category)
-        : [...prevCategories, category]
-    );
-  };
-
-  const handleCloseSidebar = (e) => {
-    if (e.target.id === "sidebar-overlay") {
-      setSidebarOpen(false);
+    if (selectedOrganization) {
+      filtered = filtered.filter((event) => event.organization === selectedOrganization);
     }
-  };
+
+    if (selectedSkills.length > 0) {
+      filtered = filtered.filter((event) =>
+        selectedSkills.some((skill) => event.skills_required.includes(skill))
+      );
+    }
+
+    if (selectedVenue) {
+      filtered = filtered.filter((event) => event.venue === selectedVenue);
+    }
+
+    setFilteredEvents(filtered);
+  }, [
+    events,
+    selectedCategories,
+    selectedStatus,
+    selectedDate,
+    selectedOrganization,
+    selectedSkills,
+    selectedVenue,
+  ]);
 
   return (
     <div className="relative flex flex-col items-center w-full min-h-screen p-6 bg-gray-50 text-black transition-all duration-300">
       <h2 className="text-center text-4xl font-extrabold mb-4 text-red-600">🌍 Volunteer Events Map</h2>
+
+      {error && <p className="text-red-600 font-semibold">{error}</p>} {/* Show error message */}
 
       <div className="flex flex-wrap justify-center gap-4 mb-4">
         <input
@@ -121,85 +122,83 @@ const LazyEventMap = () => {
       </div>
 
       {sidebarOpen && (
-        <div
-          id="sidebar-overlay"
-          className="fixed inset-0 bg-black opacity-40 z-[1000]"
-          onClick={handleCloseSidebar}
-        ></div>
+        <div className="fixed inset-0 bg-black opacity-40 z-[1000]" onClick={() => setSidebarOpen(false)}></div>
       )}
 
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transition-transform duration-300 z-[1001] ${
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transition-transform duration-300 z-[1001] overflow-y-auto p-6 ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4 text-red-600">🔍 Filters</h3>
+        <h3 className="text-lg font-semibold mb-4 text-red-600">🔍 Filters</h3>
 
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2 text-gray-700">📌 Event Categories</h4>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((category) => (
-                <button
-                  key={category.category_id}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-md ${
-                    selectedCategories.includes(category.category_name)
-                      ? "bg-red-600 text-white"
-                      : "bg-cream-200 text-red-600 border border-red-600"
-                  }`}
-                  onClick={() => handleCategoryChange(category.category_name)}
-                >
-                  {category.category_name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2 text-gray-700">📌 Event Status</h4>
-            <div className="flex space-x-4">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="status"
-                  value="Open"
-                  checked={selectedStatus === "Open"}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="accent-red-600"
-                />
-                <span>Open</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="status"
-                  value="Closed"
-                  checked={selectedStatus === "Closed"}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="accent-red-600"
-                />
-                <span>Closed</span>
-              </label>
-            </div>
-          </div>
+        {/* Event Categories */}
+        <h4 className="font-semibold mb-2 text-gray-700">📌 Event Categories</h4>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[...new Set(events.map((event) => event.category))].map((category) => (
+            <button
+              key={category}
+              className={`px-4 py-2 rounded-full border-2 ${
+                selectedCategories.includes(category) ? "bg-red-600 text-white" : "border-red-600 text-red-600"
+              }`}
+              onClick={() =>
+                setSelectedCategories((prev) =>
+                  prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+                )
+              }
+            >
+              {category}
+            </button>
+          ))}
         </div>
+
+        {/* Status */}
+        <h4 className="font-semibold mb-2 text-gray-700">📌 Event Status</h4>
+        <RadioGroup value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="mb-4">
+          <FormControlLabel value="Open" control={<Radio color="secondary" />} label="Open" />
+          <FormControlLabel value="Closed" control={<Radio color="secondary" />} label="Closed" />
+        </RadioGroup>
+
+        {/* Date Selection */}
+        <h4 className="font-semibold mb-2 text-gray-700">📅 Event Date</h4>
+        <TextField type="date" variant="outlined" fullWidth value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="mb-4" />
+
+        {/* Organization */}
+        <h4 className="font-semibold mb-2 text-gray-700">🏢 Organization</h4>
+        <Select
+          options={[...new Set(events.map((event) => ({ value: event.organization, label: event.organization })))]}
+          onChange={(selected) => setSelectedOrganization(selected.value)}
+          className="mb-4"
+        />
+
+        {/* Venue */}
+        <h4 className="font-semibold mb-2 text-gray-700">📍 Venue</h4>
+        <Select
+          options={[...new Set(events.map((event) => ({ value: event.venue, label: event.venue })))]}
+          onChange={(selected) => setSelectedVenue(selected.value)}
+          className="mb-4"
+        />
+
+        <Button variant="contained" fullWidth onClick={applyFilters} className="bg-red-600 hover:bg-red-700 text-white mt-4">
+          Apply Filters
+        </Button>
       </div>
 
-      <div className="relative w-full h-[600px] rounded-xl overflow-hidden shadow-lg z-0">
-        <Suspense fallback={<div className="text-center p-5">Loading map...</div>}>
-          <MapContainer center={CENTER_POSITION} zoom={8} className="w-full h-full">
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-            <MarkerClusterGroup>
-              {filteredEvents.map((event) => (
-                <EventMarker key={event.id} event={event} />
-              ))}
-            </MarkerClusterGroup>
-
-            <MapControls />
-          </MapContainer>
-        </Suspense>
-      </div>
+      <Suspense fallback={<CircularProgress color="secondary" />}>
+        <MapContainer center={CENTER_POSITION} zoom={8} className="w-full h-[600px]">
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            maxZoom={18}
+          />
+          <MarkerClusterGroup>
+            {filteredEvents.map((event) => (
+              <EventMarker key={event.event_id} event={event} />
+            ))}
+          </MarkerClusterGroup>
+          <MapControls />
+        </MapContainer>
+      </Suspense>
     </div>
   );
 };

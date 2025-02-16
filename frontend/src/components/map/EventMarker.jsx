@@ -1,7 +1,7 @@
 import React from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, Users, Building, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const EventMarker = ({ event }) => {
@@ -12,8 +12,7 @@ const EventMarker = ({ event }) => {
       position={coordinates}
       icon={
         new Icon({
-          iconUrl:
-            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
+          iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
@@ -27,6 +26,10 @@ const EventMarker = ({ event }) => {
 
           <div className="space-y-2 mb-3">
             <div className="flex items-center text-sm text-gray-600">
+              <Building className="w-4 h-4 mr-2" />
+              <span>{event.organization}</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
               <MapPin className="w-4 h-4 mr-2" />
               <span>{event.city}</span>
             </div>
@@ -37,6 +40,10 @@ const EventMarker = ({ event }) => {
             <div className="flex items-center text-sm text-gray-600">
               <Users className="w-4 h-4 mr-2" />
               <span>{event.total_registered_volunteers} registered</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <Phone className="w-4 h-4 mr-2" />
+              <span>{event.contact_person.name} ({event.contact_person.contact_number})</span>
             </div>
           </div>
 

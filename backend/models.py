@@ -1,10 +1,14 @@
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import Optional, List
+
+class ContactPerson(BaseModel):
+    name: str
+    contact_number: str
 
 class Event(BaseModel):
-    event_id: int
+    event_id: str
     event_name: str
+    organization: str
     description: str
     category: str
     date: str
@@ -14,15 +18,12 @@ class Event(BaseModel):
     address: str
     duration: str
     volunteer_requirements: str
-    skills_required: List[str]
+    skills_required: str
     contact_email: str
-    contact_personal: str
-    contact_number: str
+    contact_person: ContactPerson
     image_url: str
     registration_deadline: str
-    additional_notes: Optional[str]
+    additional_notes: Optional[str] = None
     status: str
     total_registered_volunteers: int
-    created_at: datetime
-    latitude: float
-    longitude: float
+    created_at: str

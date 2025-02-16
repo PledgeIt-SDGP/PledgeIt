@@ -1,13 +1,14 @@
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 # Load environment variables
 load_dotenv()
 
+# Database connection
 MONGO_URI = os.getenv("MONGO_URI")
-DATABASE_NAME = "pledgeit_database"
+DB_NAME = os.getenv("DB_NAME")
 
-client = AsyncIOMotorClient(MONGO_URI)
-database = client[DATABASE_NAME]
-events_collection = database.get_collection("events")
+client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+events_collection = db["events"]
