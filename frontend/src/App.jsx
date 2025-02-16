@@ -7,12 +7,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Hero Section (Landing Page) */}
+        {/* Home Page (Landing Page) */}
         <Route path="/" element={<HomePage />} />
 
         {/* Events Page with Interactive Map */}
         <Route path="/events" element={<EventMap />} />
-
       </Routes>
     </Router>
   );
