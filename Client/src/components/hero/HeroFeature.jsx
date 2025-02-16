@@ -32,8 +32,8 @@ const features = [
 function HeroFeature() {
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-      {features.map((feature, index) => (
-        <div className="flex items-center gap-4 p-7 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-100 hover:orange ">
+      {features.map((feature) => (
+        <div className="flex items-center gap-4 p-7 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-100 hover:inset-shadow-sm inset-shadow-orange-600/90 hover:shadow-lg shadow-red-500/90">
           <feature.icon className="w-8 h-8 text-orange-600 lg:w-12 h-12" />
           <div>
             <h3 className="text-lg font-semibold text-gray-800">
