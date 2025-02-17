@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from database import events_collection
 from models import Event
@@ -23,7 +23,7 @@ def event_serializer(event) -> dict:
         "longitude": event.get("longitude", None),  # Prevent crash
         "duration": event["duration"],
         "volunteer_requirements": event["volunteer_requirements"],
-        "skills_required": event["skills_required"],
+        "skills_required": event.get("skills_required", []),
         "contact_email": event["contact_email"],
         "contact_person": {
             "name": event["contact_person"]["name"],
@@ -71,12 +71,13 @@ async def create_event(event: Event):
     return {"message": "Event created successfully", "event_id": event.event_id}
 
 # Fetch events with filters (case-insensitive)
-@router.get("/events/filter", response_model=List[Event])
+@router.get("/events/filter", response_model=List[dict])
 async def filter_events(
-    category: Optional[str] = None,
-    city: Optional[str] = None,
-    date: Optional[str] = None,
-    status: Optional[str] = None
+    category: Optional[str] = Query(None),
+    city: Optional[str] = Query(None),
+    date: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    skills: Optional[str] = Query(None)
 ):
     query = {}
 
@@ -89,5 +90,13 @@ async def filter_events(
     if status:
         query["status"] = status
 
+    if skills:
+        skill_list = skills.split(",")
+        query["skills_required"] = {"$in": skill_list}
+
     events = list(events_collection.find(query))
+    
+    if not events:
+        raise HTTPException(status_code=404, detail="No events found")  # Prevents empty list errors
+    
     return [event_serializer(event) for event in events]
