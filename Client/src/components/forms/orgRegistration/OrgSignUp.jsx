@@ -1,8 +1,8 @@
 import { BadgeInfo, ImagePlus } from "lucide-react";
 import React from "react";
 import { useState } from 'react';
-import OrgType from "../../components/forms/organization/orgType";
-import { Link } from 'react-router-dom';
+import OrgType from "./orgType";
+
 
 
 const OrgSignUp = () => {
@@ -36,22 +36,13 @@ const OrgSignUp = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 pb-10">
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold  text-orange-700 ">PlegeIt</h1>
-      </div>
 
-      {/* Title and Info Section */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-700 pb-5">Create an Oganization account</h2>
-
-      </div>
 
 
       {/* Form Section */}
       <form
         // onSubmit={}
-        className="space-y-4 w-160 bg-gray-50 rounded-lg px-10 py-8 border border-gray-300 border-opacity-50"
+        className="space-y-4 w-180 bg-gray-50 rounded-lg px-10 py-8 border border-gray-300 border-opacity-50"
         encType="multipart/form-data"> {/*Required for sending files (e.g., images) with the form*/}
 
         <div className="flex items-center space-x-4">
@@ -111,18 +102,7 @@ const OrgSignUp = () => {
         </div>
 
 
-        <div>
-          <label className="block text-gray-600 mb-1">Email Address *</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email Address"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-            required
-          />
-        </div>
+
 
         <div>
           <label className="block text-gray-600 mb-3">Organization Type *</label>
@@ -134,20 +114,20 @@ const OrgSignUp = () => {
 
         <div>
           <label className="block text-gray-600 mb-1">About Your Organization *</label>
-          <textarea rows="1" class="block p-2.5 w-full text-sm text-black-900 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200 resize-none" placeholder="Write your thoughts here..."></textarea>
+          <textarea rows="3" class="block p-2.5 w-full text-sm text-black-900 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200 resize-none" placeholder="Write your thoughts here..."></textarea>
           <div className="flex items-center gap-2">
             <BadgeInfo /><p className="text-sm block text-gray-500 mt-1 ">Write 1-2 paragraphs to share your mission,describe the work you do, and highlight the impact you make </p>
           </div>
         </div>
 
         <div>
-          <label className="block text-gray-600 mb-1">Contact Email Address *</label>
+          <label className="block text-gray-600 mb-1">Email Address *</label>
           <input
             type="email"
             name="email"
-            // value={formData.email}
-            // onChange={handleInputChange}
-            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="e.g.,volunteer@gmail.com"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
             required
           />
@@ -158,9 +138,9 @@ const OrgSignUp = () => {
           <input
             type="tel"
             name="PhoneNo"
-            // value={formData.email}
-            // onChange={handleInputChange}
-            placeholder="+94"
+            value={formData.phoneNo}
+            onChange={handleInputChange}
+            placeholder="0711234567"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
             required
           />
@@ -169,24 +149,18 @@ const OrgSignUp = () => {
         <div>
           <label className="block text-gray-600 mb-1">Address *</label>
           <input
-            type=""
+            type="text"
             name="email"
-            // value={formData.email}
-            // onChange={handleInputChange}
-            placeholder="e.g.: "
+            value={formData.address}
+            onChange={handleInputChange}
+            placeholder="e.g.,57, Ramakrishna Road, Colombo 06, Sri Lanka "
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
             required
           />
         </div>
 
-        <p className="w-full mt-5 bg-red-600 text-white text-center py-2 rounded-lg hover:bg-red-700">
-          <Link to="/OrgSignUp2">Next</Link>
-        </p>
-
-
       </form>
-      <span className="mt-5"> Already have an account?</span>
-      <a href="/logIn" className="font-bold text-red-400">Sign In</a>
+
     </div>
   );
 };
