@@ -1,20 +1,36 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles  # ✅ Serves static files (uploaded images)
 from routes.events import router as event_router
+import os
 
-app = FastAPI()
+app = FastAPI(
+    title="PledgeIt Volunteer Events API",
+    description="API for managing volunteer events, including event creation, filtering, and image uploads.",
+    version="1.0.0",
+)
 
-# Allow frontend to communicate with FastAPI
+# ✅ CORS Configuration (Restrict in Production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (for development)
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ Ensure 'uploads' directory exists for serving event images
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+# ✅ Include the event routes
 app.include_router(event_router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to the PledgeIt Volunteer Events API"}
+    return {
+        "message": "Welcome to the PledgeIt Volunteer Events API",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc",
+    }

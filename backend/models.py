@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List
 
 class ContactPerson(BaseModel):
@@ -19,13 +19,13 @@ class Event(BaseModel):
     latitude: Optional[float] = None  # New field
     longitude: Optional[float] = None  # New field
     duration: str
-    volunteer_requirements: str
+    volunteer_requirements: Optional[str] = None    
     skills_required: List[str]
     contact_email: str
     contact_person: ContactPerson
-    image_url: str
+    image_url: Optional[str] = None  
     registration_deadline: str
     additional_notes: Optional[str] = None
     status: str
     total_registered_volunteers: int
-    created_at: str
+    created_at: Optional[str] = None  
