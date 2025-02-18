@@ -15,7 +15,7 @@ const OrgSignUp2 = () => {
                 {/* Form Fields */}
 
                 <div>
-                    <p>Select causes that your organization supports</p>
+                    <p>Select causes that your organization supports.</p>
                     <div>
                         <CauseType/>
                     </div>

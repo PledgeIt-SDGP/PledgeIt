@@ -20,7 +20,9 @@ const OrgType = ({ orgType, setOrgType }) => {
                         checked={orgType === 'Private Business'}
                         onChange={handleChange}
                         className="mr-2"
+                        
                     />
+
                     <label htmlFor="business">Private Business</label>
                 </div>
 

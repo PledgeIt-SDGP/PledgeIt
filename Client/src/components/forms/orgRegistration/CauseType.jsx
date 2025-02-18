@@ -24,14 +24,14 @@ const CauseType=()=>{
         }))
     );
 
-    const handleCategoryClick=async (id)=>{
-
-        const updatedCategories=categories.map((category)=>
-            category.id===id?{...category,selected:!category.selected}:category
+    const handleCategoryClick = (id) => {
+        setCategories(prevCategories => 
+          prevCategories.map(category =>
+            category.id === id ? { ...category, selected: !category.selected } : category
+          )
         );
-        setCategories(updatedCategories)
-
-    }
+    };
+    
 
     return(
         <div className="grid grid-cols-4 gap-2 mt-6">

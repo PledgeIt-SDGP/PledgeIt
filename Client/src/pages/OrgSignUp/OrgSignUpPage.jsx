@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Building2, ChevronRight, Grid2X2Check, Users } from "lucide-react";
+import { Building2, ChevronRight, Grid2X2Check } from "lucide-react";
 import OrgSignUp from "../../components/forms/orgRegistration/OrgSignUp";
 import OrgSignUp2 from "../../components/forms/orgRegistration/OrgSignUp2";
 
@@ -8,8 +8,31 @@ import OrgSignUp2 from "../../components/forms/orgRegistration/OrgSignUp2";
 
 const OrgSignUpPage = () => {
     const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({
+        orgName: '',
+        websiteUrl: '',
+        orgType: 'Private Business',
+        email: "",
+        phoneNo: "",
+        address: "",
+        password: "",
+        confirmPassword: "",
+      });
 
-    const handleNext = () => setStep((prev) => prev + 1);
+    // Validate if all required fields are filled in the first step
+    const validateStep1 = () => {
+        const { orgName, websiteUrl, email, phoneNo, address } = formData;
+        return orgName && websiteUrl && email && phoneNo && address; // Check all required fields
+    };
+
+    const handleNext = () => {
+        if (step === 1 && !validateStep1()) {
+            alert("Please fill out all required fields on the first step.");
+            return; // Prevent moving to the next step if validation fails
+        }
+        setStep((prev) => prev + 1);
+    };
+
     const handleBack = () => setStep((prev) => prev - 1);
 
     return (
@@ -17,13 +40,13 @@ const OrgSignUpPage = () => {
             {/* Header Section */}
             <div className="mb-8 text-center">
                 <h1 className="text-3xl font-bold  text-orange-700 ">PlegeIt</h1>
-            
 
-            {/* Title and Info Section */}
-            
+
+                {/* Title and Info Section */}
+
                 <h2 className="text-2xl font-bold text-gray-700 pb-5 mt-2">Create an Oganization account</h2>
 
-           </div>
+            </div>
 
             <div className="flex items-center mb-6 justify-center">
                 <span className={`border-2 rounded-full p-3 ${step === 1 ? "border-orange-500 bg-orange-100 text-orange-600" : "border-gray-400 bg-gray-50 text-gray-400"}`}><Building2 /></span>
@@ -34,7 +57,7 @@ const OrgSignUpPage = () => {
             </div>
 
             <div>
-                {step === 1 && <OrgSignUp />}
+                {step === 1 && <OrgSignUp formData={formData} setFormData={setFormData}/>}
                 {step === 2 && <OrgSignUp2 />}
             </div>
 
