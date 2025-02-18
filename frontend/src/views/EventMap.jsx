@@ -14,6 +14,8 @@ import {
   RadioGroup,
 } from "@mui/material";
 import Select from "react-select";
+import { motion } from "framer-motion";
+import { Search, Filter, X } from "lucide-react";
 
 // Fix for default marker icons in react-leaflet
 import { Icon } from "leaflet";
@@ -64,54 +66,39 @@ const LazyEventMap = () => {
   }, []);
 
   const applyFilters = useCallback(() => {
-    let filtered = events;
+    setLoading(true); // Show loading spinner
 
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((event) =>
-        event.event_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    const params = {
+      category: selectedCategories.join(","),
+      city: selectedOrganization,
+      date: selectedDate,
+      status: selectedStatus,
+      skills: selectedSkills.join(","),
+      venue: selectedVenue,
+      search: searchTerm.trim() !== "" ? searchTerm : undefined,
+    };
 
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((event) =>
-        selectedCategories.includes(event.category)
-      );
-    }
-
-    if (selectedStatus) {
-      filtered = filtered.filter((event) => event.status === selectedStatus);
-    }
-
-    if (selectedDate) {
-      filtered = filtered.filter((event) => event.date === selectedDate);
-    }
-
-    if (selectedOrganization) {
-      filtered = filtered.filter(
-        (event) => event.organization === selectedOrganization
-      );
-    }
-
-    if (selectedSkills.length > 0) {
-      filtered = filtered.filter((event) =>
-        selectedSkills.some((skill) => event.skills_required.includes(skill))
-      );
-    }
-
-    if (selectedVenue) {
-      filtered = filtered.filter((event) => event.venue === selectedVenue);
-    }
-
-    setFilteredEvents(filtered);
+    axios
+      .get(`${API_URL}/filter`, { params })
+      .then((response) => {
+        setFilteredEvents(response.data);
+        setSidebarOpen(false); // ✅ Closes the sidebar after filters are applied
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered events:", error);
+        setFilteredEvents([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [
-    events,
-    searchTerm,
     selectedCategories,
-    selectedStatus,
-    selectedDate,
     selectedOrganization,
+    selectedDate,
+    selectedStatus,
     selectedSkills,
     selectedVenue,
+    searchTerm,
   ]);
 
   return (
@@ -121,25 +108,29 @@ const LazyEventMap = () => {
       </h2>
       {error && <p className="text-red-600 font-semibold">{error}</p>}{" "}
       {/* Show error message */}
-      <div className="flex flex-wrap justify-center gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="🔍 Search events..."
-          className="border border-gray-300 p-3 rounded-md w-72 shadow-md focus:ring focus:ring-red-400 transition-all duration-200"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="flex flex-wrap justify-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-md">
+  <input
+    type="text"
+    placeholder="🔍 Search events..."
+    className="border border-gray-300 p-3 rounded-lg w-72 shadow-sm 
+               focus:ring focus:ring-red-400 transition-all duration-200
+               bg-gray-100 text-black placeholder-gray-500"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
 
-        <button
+        <motion.button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300"
+          className="bg-gradient-to-r from-red-500 to-red-700 text-white px-6 py-3 rounded-lg shadow-md hover:opacity-90 transition-all flex items-center gap-2"
+          whileHover={{ scale: 1.05 }}
         >
+          <Filter className="w-5 h-5" />
           {sidebarOpen ? "Hide Filters" : "Show Filters"}
-        </button>
+        </motion.button>
       </div>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-40 z-[1000]"
+          className="fixed inset-0 bg-black opacity-50 z-40"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
@@ -148,35 +139,41 @@ const LazyEventMap = () => {
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <h3 className="text-lg font-semibold mb-4 text-red-600">🔍 Filters</h3>
-
-        {/* Event Categories */}
-        <h4 className="font-semibold mb-2 text-gray-700">
-          📌 Event Categories
-        </h4>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {[...new Set(events.map((event) => event.category))].map(
-            (category) => (
-              <button
-                key={category}
-                className={`px-4 py-2 rounded-full border-2 ${
-                  selectedCategories.includes(category)
-                    ? "bg-red-600 text-white"
-                    : "border-red-600 text-red-600"
-                }`}
-                onClick={() =>
-                  setSelectedCategories((prev) =>
-                    prev.includes(category)
-                      ? prev.filter((c) => c !== category)
-                      : [...prev, category]
-                  )
-                }
-              >
-                {category}
-              </button>
-            )
-          )}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold mb-4 text-red-700 flex items-center">
+            <Filter className="mr-2" />Filters
+          </h3>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="text-gray-500 hover:text-red-500"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        {/* Event Categories */}
+        <h4 className="font-semibold mb-2 text-gray-700">📌 Event Categories</h4>
+<div className="flex flex-wrap gap-2 mb-4">
+  {[...new Set(events.map((event) => event.category))].map((category) => (
+    <button
+      key={category}
+      className={`px-4 py-2 rounded-full border-2 transition-all duration-300 
+                  ${
+                    selectedCategories.includes(category)
+                      ? "bg-gradient-to-r from-red-500 to-red-700 text-white shadow-md"
+                      : "border-red-500 text-red-600 hover:bg-red-100"
+                  }`}
+      onClick={() =>
+        setSelectedCategories((prev) =>
+          prev.includes(category)
+            ? prev.filter((c) => c !== category)
+            : [...prev, category]
+        )
+      }
+    >
+      {category}
+    </button>
+  ))}
+</div>
 
         {/* Skills Required Dropdown */}
         <h4 className="font-semibold mb-2 text-gray-700">🛠 Required Skills</h4>
@@ -258,27 +255,40 @@ const LazyEventMap = () => {
         <Button
           variant="contained"
           fullWidth
-          onClick={applyFilters}
-          className="bg-red-600 hover:bg-red-700 text-white mt-4"
+          onClick={() => {
+            applyFilters();
+            setSidebarOpen(false); // ✅ Manually close the sidebar
+          }}
+          className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 
+               text-white font-semibold rounded-lg py-3 mt-4 shadow-lg"
+    disabled={loading}
         >
-          Apply Filters
+          {loading ? "Applying..." : "Apply Filters"}
         </Button>
       </div>
       <Suspense fallback={<CircularProgress color="secondary" />}>
         <MapContainer
+          key={filteredEvents.length}
           center={CENTER_POSITION}
           zoom={8}
-          className="w-full h-[600px]"
-        >
+          className="w-full h-[600px] shadow-lg rounded-2xl border border-gray-300"
+          >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             maxZoom={18}
           />
           <MarkerClusterGroup>
-            {filteredEvents.map((event) => (
-              <EventMarker key={event.event_id} event={event} />
-            ))}
+            {filteredEvents.length > 0
+              ? filteredEvents.map((event) => (
+                  <EventMarker key={event.event_id} event={event} />
+                ))
+              : // ✅ Show a message when no events match the filters
+                !loading && (
+                  <p className="text-center text-gray-500">
+                    No matching events found. Try different filters.
+                  </p>
+                )}
           </MarkerClusterGroup>
           <MapControls />
         </MapContainer>

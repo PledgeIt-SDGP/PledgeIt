@@ -77,7 +77,9 @@ async def filter_events(
     city: Optional[str] = Query(None),
     date: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    skills: Optional[str] = Query(None)
+    skills: Optional[str] = Query(None),
+    venue: Optional[str] = Query(None),
+    search: Optional[str] = Query(None)  
 ):
     query = {}
 
@@ -89,14 +91,17 @@ async def filter_events(
         query["date"] = date
     if status:
         query["status"] = status
-
+    if venue:
+        query["venue"] = {"$regex": venue, "$options": "i"}
     if skills:
         skill_list = skills.split(",")
         query["skills_required"] = {"$in": skill_list}
+    if search:
+        query["event_name"] = {"$regex": search, "$options": "i"}
+
+    print(f"🔍 Querying MongoDB with filters: {query}")  # ✅ Log query
 
     events = list(events_collection.find(query))
-    
-    if not events:
-        raise HTTPException(status_code=404, detail="No events found")  # Prevents empty list errors
-    
+    print(f"✅ Events found: {len(events)}")  # ✅ Log number of matched events
+
     return [event_serializer(event) for event in events]

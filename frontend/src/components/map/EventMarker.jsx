@@ -58,7 +58,7 @@ const EventMarker = ({ event }) => {
             className="flex items-center text-red-600 font-semibold text-sm transition-all group"
           >
             <span className="mr-1 group-hover:text-red-700 transition-colors">View More</span>
-            <ArrowRight className="w-4 h-4 text-red-600 group-hover:text-red-700 transition-colors group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-red-600 group-hover:text-red-700 transition duration-300 ease-in-out transform group-hover:translate-x-1"/>
           </Link>
         </div>
       </Popup>
