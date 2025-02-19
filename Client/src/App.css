@@ -1,4 +1,15 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@theme {
+  --color-flame-pea-50: #fdf4ef;
+  --color-flame-pea-100: #fae5da;
+  --color-flame-pea-200: #f5c8b3;
+  --color-flame-pea-300: #eea383;
+  --color-flame-pea-400: #e67551;
+  --color-flame-pea-500: #df4e2a;
+  --color-flame-pea-600: #d13c25;
+  --color-flame-pea-700: #ae2b20;
+  --color-flame-pea-800: #8b2621;
+  --color-flame-pea-900: #70221e;
+  --color-flame-pea-950: #3c0e0e;
+}
