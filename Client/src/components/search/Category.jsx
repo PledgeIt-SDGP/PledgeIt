@@ -55,9 +55,7 @@ function Category({ onCategorySelect }) {
           onClick={() => handleCategoryClick(item.value)}
           className={`flex flex-col items-center space-y-2 cursor-pointer transition-all 
             ${
-              selectedCategory === item.value
-                ? "text-orange-600"
-                : "text-gray-700"
+              selectedCategory === item.value ? "text-red-600" : "text-gray-700"
             }`}
         >
           {/* Circular Icon Container */}
@@ -66,7 +64,7 @@ function Category({ onCategorySelect }) {
             shadow-md transition-all border-2 
             ${
               selectedCategory === item.value
-                ? "bg-orange-500 text-white border-orange-500"
+                ? "bg-red-500 text-white border-red-500"
                 : "bg-gray-100 text-orange-600 border-gray-300"
             }`}
           >

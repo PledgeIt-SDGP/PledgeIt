@@ -111,6 +111,31 @@ const SearchFilters = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <TextField
               select
+              label="category"
+              value={filters.event_type}
+              fullWidth
+              variant="outlined"
+              className="bg-gray-20 rounded-lg"
+              onChange={(e) =>
+                setFilters({ ...filters, event_type: e.target.value })
+              }
+            >
+              <MenuItem value="Any">Any</MenuItem>
+              <MenuItem value="Environmental">Environment</MenuItem>
+              <MenuItem value="Healthcare">Health</MenuItem>
+              <MenuItem value="Community Service">Community</MenuItem>
+              <MenuItem value="Education">Education</MenuItem>
+              <MenuItem value="Animal Welfare">Animal Welfare</MenuItem>
+              <MenuItem value="Human Rights">Human Rights</MenuItem>
+              <MenuItem value="Disaster Relief">Disaster Relief</MenuItem>
+              <MenuItem value="Life & Culture">Life & Culture</MenuItem>
+              <MenuItem value="Fundraising & Charity">
+                Fundraising & Charity
+              </MenuItem>
+            </TextField>
+
+            <TextField
+              select
               label="Location"
               value={filters.city}
               fullWidth
