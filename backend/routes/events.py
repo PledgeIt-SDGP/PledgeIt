@@ -2,18 +2,18 @@ from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile
 from typing import List, Optional
 from database import events_collection
 from models import Event, ContactPerson
-from geocoding import get_coordinates  # Import geocoding function
+from geocoding import get_coordinates  # ✅ Import geocoding function to convert address to coordinates
 import datetime
-import uuid  # ✅ Generate unique event ID
+import uuid  # ✅ Generate unique event IDs
 import os  # ✅ Handle image uploads
 
 router = APIRouter()
 
-# File upload directory (Temporary, better to use cloud storage)
+# ✅ File upload directory (temporary, consider cloud storage in production)
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure upload folder exists
 
-# Convert MongoDB document to Python dictionary
+# ✅ Convert MongoDB document to a Python dictionary for API responses
 def event_serializer(event) -> dict:
     return {
         "event_id": event["event_id"],
@@ -26,8 +26,8 @@ def event_serializer(event) -> dict:
         "venue": event["venue"],
         "city": event["city"],
         "address": event["address"],
-        "latitude": event.get("latitude", None),  # Prevent crash
-        "longitude": event.get("longitude", None),  # Prevent crash
+        "latitude": event.get("latitude", None),  # Prevent crash if missing
+        "longitude": event.get("longitude", None),  # Prevent crash if missing
         "duration": event["duration"],
         "volunteer_requirements": event.get("volunteer_requirements", ""),
         "skills_required": event.get("skills_required", []),
@@ -36,7 +36,7 @@ def event_serializer(event) -> dict:
             "name": event["contact_person"]["name"],
             "contact_number": event["contact_person"]["contact_number"],
         },
-        "image_url": event.get("image_url", ""),
+        "image_url": f"http://127.0.0.1:8000{event.get('image_url', '')}",  # ✅ Ensure correct full image path
         "registration_deadline": event["registration_deadline"],
         "additional_notes": event.get("additional_notes", ""),
         "status": event["status"],
@@ -44,11 +44,23 @@ def event_serializer(event) -> dict:
         "created_at": event["created_at"],
     }
 
-# ✅ Fetch all events
+# ✅ Fetch all events (basic endpoint; you can extend with pagination if needed)
 @router.get("/events", response_model=List[Event])
 async def get_events():
     events = list(events_collection.find())
     return [event_serializer(event) for event in events]
+
+# @router.get("/events", response_model=List[dict])
+# async def get_events(
+#     limit: int = Query(8, alias="limit"),  # ✅ Default limit to 8
+#     skip: int = Query(0, alias="skip")     # ✅ Default start point at 0
+# ):
+#     """
+#     Fetch paginated list of events.
+#     The frontend will pass `limit` and `skip` values dynamically.
+#     """
+#     events = list(events_collection.find().skip(skip).limit(limit))
+#     return [event_serializer(event) for event in events]
 
 # ✅ Fetch a single event by event_id
 @router.get("/events/{event_id}", response_model=Event)
@@ -58,7 +70,7 @@ async def get_event(event_id: str):
         return event_serializer(event)
     raise HTTPException(status_code=404, detail="Event not found")
 
-# ✅ Create an event (Handles form-data & file uploads)
+# ✅ Create an event (Handles form-data and file uploads)
 @router.post("/events", response_model=dict)
 async def create_event(
     event_name: str = Form(...),
@@ -72,7 +84,7 @@ async def create_event(
     address: str = Form(...),
     duration: str = Form(...),
     volunteer_requirements: Optional[str] = Form(None),
-    skills_required: str = Form(...),  # ✅ Stored as a list
+    skills_required: str = Form(...),  # ✅ Stored as a comma-separated list
     contact_email: str = Form(...),
     contact_person_name: str = Form(...),
     contact_person_number: str = Form(...),
@@ -88,24 +100,25 @@ async def create_event(
     # ✅ Generate unique event ID
     event_id = str(uuid.uuid4())
 
-    # ✅ Convert skills into a list
+    # ✅ Convert comma-separated skills into a list
     skills_list = skills_required.split(",")
 
-    # ✅ Get coordinates from the address
+    # ✅ Get coordinates from the address using the geocoding function
     latitude, longitude = get_coordinates(address)
 
-    # Validate image type
+    # ✅ Validate image type
     allowed_types = ["image/jpeg", "image/png", "image/jpg"]
     if image_url.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid image format. Only JPG, JPEG, PNG allowed.")
 
-    # Handle Image Upload
+    # ✅ Handle Image Upload
     image_path = f"{UPLOAD_DIR}/{event_id}_{image_url.filename}"
     with open(image_path, "wb") as buffer:
         buffer.write(await image_url.read())
-    image_url = f"/{image_path}"
+    # ✅ Construct the correct URL path for serving the image
+    image_url = f"/uploads/{event_id}_{image_url.filename}"
 
-    # ✅ Create event dictionary
+    # ✅ Create event dictionary to insert into MongoDB
     event_data = {
         "event_id": event_id,
         "event_name": event_name,
@@ -149,31 +162,32 @@ async def filter_events(
     status: Optional[str] = Query(None),
     skills: Optional[str] = Query(None),
     venue: Optional[str] = Query(None),
-    search: Optional[str] = Query(None)  
+    search: Optional[str] = Query(None)
 ):
     query = {}
 
-    if category:
+    if category and category.strip():
         query["category"] = {"$regex": category, "$options": "i"}
-    if city:
+    if city and city.strip():
         query["city"] = {"$regex": city, "$options": "i"}
-    if date:
+    if date and date.strip():
         query["date"] = date
-    if status:
+    if status and status.strip():
         query["status"] = status
-    if venue:
+    if venue and venue.strip():
         query["venue"] = {"$regex": venue, "$options": "i"}
-    if skills:
-        skill_list = skills.split(",")
-        query["skills_required"] = {"$in": skill_list}
-    if search:
+    if skills and skills.strip():
+        # ✅ Split skills by comma and use $in operator for flexible matching
+        skill_list = [skill.strip() for skill in skills.split(",") if skill.strip()]
+        if skill_list:
+            query["skills_required"] = {"$in": skill_list}
+    if search and search.strip():
         query["event_name"] = {"$regex": search, "$options": "i"}
 
-    print(f"🔍 Querying MongoDB with filters: {query}")  # ✅ Log query
-
+    # ✅ Debugging: Print the actual query being sent to MongoDB
+    print(f"🔍 MongoDB Query: {query}")
     events = list(events_collection.find(query))
-    print(f"✅ Events found: {len(events)}")  # ✅ Log number of matched events
-
+    print(f"✅ Found {len(events)} matching events.")
     return [event_serializer(event) for event in events]
 
 # ✅ Delete an event

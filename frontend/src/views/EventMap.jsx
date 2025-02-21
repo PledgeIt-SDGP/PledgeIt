@@ -66,26 +66,32 @@ const LazyEventMap = () => {
   }, []);
 
   const applyFilters = useCallback(() => {
-    setLoading(true); // Show loading spinner
+    setLoading(true);
 
-    const params = {
-      category: selectedCategories.join(","),
-      city: selectedOrganization,
-      date: selectedDate,
-      status: selectedStatus,
-      skills: selectedSkills.join(","),
-      venue: selectedVenue,
-      search: searchTerm.trim() !== "" ? searchTerm : undefined,
-    };
+    // ✅ Build query parameters dynamically (Only include selected filters)
+    const params = {};
+    if (selectedCategories.length > 0)
+      params.category = selectedCategories.join(",");
+    if (selectedOrganization) params.city = selectedOrganization;
+    if (selectedDate) params.date = selectedDate;
+    if (selectedStatus) params.status = selectedStatus;
+    if (selectedSkills.length > 0) params.skills = selectedSkills.join(",");
+    if (selectedVenue) params.venue = selectedVenue;
+    if (searchTerm.trim() !== "") params.search = searchTerm;
+
+    console.log("🔍 Applying filters:", params); // ✅ Debugging log
 
     axios
-      .get(`${API_URL}/filter`, { params })
+      .get(`${API_URL}/filter`, { params }) // ✅ Send only selected filters
       .then((response) => {
         setFilteredEvents(response.data);
-        setSidebarOpen(false); // ✅ Closes the sidebar after filters are applied
+        setSidebarOpen(false);
       })
       .catch((error) => {
-        console.error("Error fetching filtered events:", error);
+        console.error(
+          "❌ Error fetching filtered events:",
+          error.response?.data || error.message
+        );
         setFilteredEvents([]);
       })
       .finally(() => {
@@ -109,15 +115,15 @@ const LazyEventMap = () => {
       {error && <p className="text-red-600 font-semibold">{error}</p>}{" "}
       {/* Show error message */}
       <div className="flex flex-wrap justify-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-md">
-  <input
-    type="text"
-    placeholder="🔍 Search events..."
-    className="border border-gray-300 p-3 rounded-lg w-72 shadow-sm 
+        <input
+          type="text"
+          placeholder="🔍 Search events..."
+          className="border border-gray-300 p-3 rounded-lg w-72 shadow-sm 
                focus:ring focus:ring-red-400 transition-all duration-200
                bg-gray-100 text-black placeholder-gray-500"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
         <motion.button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -141,7 +147,8 @@ const LazyEventMap = () => {
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold mb-4 text-red-700 flex items-center">
-            <Filter className="mr-2" />Filters
+            <Filter className="mr-2" />
+            Filters
           </h3>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -151,29 +158,33 @@ const LazyEventMap = () => {
           </button>
         </div>
         {/* Event Categories */}
-        <h4 className="font-semibold mb-2 text-gray-700">📌 Event Categories</h4>
-<div className="flex flex-wrap gap-2 mb-4">
-  {[...new Set(events.map((event) => event.category))].map((category) => (
-    <button
-      key={category}
-      className={`px-4 py-2 rounded-full border-2 transition-all duration-300 
+        <h4 className="font-semibold mb-2 text-gray-700">
+          📌 Event Categories
+        </h4>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[...new Set(events.map((event) => event.category))].map(
+            (category) => (
+              <button
+                key={category}
+                className={`px-4 py-2 rounded-full border-2 transition-all duration-300 
                   ${
                     selectedCategories.includes(category)
                       ? "bg-gradient-to-r from-red-500 to-red-700 text-white shadow-md"
                       : "border-red-500 text-red-600 hover:bg-red-100"
                   }`}
-      onClick={() =>
-        setSelectedCategories((prev) =>
-          prev.includes(category)
-            ? prev.filter((c) => c !== category)
-            : [...prev, category]
-        )
-      }
-    >
-      {category}
-    </button>
-  ))}
-</div>
+                onClick={() =>
+                  setSelectedCategories((prev) =>
+                    prev.includes(category)
+                      ? prev.filter((c) => c !== category)
+                      : [...prev, category]
+                  )
+                }
+              >
+                {category}
+              </button>
+            )
+          )}
+        </div>
 
         {/* Skills Required Dropdown */}
         <h4 className="font-semibold mb-2 text-gray-700">🛠 Required Skills</h4>
@@ -261,7 +272,7 @@ const LazyEventMap = () => {
           }}
           className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 
                text-white font-semibold rounded-lg py-3 mt-4 shadow-lg"
-    disabled={loading}
+          disabled={loading}
         >
           {loading ? "Applying..." : "Apply Filters"}
         </Button>
@@ -272,7 +283,7 @@ const LazyEventMap = () => {
           center={CENTER_POSITION}
           zoom={8}
           className="w-full h-[600px] shadow-lg rounded-2xl border border-gray-300"
-          >
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -283,11 +294,10 @@ const LazyEventMap = () => {
               ? filteredEvents.map((event) => (
                   <EventMarker key={event.event_id} event={event} />
                 ))
-              : // ✅ Show a message when no events match the filters
-                !loading && (
-                  <p className="text-center text-gray-500">
-                    No matching events found. Try different filters.
-                  </p>
+              : !loading && (
+                  <div className="text-center text-gray-500 mt-4">
+                    <p>No matching events found. Try different filters.</p>
+                  </div>
                 )}
           </MarkerClusterGroup>
           <MapControls />
