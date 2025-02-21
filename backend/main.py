@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles  # ✅ Serves static files (uploaded images)
+from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
 import os
 
@@ -10,7 +10,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# ✅ CORS Configuration (Restrict in Production)
+# Configure CORS (adjust allowed origins in production)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
@@ -19,12 +19,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Ensure 'uploads' directory exists for serving event images
+# Ensure the uploads directory exists for serving event images
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# ✅ Include the event routes
+# Include event routes
 app.include_router(event_router)
 
 @app.get("/")

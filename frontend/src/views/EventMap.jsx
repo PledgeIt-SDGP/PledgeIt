@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense, useCallback } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import axios from "axios";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import EventMarker from "../components/map/EventMarker";
@@ -15,14 +15,13 @@ import {
 } from "@mui/material";
 import Select from "react-select";
 import { motion } from "framer-motion";
-import { Search, Filter, X } from "lucide-react";
-
-// Fix for default marker icons in react-leaflet
+import { Filter, X } from "lucide-react";
 import { Icon } from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+// Fix for default marker icons in react-leaflet
 delete Icon.Default.prototype._getIconUrl;
 Icon.Default.mergeOptions({
   iconUrl: markerIcon,
@@ -50,6 +49,9 @@ const LazyEventMap = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // Track API errors
 
+  // (Optional) User location marker
+  const [userLocation, setUserLocation] = useState(null);
+
   useEffect(() => {
     axios
       .get(`${API_URL}`)
@@ -63,12 +65,20 @@ const LazyEventMap = () => {
         setError("Failed to load events. Please check the backend.");
         setLoading(false);
       });
+
+    // Get user's current location
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation([position.coords.latitude, position.coords.longitude]);
+      },
+      (error) => console.error("Error fetching user location:", error),
+      { enableHighAccuracy: true }
+    );
   }, []);
 
   const applyFilters = useCallback(() => {
     setLoading(true);
-
-    // ✅ Build query parameters dynamically (Only include selected filters)
+    // Build query parameters dynamically (Only include selected filters)
     const params = {};
     if (selectedCategories.length > 0)
       params.category = selectedCategories.join(",");
@@ -79,10 +89,10 @@ const LazyEventMap = () => {
     if (selectedVenue) params.venue = selectedVenue;
     if (searchTerm.trim() !== "") params.search = searchTerm;
 
-    console.log("🔍 Applying filters:", params); // ✅ Debugging log
+    console.log("🔍 Applying filters:", params); // Debugging log
 
     axios
-      .get(`${API_URL}/filter`, { params }) // ✅ Send only selected filters
+      .get(`${API_URL}/filter`, { params })
       .then((response) => {
         setFilteredEvents(response.data);
         setSidebarOpen(false);
@@ -112,19 +122,16 @@ const LazyEventMap = () => {
       <h2 className="text-center text-4xl font-extrabold mb-4 text-red-600">
         🌍 Volunteer Events Map
       </h2>
-      {error && <p className="text-red-600 font-semibold">{error}</p>}{" "}
-      {/* Show error message */}
-      <div className="flex flex-wrap justify-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-md">
+      {error && <p className="text-red-600 font-semibold">{error}</p>}
+      {/* Search & Filter Bar Container with Glassmorphism */}
+      <div className="flex flex-wrap justify-center gap-4 mb-4 bg-white/90 backdrop-blur-lg p-4 rounded-xl shadow-lg border border-gray-200">
         <input
           type="text"
           placeholder="🔍 Search events..."
-          className="border border-gray-300 p-3 rounded-lg w-72 shadow-sm 
-               focus:ring focus:ring-red-400 transition-all duration-200
-               bg-gray-100 text-black placeholder-gray-500"
+          className="border border-gray-300 p-3 rounded-lg w-72 shadow-sm focus:ring focus:ring-red-400 transition-all duration-200 bg-gray-100 text-black placeholder-gray-500"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
         <motion.button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="bg-gradient-to-r from-red-500 to-red-700 text-white px-6 py-3 rounded-lg shadow-md hover:opacity-90 transition-all flex items-center gap-2"
@@ -140,8 +147,9 @@ const LazyEventMap = () => {
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
+      {/* Sidebar with Glassmorphism & Enhanced Borders */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transition-transform duration-300 z-[1001] overflow-y-auto p-6 ${
+        className={`fixed top-0 right-0 h-full w-80 bg-white/90 backdrop-blur-lg shadow-lg border border-gray-200 transition-transform duration-300 z-[1001] overflow-y-auto p-6 ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -185,24 +193,22 @@ const LazyEventMap = () => {
             )
           )}
         </div>
-
         {/* Skills Required Dropdown */}
         <h4 className="font-semibold mb-2 text-gray-700">🛠 Required Skills</h4>
         <Select
           isMulti
           options={[
             ...new Set(events.flatMap((event) => event.skills_required || [])),
-          ].map((skill) => ({ value: skill, label: skill }))} // Convert skills into dropdown options
+          ].map((skill) => ({ value: skill, label: skill }))}
           value={selectedSkills.map((skill) => ({
             value: skill,
             label: skill,
-          }))} // Convert selected values for dropdown
+          }))}
           onChange={(selectedOptions) =>
             setSelectedSkills(selectedOptions.map((option) => option.value))
           }
           className="mb-4"
         />
-
         {/* Status */}
         <h4 className="font-semibold mb-2 text-gray-700">📌 Event Status</h4>
         <RadioGroup
@@ -221,7 +227,6 @@ const LazyEventMap = () => {
             label="Closed"
           />
         </RadioGroup>
-
         {/* Date Selection */}
         <h4 className="font-semibold mb-2 text-gray-700">📅 Event Date</h4>
         <TextField
@@ -232,7 +237,6 @@ const LazyEventMap = () => {
           onChange={(e) => setSelectedDate(e.target.value)}
           className="mb-4"
         />
-
         {/* Organization */}
         <h4 className="font-semibold mb-2 text-gray-700">🏢 Organization</h4>
         <Select
@@ -247,7 +251,6 @@ const LazyEventMap = () => {
           onChange={(selected) => setSelectedOrganization(selected.value)}
           className="mb-4"
         />
-
         {/* Venue */}
         <h4 className="font-semibold mb-2 text-gray-700">📍 Venue</h4>
         <Select
@@ -262,16 +265,14 @@ const LazyEventMap = () => {
           onChange={(selected) => setSelectedVenue(selected.value)}
           className="mb-4"
         />
-
         <Button
           variant="contained"
           fullWidth
           onClick={() => {
             applyFilters();
-            setSidebarOpen(false); // ✅ Manually close the sidebar
+            setSidebarOpen(false);
           }}
-          className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 
-               text-white font-semibold rounded-lg py-3 mt-4 shadow-lg"
+          className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-semibold rounded-lg py-3 mt-4 shadow-lg"
           disabled={loading}
         >
           {loading ? "Applying..." : "Apply Filters"}
@@ -289,7 +290,28 @@ const LazyEventMap = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             maxZoom={18}
           />
-          <MarkerClusterGroup>
+          {/* User's current location marker */}
+          {userLocation && (
+            <Marker
+              position={userLocation}
+              icon={L.icon({
+                iconUrl:
+                  "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              })}
+            />
+          )}
+          <MarkerClusterGroup
+            iconCreateFunction={(cluster) => {
+              const count = cluster.getChildCount();
+              return L.divIcon({
+                html: `<div class="flex items-center justify-center w-10 h-10 bg-red-500 text-white rounded-full border-2 border-white shadow-lg font-bold">${count}</div>`,
+                className: "marker-cluster",
+                iconSize: L.point(40, 40),
+              });
+            }}
+          >
             {filteredEvents.length > 0
               ? filteredEvents.map((event) => (
                   <EventMarker key={event.event_id} event={event} />
