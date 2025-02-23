@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile
 from typing import List, Optional
-from database import events_collection  # Your MongoDB collection
+from database import events_collection
 from models import Event, ContactPerson
-from geocoding import get_coordinates  # Helper function for geocoding
+from geocoding import get_coordinates
 import datetime
-import uuid
 import os
+import uuid
+import uuid as uuid_lib  # For converting legacy UUID strings if needed
 
 router = APIRouter()
 
@@ -13,14 +14,22 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# ✅ Convert MongoDB document to a Python dictionary for API responses
 def event_serializer(event) -> dict:
     """
-    Converts a MongoDB event document into a Python dictionary
-    for API responses. The image_url is built as an absolute URL.
+    Converts a MongoDB event document into a dictionary for API responses.
+    Ensures that the event_id is returned as an integer.
     """
+    eid = event.get("event_id")
+    if not isinstance(eid, int):
+        try:
+            eid = int(eid)
+        except (ValueError, TypeError):
+            try:
+                eid = int(uuid_lib.UUID(eid))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Invalid event_id format: {eid}")
     return {
-        "event_id": event["event_id"],
+        "event_id": eid,
         "event_name": event["event_name"],
         "organization": event["organization"],
         "description": event["description"],
@@ -40,7 +49,6 @@ def event_serializer(event) -> dict:
             "name": event["contact_person"]["name"],
             "contact_number": event["contact_person"]["contact_number"],
         },
-        # Return the full URL for the image so that the frontend can display it.
         "image_url": f"http://127.0.0.1:8000{event.get('image_url', '')}",
         "registration_deadline": event["registration_deadline"],
         "additional_notes": event.get("additional_notes", ""),
@@ -49,33 +57,43 @@ def event_serializer(event) -> dict:
         "created_at": event["created_at"],
     }
 
+def get_next_event_id() -> int:
+    """
+    Returns the next event_id as the current count of events plus one.
+    (Assumes that only documents with numeric event_id exist.)
+    """
+    count = events_collection.count_documents({"event_id": {"$type": "int"}})
+    return count + 1
+
+def renumber_events():
+    """
+    Renumbers all events in the database to maintain sequential event_ids.
+    Called after an event is deleted.
+    Only considers events with numeric event_id.
+    """
+    events = list(events_collection.find({"event_id": {"$type": "int"}}).sort("created_at", 1))
+    new_id = 1
+    for event in events:
+        events_collection.update_one({"_id": event["_id"]}, {"$set": {"event_id": new_id}})
+        new_id += 1
+
 @router.get("/events", response_model=List[Event])
 async def get_events():
     """
-    Fetches all events from the database and serializes them.
+    Fetches all events from the database that have a numeric event_id.
     """
-    events = list(events_collection.find())
+    events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [event_serializer(event) for event in events]
 
-# @router.get("/events", response_model=List[dict])
-# async def get_events(
-#     limit: int = Query(8, alias="limit"),  # ✅ Default limit to 8
-#     skip: int = Query(0, alias="skip")     # ✅ Default start point at 0
-# ):
-#     """
-#     Fetch paginated list of events.
-#     The frontend will pass `limit` and `skip` values dynamically.
-#     """
-#     events = list(events_collection.find().skip(skip).limit(limit))
-#     return [event_serializer(event) for event in events]
-
-# ✅ Fetch a single event by event_id
 @router.get("/events/{event_id}", response_model=Event)
-async def get_event(event_id: str):
+async def get_event(event_id: int):
     """
-    Fetches a single event by its event_id.
+    Fetches a single event by its sequential event_id.
+    Matches documents where event_id is stored as an integer or string.
     """
-    event = events_collection.find_one({"event_id": event_id})
+    event = events_collection.find_one({
+        "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
+    })
     if event:
         return event_serializer(event)
     raise HTTPException(status_code=404, detail="Event not found")
@@ -86,43 +104,42 @@ async def create_event(
     organization: str = Form(...),
     description: str = Form(...),
     category: str = Form(...),
-    date: str = Form(...),
-    time: str = Form(...),
+    date: str = Form(...),   # Format: YYYY-MM-DD
+    time: str = Form(...),   # Format: HH:MM:SS
     venue: str = Form(...),
     city: str = Form(...),
     address: str = Form(...),
     duration: str = Form(...),
     volunteer_requirements: Optional[str] = Form(None),
-    skills_required: str = Form(...),  # Comma-separated skills
+    skills_required: str = Form(...),  # Comma-separated list
     contact_email: str = Form(...),
     contact_person_name: str = Form(...),
     contact_person_number: str = Form(...),
-    registration_deadline: str = Form(...),
+    registration_deadline: str = Form(...),  # Format: YYYY-MM-DD
     additional_notes: Optional[str] = Form(None),
     status: str = Form(...),
     total_registered_volunteers: int = Form(...),
     image_url: UploadFile = File(...)
 ):
     """
-    Creates a new event. It generates a unique event_id, converts the provided address
-    into latitude and longitude, validates and uploads the event image, and stores all data in the database.
+    Creates a new event:
+    - Generates a sequential event_id.
+    - Converts the provided address to latitude and longitude.
+    - Validates and uploads the event image.
+    - Stores all event details in the database.
     """
-    # Generate unique event ID
-    event_id = str(uuid.uuid4())
-    # Convert skills string to list
-    skills_list = skills_required.split(",")
-    # Get coordinates using geocoding function
+    event_id = get_next_event_id()
+    skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
     latitude, longitude = get_coordinates(address)
-    # Validate image type
+    if latitude is None or longitude is None:
+        raise HTTPException(status_code=400, detail="Unable to convert address to coordinates.")
     allowed_types = ["image/jpeg", "image/png", "image/jpg"]
     if image_url.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid image format. Only JPG, JPEG, PNG allowed.")
-    # Handle image upload: store image in local uploads directory
     image_path = f"{UPLOAD_DIR}/{event_id}_{image_url.filename}"
     with open(image_path, "wb") as buffer:
         buffer.write(await image_url.read())
-    # Build URL path for the uploaded image
-    image_url = f"/uploads/{event_id}_{image_url.filename}"
+    image_url_path = f"/uploads/{event_id}_{image_url.filename}"
     
     event_data = {
         "event_id": event_id,
@@ -145,7 +162,7 @@ async def create_event(
             "name": contact_person_name,
             "contact_number": contact_person_number
         },
-        "image_url": image_url,
+        "image_url": image_url_path,
         "registration_deadline": registration_deadline,
         "additional_notes": additional_notes,
         "status": status,
@@ -159,26 +176,25 @@ async def create_event(
 @router.get("/events/filter", response_model=List[dict])
 async def filter_events(
     category: Optional[str] = Query(None),
-    city: Optional[str] = Query(None),
-    date: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    organization: Optional[str] = Query(None),
     skills: Optional[str] = Query(None),
     venue: Optional[str] = Query(None),
     search: Optional[str] = Query(None)
 ):
     """
-    Filters events based on the provided query parameters.
-    Uses case-insensitive regex for flexible matching and the $in operator for skills.
+    Filters events based on the following parameters:
+    - category: matches the event category (case-insensitive)
+    - organization: matches the event's organization (case-insensitive)
+    - skills: comma-separated list; event must have at least one matching skill
+    - venue: matches the event venue (case-insensitive)
+    - search: matches event names (case-insensitive)
+    Only returns events with a numeric event_id.
     """
-    query = {}
+    query = {"event_id": {"$type": "int"}}
     if category and category.strip():
         query["category"] = {"$regex": category, "$options": "i"}
-    if city and city.strip():
-        query["city"] = {"$regex": city, "$options": "i"}
-    if date and date.strip():
-        query["date"] = date
-    if status and status.strip():
-        query["status"] = status
+    if organization and organization.strip():
+        query["organization"] = {"$regex": organization, "$options": "i"}
     if venue and venue.strip():
         query["venue"] = {"$regex": venue, "$options": "i"}
     if skills and skills.strip():
@@ -193,23 +209,39 @@ async def filter_events(
     print(f"✅ Found {len(events)} matching events.")
     return [event_serializer(event) for event in events]
 
+@router.get("/events/autocomplete", response_model=List[str])
+async def autocomplete_events(search: str = Query(...)):
+    """
+    Returns a list of distinct event names starting with the search term (case-insensitive),
+    useful for auto-prediction on the frontend.
+    """
+    query = {"event_name": {"$regex": f"^{search}", "$options": "i"}}
+    suggestions = events_collection.distinct("event_name", query)
+    return suggestions
+
 @router.delete("/events/{event_id}")
-async def delete_event(event_id: str):
+async def delete_event(event_id: int):
     """
-    Deletes an event by its event_id.
+    Deletes an event by its event_id and renumbers remaining events sequentially.
+    Matches documents where event_id is stored as an int or a string.
     """
-    result = events_collection.delete_one({"event_id": event_id})
+    result = events_collection.delete_one({
+        "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
+    })
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
+    renumber_events()
     return {"message": "Event deleted successfully"}
 
 @router.put("/events/{event_id}")
-async def update_event(event_id: str, updated_event: Event):
+async def update_event(event_id: int, updated_event: Event):
     """
-    Updates an existing event. If no event is found with the given event_id, raises a 404 error.
+    Updates an existing event. Matches documents where event_id is stored as an int or a string.
+    Raises a 404 error if no event is found with the given event_id.
     """
     result = events_collection.update_one(
-        {"event_id": event_id}, {"$set": updated_event.dict()}
+        {"$or": [{"event_id": event_id}, {"event_id": str(event_id)}]},
+        {"$set": updated_event.dict()}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")

@@ -6,14 +6,14 @@ import os
 
 app = FastAPI(
     title="PledgeIt Volunteer Events API",
-    description="API for managing volunteer events, including event creation, filtering, and image uploads.",
+    description="API for managing volunteer events, including event creation, filtering, geocoding, and image uploads.",
     version="1.0.0",
 )
 
 # Configure CORS (adjust allowed origins in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

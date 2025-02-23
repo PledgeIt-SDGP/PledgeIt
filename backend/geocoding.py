@@ -5,9 +5,10 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 def get_coordinates(address: str):
     """
     Converts an address into latitude and longitude using OpenStreetMap's Nominatim API.
+    Returns a tuple (latitude, longitude) or (None, None) if conversion fails.
     """
     params = {"q": address, "format": "json"}
-    headers = {"User-Agent": "PledgeIt-GeoLookup/1.0"}  # Prevent API blocking
+    headers = {"User-Agent": "PledgeIt-GeoLookup/1.0"}
     try:
         response = requests.get(NOMINATIM_URL, params=params, headers=headers, timeout=5)
         response.raise_for_status()
