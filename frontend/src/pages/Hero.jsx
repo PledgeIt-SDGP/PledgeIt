@@ -1,6 +1,6 @@
 import React from "react";
-import HeroContent from "./hero/HeroContent";
-import HeroFeature from "./hero/HeroFeature";
+import HeroContent from "../components/hero/HeroContent";
+import HeroFeature from "../components/hero/HeroFeature";
 
 function hero() {
   return (
