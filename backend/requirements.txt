@@ -1,0 +1,7 @@
+fastapi
+geopy
+pydantic
+pymongo
+python-dotenv
+requests
+uvicorn
