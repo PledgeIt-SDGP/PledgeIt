@@ -10,22 +10,22 @@ const MapControls = () => {
     {
       icon: ZoomIn,
       action: () => map.zoomIn(),
-      label: "Zoom in",
+      label: "Zoom In",
     },
     {
       icon: ZoomOut,
       action: () => map.zoomOut(),
-      label: "Zoom out",
+      label: "Zoom Out",
     },
     {
       icon: Home,
       action: () => map.setView([7.8731, 80.7718], 8),
-      label: "Reset view",
+      label: "Reset View",
     },
     {
       icon: LocateFixed,
       action: () => map.locate({ setView: true, maxZoom: 16 }),
-      label: "Find My Location",
+      label: "My Location",
     },
   ];
 
@@ -36,12 +36,12 @@ const MapControls = () => {
           <motion.button
             key={control.label}
             onClick={control.action}
-            className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-gray-600 shadow-md hover:bg-orange-100 transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-gray-600 shadow-md hover:bg-red-100 transition-all"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
             title={control.label}
           >
-            <control.icon className="w-5 h-5 text-gray-700" />
+            <control.icon className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
           </motion.button>
         ))}
       </div>
