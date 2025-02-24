@@ -1,12 +1,21 @@
-import "./App.css";
+import "./app.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Hero from "./pages/Hero";
+import HomePage from "./pages/Hero";
+import EventMap from "./pages/EventMap";
+import VolSignUp from "./pages/VolunteerSignUpPage";
+import OrgSignUp from "./pages/OrgSignUpPage";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hero />} />
+        {/* Home Page (Landing Page) */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/VolSignUp" element={<VolSignUp />} />
+        <Route path="/OrgSignUp" element={<OrgSignUp />} />
+        
+        {/* Events Page with Interactive Map */}
+        <Route path="/events" element={<EventMap />} />
       </Routes>
     </Router>
   );
