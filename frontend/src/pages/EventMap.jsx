@@ -16,7 +16,7 @@ import CountUp from "react-countup";
 
 import EventMarker from "../components/map/EventMarker";
 import MapControls from "../components/map/MapControls";
-import FilterSidebar from "../components/map/FilterSidebar";
+import FilterSidebar from "../components/map/FilterSideBar";
 import SearchFilterBar from "../components/map/SearchFilterBar";
 import HelpModalContainer from "../components/map/HelpModal";
 
@@ -117,7 +117,7 @@ const LazyEventMap = () => {
         .get(`${API_URL}/filter`, { params })
         .then((res) => {
           setFilteredEvents(res.data);
-          setSidebarOpen(false);
+          setSidebarOpen(false); // This hides the filter sidebar when filters are applied
         })
         .catch((err) => {
           console.error(
