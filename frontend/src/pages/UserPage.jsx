@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const UserPage = () => {
+const UpworkSignupPage = () => {
     const [selectedOption, setSelectedOption] = useState(null);
+    const navigate = useNavigate();
+
+    const handleCreateAccount = () => {
+        if (selectedOption === 'client') {
+            navigate('/VolSignUp');
+        } else if (selectedOption === 'freelancer') {
+            navigate('/OrgSignUp');
+        } else {
+            // If no option is selected, alert the user
+            alert('Please select an account type to continue');
+        }
+    };
 
     return (
         <div className="bg-white min-h-screen">
@@ -66,14 +79,17 @@ const UserPage = () => {
                     </div>
 
                     <div className="flex justify-center mb-6">
-                        <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-md transition">
+                        <button
+                            onClick={handleCreateAccount}
+                            className={`py-3 px-6 rounded-md transition ${selectedOption ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 text-gray-700'}`}
+                        >
                             Create Account
                         </button>
                     </div>
 
                     <div className="text-center">
                         <p className="text-gray-600">
-                            Already have an account? <a href="#" className="text-green-600 font-medium hover:underline">Log In</a>
+                            Already have an account? <a href="/logIn" className="text-green-600 font-medium hover:underline">Log In</a>
                         </p>
                     </div>
                 </div>
@@ -82,4 +98,4 @@ const UserPage = () => {
     );
 };
 
-export default UserPage;
+export default UpworkSignupPage;
