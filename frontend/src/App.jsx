@@ -4,6 +4,7 @@ import HomePage from "./pages/Hero";
 import EventMap from "./pages/EventMap";
 import VolSignUp from "./pages/VolunteerSignUpPage";
 import OrgSignUp from "./pages/OrgSignUpPage";
+import UserPage from "./pages/UserPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         {/* Home Page (Landing Page) */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/UserPage" element={<UserPage />} />
         <Route path="/VolSignUp" element={<VolSignUp />} />
         <Route path="/OrgSignUp" element={<OrgSignUp />} />
         
