@@ -28,7 +28,7 @@ const UserPage = () => {
                     <div className="flex justify-center space-x-6 mb-12">
                         {/* Client Option */}
                         <div
-                            className={`flex flex-col px-8 py-10 border rounded-md w-72 cursor-pointer transition ${selectedOption === 'client' ? 'border-green-500' : 'border-gray-300 hover:border-gray-400'}`}
+                            className={`flex flex-col px-8 py-10 border rounded-md w-72 cursor-pointer transition ${selectedOption === 'client' ? 'border-[#de362e]' : 'border-gray-300 hover:border-gray-400'}`}
                             onClick={() => setSelectedOption('client')}
                         >
                             <div className="flex justify-between mb-6">
@@ -39,7 +39,7 @@ const UserPage = () => {
                                     </svg>
                                 </div>
                                 <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center">
-                                    {selectedOption === 'client' && <div className="w-4 h-4 rounded-full bg-green-500"></div>}
+                                    {selectedOption === 'client' && <div className="w-4 h-4 rounded-full bg-[#de362e]"></div>}
                                 </div>
                             </div>
                             <h2 className="text-xl font-bold text-gray-900 mb-2">I'm a Volunteer,</h2>
@@ -48,7 +48,7 @@ const UserPage = () => {
 
                         {/* Freelancer Option */}
                         <div
-                            className={`flex flex-col px-8 py-10 border rounded-md w-72 cursor-pointer transition ${selectedOption === 'freelancer' ? 'border-green-500' : 'border-gray-300 hover:border-gray-400'}`}
+                            className={`flex flex-col px-8 py-10 border rounded-md w-72 cursor-pointer transition ${selectedOption === 'freelancer' ? 'border-[#de362e]' : 'border-gray-300 hover:border-gray-400'}`}
                             onClick={() => setSelectedOption('freelancer')}
                         >
                             <div className="flex justify-between mb-6">
@@ -60,7 +60,7 @@ const UserPage = () => {
                                     </svg>
                                 </div>
                                 <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center">
-                                    {selectedOption === 'freelancer' && <div className="w-4 h-4 rounded-full bg-green-500"></div>}
+                                    {selectedOption === 'freelancer' && <div className="w-4 h-4 rounded-full bg-[#de362e]"></div>}
                                 </div>
                             </div>
                             <h2 className="text-xl font-bold text-gray-900 mb-2">I'm a Volunteer Organization,</h2>
@@ -71,7 +71,7 @@ const UserPage = () => {
                     <div className="flex justify-center mb-6">
                         <button
                             onClick={handleCreateAccount}
-                            className={`py-3 px-6 rounded-md transition ${selectedOption ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 text-gray-700'}`}
+                            className={`py-3 px-6 rounded-md transition ${selectedOption ? 'bg-[#de362e] hover:bg-[#ad241d] text-white' : 'bg-gray-200 text-gray-700'}`}
                         >
                             Create Account
                         </button>
@@ -79,7 +79,7 @@ const UserPage = () => {
 
                     <div className="text-center">
                         <p className="text-gray-600">
-                            Already have an account? <a href="/logIn" className="text-green-600 font-medium hover:underline">Log In</a>
+                            Already have an account? <a href="/logIn" className="text-[#de362e] font-medium hover:underline">Log In</a>
                         </p>
                     </div>
                 </div>
