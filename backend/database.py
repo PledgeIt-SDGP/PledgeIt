@@ -2,10 +2,8 @@ import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Database connection
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 
