@@ -2,8 +2,8 @@ import "./app.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/Hero";
 import EventMap from "./pages/EventMap";
-import VolSignUp from "./pages/VolunteerSignUpPage";
-import OrgSignUp from "./pages/OrgSignUpPage";
+import VolSignUp from "./pages/VolunteerSignupForm";
+import OrgSignUp from "./pages/OrgSignupForm";
 import UserPage from "./pages/UserPage";
 
 function App() {
