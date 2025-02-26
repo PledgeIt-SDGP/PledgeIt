@@ -123,6 +123,7 @@ const EventForm = () => {
                         </div>
                     </div>
 
+
                     {/* Image Upload Section */}
                     <label className="block text-gray-700 font-semibold">Upload Event Image:</label>
                     <input type="file" name="image_url" onChange={handleChange} required className="file-input w-full" />
