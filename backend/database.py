@@ -10,3 +10,6 @@ DB_NAME = os.getenv("DB_NAME")
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 events_collection = db["events"]
+
+volunteers_collection = db["volunteers"]
+organizations_collection = db["organizations"]

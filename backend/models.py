@@ -30,3 +30,23 @@ class Event(BaseModel):
     status: str = Field(..., min_length=1)
     total_registered_volunteers: int
     created_at: datetime.datetime
+
+class Volunteer(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    confirm_password: str
+    # Optionally, include a Google login field if you're handling OAuth
+    google_account: Optional[str] = None  # For Google login
+
+class Organization(BaseModel):
+    logo_url: str
+    name: str
+    website_url: str
+    organization_type: str = Field(..., regex="^(Private Business|NGO|Educational Institutions|Other)$")
+    about: str
+    email: EmailStr
+    contact_number: str
+    address: str
+    causes_supported: list[str]  # List of causes (can select multiple)
