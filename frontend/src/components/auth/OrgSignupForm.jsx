@@ -3,8 +3,6 @@ import axios from "axios";
 
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
 
-
-
 const categories = [
     { id: 1, name: "Environmental", icon: <SproutIcon />, selected: false },
     { id: 2, name: "Community Service", icon: <Users />, selected: false },
@@ -60,19 +58,6 @@ const OrgSignupForm = () => {
         e.preventDefault();
         setLoading(true);
 
-        // Check if all required values are set
-        console.log({
-            orgLogo,
-            orgName,
-            websiteUrl,
-            orgType,
-            description,
-            email,
-            contactNumber,
-            address,
-            selectedCategories
-        });
-
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
@@ -107,13 +92,10 @@ const OrgSignupForm = () => {
 
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r via-orange-500 from-orange-200 to-orange-50 pb-10">
 
-                <form onSubmit={handleSubmit} className="space-y-4 w-180 bg-gray-50 rounded-lg px-10 py-8 border border-gray-300 border-opacity-50 my-20">
+                <form onSubmit={handleSubmit} className="space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20 ">
                     {/* Header Section */}
                     <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold  text-orange-700 ">PlegeIt</h1>
-
-
-                        {/* Title and Info Section */}
+                        <h1 className="text-3xl font-bold  text-orange-700 ">PlegeIt</h1> {/* Title and Info Section */}
 
                         <h2 className="text-2xl font-bold text-gray-700 pb-5 mt-2">Create an Organization account</h2>
                     </div>
@@ -168,7 +150,8 @@ const OrgSignupForm = () => {
                     </div>
 
 
-                    <div>          <label className="block text-gray-600 mb-3">Organization Type *</label>
+                    <div>          
+                        <label className="block text-gray-600 mb-3">Organization Type *</label>
 
                         <div className="container flex items-start space-x-8">
                             {/* Organization Type Options */}
@@ -190,8 +173,6 @@ const OrgSignupForm = () => {
                                             onChange={() => setOrgType(type.value)}
                                             className="mr-2 hidden"
                                         />
-
-
                                         <label htmlFor={type.value} className="cursor-pointer w-full flex items-center">
                                             {type.label}
                                         </label>
