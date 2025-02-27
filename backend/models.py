@@ -44,7 +44,7 @@ class Organization(BaseModel):
     logo_url: str
     name: str
     website_url: str
-    organization_type: str = Field(..., regex="^(Private Business|NGO|Educational Institutions|Other)$")
+    organization_type: str = Field(..., pattern="^(Private Business|NGO|Educational Institutions|Other)$")
     about: str
     email: EmailStr
     contact_number: str
