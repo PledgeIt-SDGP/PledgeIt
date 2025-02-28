@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from authlib.integrations.starlette_client import OAuth
 from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
+from routes.auth import router as auth_router  # Import the auth router
 import os
 
 app = FastAPI(
@@ -10,13 +13,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
+origins = [
+    "http://localhost:5173",  # Allow the frontend on localhost:5173
+]
+
 # Configure CORS (adjust allowed origins in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,  # Allow only the frontend origin
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
+# Configure SessionMiddleware
+app.add_middleware(
+    SessionMiddleware, secret_key='CLIENT_SECRET'
 )
 
 # Ensure the uploads directory exists for serving event images
@@ -34,3 +46,9 @@ def root():
         "docs_url": "/docs",
         "redoc_url": "/redoc",
     }
+
+# Include OAuth routes (auth_router)
+app.include_router(auth_router)  # This line includes the auth routes
+
+oauth = OAuth()
+oauth = OAuth(app)

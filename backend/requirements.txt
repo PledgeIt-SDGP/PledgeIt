@@ -5,3 +5,8 @@ pymongo
 python-dotenv
 requests
 uvicorn
+authlib
+httpx
+python-multipart
+itsdangerous
+pydantic[email]

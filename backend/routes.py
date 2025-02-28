@@ -4,8 +4,20 @@ from fastapi import APIRouter, HTTPException, status
 from backend.models import Volunteer, Organization
 from backend.database import volunteers_collection, organizations_collection
 from backend.main import get_password_hash
+from passlib.context import CryptContext
 
 router = APIRouter()
+
+# Initialize password context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Hash a password
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+# Verify if the provided password matches the hash
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
 
 @router.post("/register/volunteer/")
 async def register_volunteer(volunteer: Volunteer):
