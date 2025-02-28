@@ -56,6 +56,3 @@ def root():
 
 # Include OAuth routes (auth_router)
 app.include_router(auth_router)
-
-# Initialize OAuth instance
-oauth = OAuth(app)
