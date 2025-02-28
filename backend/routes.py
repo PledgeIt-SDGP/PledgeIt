@@ -1,11 +1,39 @@
-from backend.models import Event
+from backend.models import Event, Volunteer, Organization
 from backend.crud import create_event, get_events
-from fastapi import APIRouter, HTTPException, status
-from backend.models import Volunteer, Organization
-from backend.database import volunteers_collection, organizations_collection
+from backend.database import volunteers_collection, organizations_collection, events_collection
 from backend.main import get_password_hash
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends
+from geopy.geocoders import Nominatim
+import qrcode
+from io import BytesIO
+import base64
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+import os
+from dotenv import load_dotenv
+from datetime import datetime
+
+load_dotenv()
 
 router = APIRouter()
+
+#Funtion to generate QR Code
+async def generate_qr_code(event_id: int):
+    event_url = f"https://pledgeit.com/events/{event_id}"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(event_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return buffered.getvalue()
 
 @router.post("/register/volunteer/")
 async def register_volunteer(volunteer: Volunteer):

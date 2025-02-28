@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
 import os
+
 
 app = FastAPI(
     title="PledgeIt Volunteer Events API",

@@ -30,6 +30,7 @@ class Event(BaseModel):
     status: str = Field(..., min_length=1)
     total_registered_volunteers: int
     created_at: datetime.datetime
+    qr_code_url: Optional[str]  # QR code URL for registration
 
 class Volunteer(BaseModel):
     first_name: str
