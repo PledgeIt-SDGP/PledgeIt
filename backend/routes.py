@@ -35,6 +35,34 @@ async def generate_qr_code(event_id: int):
     img.save(buffered, format="PNG")
     return buffered.getvalue()
 
+# Function to send email with QR code
+async def send_email_with_qr_code(organization_email: str, event_name: str, qr_code_bytes: bytes):
+    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_port = int(os.getenv("SMTP_PORT"))
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
+    
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = organization_email
+    msg['Subject'] = f"QR Code for Event: {event_name}"
+    
+    body = f"Please find the QR code for your event '{event_name}' attached."
+    msg.attach(MIMEText(body, 'plain'))
+    
+    qr_code_image = MIMEImage(qr_code_bytes, name="event_qr_code.png")
+    msg.attach(qr_code_image)
+    
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, organization_email, msg.as_string())
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send email")
+
 @router.post("/register/volunteer/")
 async def register_volunteer(volunteer: Volunteer):
     # Check if the email is already registered in the volunteers collection
