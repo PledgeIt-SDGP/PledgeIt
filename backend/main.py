@@ -6,6 +6,13 @@ from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
 from routes.auth import router as auth_router  # Import the auth router
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Get secret key from environment variables
+SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')  # Default for development
 
 app = FastAPI(
     title="PledgeIt Volunteer Events API",
@@ -28,7 +35,7 @@ app.add_middleware(
 
 # Configure SessionMiddleware
 app.add_middleware(
-    SessionMiddleware, secret_key='CLIENT_SECRET'
+    SessionMiddleware, secret_key=SECRET_KEY
 )
 
 # Ensure the uploads directory exists for serving event images
@@ -48,7 +55,7 @@ def root():
     }
 
 # Include OAuth routes (auth_router)
-app.include_router(auth_router)  # This line includes the auth routes
+app.include_router(auth_router)
 
-oauth = OAuth()
+# Initialize OAuth instance
 oauth = OAuth(app)
