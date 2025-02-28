@@ -26,7 +26,7 @@ async def generate_qr_code(event_id: int):
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
-        border=2,
+        border=4,
     )
     qr.add_data(event_url)
     qr.make(fit=True)
@@ -101,11 +101,29 @@ async def register_organization(organization: Organization):
     return {"msg": "Organization registered successfully"}
 
 
-
 @router.post("/events/")
 async def add_event(event: Event):
-    return await create_event(event)
+    event_dict = event.dict()
 
-@router.get("/events/")
-async def fetch_events():
-    return await get_events()
+    # Geocode the event location
+    event_dict = await geocode_location(event_dict)
+
+# @router.get("/events/")
+# async def fetch_events():
+#     return await get_events()
+
+    # Generate a QR code for the event
+    qr_code_bytes = await generate_qr_code(event_dict["event_id"])
+    qr_code_base64 = base64.b64encode(qr_code_bytes).decode()
+    event_dict["qr_code_url"] = f"data:image/png;base64,{qr_code_base64}"
+    
+    # Insert the event into the database
+    event_dict["created_at"] = datetime.now()
+    await events_collection.insert_one(event_dict)
+    
+    # Send the QR code to the organization's email
+    organization_email = event_dict["contact_email"]
+    event_name = event_dict["event_name"]
+    await send_email_with_qr_code(organization_email, event_name, qr_code_bytes)
+    
+    return {"message": "Event created successfully", "event": event_dict}
