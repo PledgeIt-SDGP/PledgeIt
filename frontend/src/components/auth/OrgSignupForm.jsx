@@ -34,6 +34,7 @@ const OrgSignupForm = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [categoriesState, setCategoriesState] = useState(categories);
+    const [password, setPassword] = useState('');
 
     const handleLogoChange = (e) => {
         setOrgLogo(e.target.files[0]);
@@ -75,6 +76,7 @@ const OrgSignupForm = () => {
         formDataToSend.append('contactNumber', contactNumber);
         formDataToSend.append('address', address);
         formDataToSend.append('selectedCategories', JSON.stringify(selectedCategories));
+        formDataToSend.append('password', password);
 
         try {
             const response = await axios.post("http://127.0.0.1:8000/orgsignup", formDataToSend);   // Replace with your backend URL (ideally from env vars)
@@ -150,7 +152,7 @@ const OrgSignupForm = () => {
                     </div>
 
 
-                    <div>          
+                    <div>
                         <label className="block text-gray-600 mb-3">Organization Type *</label>
 
                         <div className="container flex items-start space-x-8">
@@ -255,6 +257,22 @@ const OrgSignupForm = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-gray-600 mb-1">Password *</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter a secure password"
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                            required
+                            minLength="8"
+                        />
+                        <div className="flex items-center gap-2 mt-2">
+                            <BadgeInfo /><p className="text-sm block text-gray-500 ">Use at least 8 characters with a mix of letters, numbers, and symbols</p>
                         </div>
                     </div>
 
