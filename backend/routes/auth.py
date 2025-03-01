@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 from passlib.context import CryptContext
-from typing import Optional
-from bson import ObjectId
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -13,7 +11,7 @@ import httpx
 router = APIRouter()
 
 # Initialize password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # Load environment variables
 load_dotenv()
@@ -51,35 +49,41 @@ oauth.register(
     client_secret=CLIENT_SECRET,
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     access_token_url='https://oauth2.googleapis.com/token',
-    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
-    client_kwargs={"scope": "openid email profile"},
-    redirect_uri='http://127.0.0.1:8000/auth/callback'
+    client_kwargs={"scope": "email profile"},
+    redirect_uri='http://127.0.0.1:8000/auth/callback'  # Make sure this URI is correct in Google Developer Console
 )
 
 # Google OAuth login route
 @router.get('/auth/google')
 async def login_via_google(request: Request):
-    redirect_uri = "http://127.0.0.1:8000/auth/callback"
+    redirect_uri = 'http://127.0.0.1:8000/auth/callback'  # Ensure this matches your Google console
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 # Google OAuth callback route
 @router.get('/auth/callback')
 async def auth_callback(request: Request):
     try:
+        # Get Google token
         google_token = await oauth.google.authorize_access_token(request)
         print("🔹 Google Token Response:", google_token)
 
+        # Fetch user info from Google using the access token
         async with httpx.AsyncClient() as client:
             user_info = await client.get(
-                oauth.google.userinfo_endpoint,
+                "https://www.googleapis.com/oauth2/v3/userinfo",  # Correct user info endpoint
                 headers={"Authorization": f"Bearer {google_token['access_token']}"}
             )
 
         user = user_info.json()
+        print("🔹 User Info:", user)  # Debugging user info
         return {"user_info": user}
 
-    except Exception as e:
+    except HTTPException as e:
+        print(f"🔹 Error: {e.detail}")
         return {"error": "Authentication failed", "message": str(e)}
+    except Exception as e:
+        print(f"🔹 Unexpected Error: {e}")
+        return {"error": "Unexpected error", "message": str(e)}
 
 # Volunteer Registration route
 @router.post('/auth/volunteer/register')
