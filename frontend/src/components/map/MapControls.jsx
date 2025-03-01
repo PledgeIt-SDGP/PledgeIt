@@ -1,9 +1,16 @@
 import React from "react";
 import { useMap } from "react-leaflet";
 import { motion } from "framer-motion";
-import { ZoomIn, ZoomOut, Home, LocateFixed } from "lucide-react";
+import {
+  ZoomIn,
+  ZoomOut,
+  Home,
+  LocateFixed,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 
-const MapControls = () => {
+const MapControls = ({ isFullScreen, toggleFullScreen }) => {
   const map = useMap();
 
   const controls = [
@@ -26,6 +33,11 @@ const MapControls = () => {
       icon: LocateFixed,
       action: () => map.locate({ setView: true, maxZoom: 16 }),
       label: "My Location",
+    },
+    {
+      icon: isFullScreen ? Minimize2 : Maximize2,
+      action: toggleFullScreen,
+      label: isFullScreen ? "Exit Full Screen" : "Full Screen",
     },
   ];
 

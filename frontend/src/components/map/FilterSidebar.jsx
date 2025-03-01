@@ -34,8 +34,9 @@ const FilterSidebar = ({
   setSelectedDate,
   selectedOrganization,
   setSelectedOrganization,
-  selectedVenue,
-  setSelectedVenue,
+  // Removed venue props and added city filter props:
+  selectedCity,
+  setSelectedCity,
 }) => {
   // Clear all filters function
   const clearFilters = () => {
@@ -44,7 +45,7 @@ const FilterSidebar = ({
     setSelectedStatus("");
     setSelectedDate("");
     setSelectedOrganization("");
-    setSelectedVenue("");
+    setSelectedCity("");
   };
 
   return (
@@ -116,9 +117,11 @@ const FilterSidebar = ({
         </h4>
         <Select
           isMulti
-          options={[
-            ...new Set(events.flatMap((evt) => evt.skills_required || [])),
-          ].map((skill) => ({ value: skill, label: skill }))}
+          options={
+            [...new Set(events.flatMap((evt) => evt.skills_required || []))].map(
+              (skill) => ({ value: skill, label: skill })
+            )
+          }
           value={selectedSkills.map((skill) => ({ value: skill, label: skill }))}
           onChange={(selectedOptions) =>
             setSelectedSkills(selectedOptions.map((option) => option.value))
@@ -139,11 +142,7 @@ const FilterSidebar = ({
 
         {/* Event Status */}
         <h4 className="font-semibold mb-2 text-red-600 flex items-center gap-2">
-          <AlertTriangle
-            className="w-5 h-5 text-red-600"
-            strokeWidth={2}
-            fill="none"
-          />
+          <AlertTriangle className="w-5 h-5 text-red-600" strokeWidth={2} fill="none" />
           Event Status
         </h4>
         <RadioGroup
@@ -189,14 +188,19 @@ const FilterSidebar = ({
           Organization
         </h4>
         <Select
-          options={[
-            ...new Set(
+          options={
+            [...new Set(
               events.map((event) => ({
                 value: event.organization,
                 label: event.organization,
               }))
-            ),
-          ]}
+            )]
+          }
+          value={
+            selectedOrganization
+              ? { value: selectedOrganization, label: selectedOrganization }
+              : null
+          }
           onChange={(selected) => setSelectedOrganization(selected.value)}
           className="mb-6"
           styles={{
@@ -212,21 +216,24 @@ const FilterSidebar = ({
           }}
         />
 
-        {/* Venue */}
+        {/* City */}
         <h4 className="font-semibold mb-2 text-red-600 flex items-center gap-2">
           <MapPin className="w-5 h-5 text-red-600" strokeWidth={2} fill="none" />
-          Venue
+          City
         </h4>
         <Select
-          options={[
-            ...new Set(
+          options={
+            [...new Set(
               events.map((event) => ({
-                value: event.venue,
-                label: event.venue,
+                value: event.city,
+                label: event.city,
               }))
-            ),
-          ]}
-          onChange={(selected) => setSelectedVenue(selected.value)}
+            )]
+          }
+          value={
+            selectedCity ? { value: selectedCity, label: selectedCity } : null
+          }
+          onChange={(selected) => setSelectedCity(selected.value)}
           className="mb-6"
           styles={{
             control: (base) => ({
@@ -244,7 +251,7 @@ const FilterSidebar = ({
         {/* Clear & Apply Filters */}
         <div className="flex gap-4 mt-8">
           {/* Clear Filters */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+          <div className="flex-1">
             <Button
               variant="outlined"
               onClick={clearFilters}
@@ -257,10 +264,10 @@ const FilterSidebar = ({
             >
               Clear Filters
             </Button>
-          </motion.div>
+          </div>
 
           {/* Apply Filters */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+          <div className="flex-1">
             <Button
               variant="contained"
               fullWidth
@@ -275,7 +282,7 @@ const FilterSidebar = ({
             >
               {loading ? "Applying..." : "Apply Filters"}
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </>

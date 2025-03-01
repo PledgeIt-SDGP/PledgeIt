@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense, useCallback } from "react";
+import React, { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import axios from "axios";
 import MarkerClusterGroup from "react-leaflet-markercluster";
@@ -11,14 +11,13 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
-import { CalendarDays, Users } from "lucide-react";
-import CountUp from "react-countup";
 
 import EventMarker from "../components/map/EventMarker";
 import MapControls from "../components/map/MapControls";
 import FilterSidebar from "../components/map/FilterSideBar";
 import SearchFilterBar from "../components/map/SearchFilterBar";
 import HelpModalContainer from "../components/map/HelpModal";
+import CountCards from "../components/map/CountCards";
 
 // Fix Leaflet icons
 delete Icon.Default.prototype._getIconUrl;
@@ -33,35 +32,33 @@ const API_URL = "http://127.0.0.1:8000/events";
 const CENTER_POSITION = [7.8731, 80.7718]; // Example: Sri Lanka
 
 const LazyEventMap = () => {
-  // States
+  // States for events, filters, UI, etc.
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Filter states
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  // Organization filter remains for filtering by organization name.
   const [selectedOrganization, setSelectedOrganization] = useState("");
+  // Instead of venue, we now use selectedCity for filtering by city.
+  const [selectedCity, setSelectedCity] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
-  const [selectedVenue, setSelectedVenue] = useState("");
-
-  // UI states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // User location
   const [userLocation, setUserLocation] = useState(null);
+
+  // State and ref for full screen mode
+  const mapWrapperRef = useRef(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Validation function for filters/search
   const validateFilters = () => {
-    // If search term is provided, require at least 3 characters
     if (searchTerm.trim() !== "" && searchTerm.trim().length < 3) {
       setError("Search term must be at least 3 characters long.");
       return false;
     }
-    // Validate date format if provided
     if (selectedDate && !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
       setError("Please provide a valid date in the format YYYY-MM-DD.");
       return false;
@@ -70,7 +67,7 @@ const LazyEventMap = () => {
     return true;
   };
 
-  // Fetch all events on mount
+  // Fetch events and user location on mount
   useEffect(() => {
     axios
       .get(API_URL)
@@ -85,7 +82,6 @@ const LazyEventMap = () => {
         setLoading(false);
       });
 
-    // Get user's location
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLocation([pos.coords.latitude, pos.coords.longitude]);
@@ -95,7 +91,20 @@ const LazyEventMap = () => {
     );
   }, []);
 
-  // Build query & filter
+  // Listen for full screen changes to update state if user exits via ESC
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullScreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+    };
+  }, []);
+
+  // Build query & filter events with proper parameters for organization and city.
   const applyFilters = useCallback(() => {
     try {
       if (!validateFilters()) {
@@ -105,19 +114,19 @@ const LazyEventMap = () => {
       const params = {};
       if (selectedCategories.length > 0)
         params.category = selectedCategories.join(",");
-      if (selectedOrganization) params.city = selectedOrganization;
+      if (selectedOrganization) params.organization = selectedOrganization;
+      if (selectedCity) params.city = selectedCity;
       if (selectedDate) params.date = selectedDate;
       if (selectedStatus) params.status = selectedStatus;
       if (selectedSkills.length > 0)
         params.skills = selectedSkills.join(",");
-      if (selectedVenue) params.venue = selectedVenue;
       if (searchTerm.trim() !== "") params.search = searchTerm;
 
       axios
         .get(`${API_URL}/filter`, { params })
         .then((res) => {
           setFilteredEvents(res.data);
-          setSidebarOpen(false); // This hides the filter sidebar when filters are applied
+          setSidebarOpen(false);
         })
         .catch((err) => {
           console.error(
@@ -141,10 +150,10 @@ const LazyEventMap = () => {
   }, [
     selectedCategories,
     selectedOrganization,
+    selectedCity,
     selectedDate,
     selectedStatus,
     selectedSkills,
-    selectedVenue,
     searchTerm,
   ]);
 
@@ -153,7 +162,34 @@ const LazyEventMap = () => {
     applyFilters();
   };
 
-  // Stats
+  // Full screen toggle function using the Fullscreen API
+  const toggleFullScreen = () => {
+    if (!isFullScreen) {
+      if (mapWrapperRef.current.requestFullscreen) {
+        mapWrapperRef.current.requestFullscreen();
+      } else if (mapWrapperRef.current.mozRequestFullScreen) {
+        mapWrapperRef.current.mozRequestFullScreen();
+      } else if (mapWrapperRef.current.webkitRequestFullscreen) {
+        mapWrapperRef.current.webkitRequestFullscreen();
+      } else if (mapWrapperRef.current.msRequestFullscreen) {
+        mapWrapperRef.current.msRequestFullscreen();
+      }
+      setIsFullScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullScreen(false);
+    }
+  };
+
+  // Stats calculations
   const totalEvents = filteredEvents.length;
   const totalVolunteers = filteredEvents.reduce(
     (acc, evt) => acc + (evt.total_registered_volunteers || 0),
@@ -195,45 +231,23 @@ const LazyEventMap = () => {
         setSelectedDate={setSelectedDate}
         selectedOrganization={selectedOrganization}
         setSelectedOrganization={setSelectedOrganization}
-        selectedVenue={selectedVenue}
-        setSelectedVenue={setSelectedVenue}
+        selectedCity={selectedCity}
+        setSelectedCity={setSelectedCity}
       />
 
-      {/* TWO SMALL BARS (top-left corner) */}
-      {!loading && (
-        <div className="absolute top-6 left-6 z-[10] flex flex-col items-stretch space-y-2 w-full max-w-[200px]">
-          {/* Events Bar */}
-          <div className="w-full bg-white/90 backdrop-blur-lg rounded-md shadow-md px-4 py-2 flex items-center gap-2">
-            <CalendarDays className="text-red-500 h-5 w-5" strokeWidth={1.5} fill="none" />
-            <p className="text-sm text-gray-700">
-              Events:{" "}
-              <span className="font-bold text-red-600">
-                <CountUp end={totalEvents} duration={1.5} />
-              </span>
-            </p>
-          </div>
-
-          {/* Volunteers Bar */}
-          <div className="w-full bg-white/90 backdrop-blur-lg rounded-md shadow-md px-4 py-2 flex items-center gap-2">
-            <Users className="text-red-500 h-5 w-5" strokeWidth={1.5} fill="none" />
-            <p className="text-sm text-gray-700">
-              Volunteers:{" "}
-              <span className="font-bold text-red-600">
-                <CountUp end={totalVolunteers} duration={1.5} />
-              </span>
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* MAP SECTION */}
-      <div className="relative w-full max-w-6xl">
+      <div
+        ref={mapWrapperRef}
+        className={`relative ${isFullScreen ? "w-screen h-screen" : "w-full max-w-6xl"}`}
+      >
         <Suspense fallback={<CircularProgress color="secondary" />}>
           <MapContainer
             key={filteredEvents.length}
             center={CENTER_POSITION}
             zoom={8}
-            className="w-full h-[600px] sm:h-[500px] md:h-[600px] shadow-lg rounded-2xl border border-gray-300"
+            className={`w-full ${
+              isFullScreen ? "h-full" : "h-[600px] sm:h-[500px] md:h-[600px]"
+            } shadow-lg rounded-2xl border border-gray-300`}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -241,6 +255,13 @@ const LazyEventMap = () => {
                 OpenStreetMap
               </a> contributors'
               maxZoom={18}
+            />
+
+            {/* Count Cards overlay on the map */}
+            <CountCards
+              totalEvents={totalEvents}
+              totalVolunteers={totalVolunteers}
+              loading={loading}
             />
 
             {/* User Location Marker */}
@@ -279,7 +300,7 @@ const LazyEventMap = () => {
               )}
             </MarkerClusterGroup>
 
-            <MapControls />
+            <MapControls isFullScreen={isFullScreen} toggleFullScreen={toggleFullScreen} />
           </MapContainer>
         </Suspense>
 

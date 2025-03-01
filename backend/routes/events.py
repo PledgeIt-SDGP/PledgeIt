@@ -14,6 +14,9 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Ensure TTL index on expireAt field: automatically delete events after expireAt time is reached
+events_collection.create_index("expireAt", expireAfterSeconds=0)
+
 def event_serializer(event) -> dict:
     """
     Converts a MongoDB event document into a dictionary for API responses.
@@ -113,10 +116,11 @@ async def filter_events(
     category: Optional[str] = Query(None),
     organization: Optional[str] = Query(None),
     skills: Optional[str] = Query(None),
-    venue: Optional[str] = Query(None),
+    # Removed the venue parameter and its filtering logic.
     search: Optional[str] = Query(None),
     date: Optional[str] = Query(None),
-    status: Optional[str] = Query(None)
+    status: Optional[str] = Query(None),
+    city: Optional[str] = Query(None)  # Using city as the filter parameter
 ):
     """
     Filters events based on the following parameters:
@@ -124,10 +128,10 @@ async def filter_events(
       any event with a category matching any of the values will be returned.
     - organization: matches the event's organization (using an exact match)
     - skills: comma-separated list; event must have at least one matching skill
-    - venue: matches the event venue (case-insensitive)
     - search: matches event names (case-insensitive)
     - date: matches the event date (exact match)
     - status: matches the event status (case-insensitive)
+    - city: matches the event city (case-insensitive)
     Only returns events with a numeric event_id.
     """
     query = {"event_id": {"$type": "int"}}
@@ -139,8 +143,6 @@ async def filter_events(
             query["category"] = {"$in": categories}
     if organization and organization.strip():
         query["organization"] = organization
-    if venue and venue.strip():
-        query["venue"] = {"$regex": venue, "$options": "i"}
     if skills and skills.strip():
         skill_list = [skill.strip() for skill in skills.split(",") if skill.strip()]
         if skill_list:
@@ -151,6 +153,8 @@ async def filter_events(
         query["date"] = date
     if status and status.strip():
         query["status"] = {"$regex": status, "$options": "i"}
+    if city and city.strip():
+        query["city"] = {"$regex": city, "$options": "i"}
     
     print(f"🔍 MongoDB Query: {query}")
     events = list(events_collection.find(query))
@@ -248,7 +252,7 @@ async def create_event(
     image_url_path = f"/uploads/{event_id}_{image_url.filename}"
     
     # Compute status based on registration deadline
-    from datetime import datetime
+    from datetime import datetime, timedelta
     deadline_date = datetime.strptime(registration_deadline, "%Y-%m-%d").date()
     current_date = datetime.utcnow().date()
     status = "Open" if deadline_date >= current_date else "Closed"
@@ -256,6 +260,11 @@ async def create_event(
     # Automatically initialize total_registered_volunteers to 0
     total_registered_volunteers = 0
 
+    # Calculate event's expireAt field (logical deletion time)
+    # Here we assume the event should be deleted one day after its scheduled start time.
+    event_datetime = datetime.strptime(f"{date} {time if len(time.strip()) > 5 else time + ':00'}", "%Y-%m-%d %H:%M:%S")
+    expireAt = event_datetime + timedelta(days=1)
+    
     event_data = {
         "event_id": event_id,
         "event_name": event_name,
@@ -283,6 +292,7 @@ async def create_event(
         "status": status,
         "total_registered_volunteers": total_registered_volunteers,
         "created_at": datetime.utcnow().isoformat(),
+        "expireAt": expireAt  # Added expireAt field for automatic deletion
     }
 
     events_collection.insert_one(event_data)
