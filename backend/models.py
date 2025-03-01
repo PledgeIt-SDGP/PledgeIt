@@ -51,3 +51,4 @@ class Organization(BaseModel):
     contact_number: str
     address: str
     causes_supported: list[str]  # List of causes (can select multiple)
+    

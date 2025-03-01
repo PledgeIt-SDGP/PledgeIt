@@ -21,7 +21,7 @@ router = APIRouter()
 
 #Funtion to generate QR Code
 async def generate_qr_code(event_id: int):
-    event_url = f"https://pledgeit.com/events/{event_id}"
+    event_url = f"https://pledgeit.com/events/{event_id}/participate"
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
