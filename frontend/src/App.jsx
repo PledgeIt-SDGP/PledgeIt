@@ -1,4 +1,4 @@
-import "./index.css";
+import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SplashScreen from "./components/loading/SplashScreen";
 import HomePage from "./pages/HomePage";
