@@ -55,6 +55,7 @@ def root():
         "google_auth": "/auth/google",
         "google_auth_callback": "/auth/callback",
         "volunteer_register": "/auth/volunteer/register",
+        "organization_register": "/auth/organization/register",
     }
 
 # Include OAuth routes (auth_router)

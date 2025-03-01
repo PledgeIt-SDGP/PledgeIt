@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from passlib.context import CryptContext
 from pymongo import MongoClient
 import os
@@ -23,12 +23,26 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 client = MongoClient(os.getenv('MONGO_URI'))
 db = client[os.getenv('DB_NAME')]
 volunteers_collection = db[os.getenv('VOLUNTEERS_COLLECTION')]
+organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
 
 # Pydantic model for volunteer registration
 class VolunteerRegister(BaseModel):
     first_name: str
     last_name: str
     email: str
+    password: str
+    password_confirmation: str
+
+class OrganizationRegister(BaseModel):
+    logo: str  # URL or path to logo image
+    name: str
+    website_url: str
+    organization_type: str = Field(..., pattern="^(Private Business|NGO|Educational Institution|Other)$")
+    about: str
+    email: str
+    contact_number: str
+    address: str
+    causes_supported: list[str] = Field(..., min_items=1, max_items=8)
     password: str
     password_confirmation: str
 
@@ -112,3 +126,37 @@ async def register_volunteer(volunteer: VolunteerRegister):
 
     # Return success response
     return {"message": "Volunteer registered successfully", "volunteer_id": str(result.inserted_id)}
+
+# Organization Registration route
+@router.post('/auth/organization/register')
+async def register_organization(organization: OrganizationRegister):
+    # Verify passwords
+    verify_passwords(organization.password, organization.password_confirmation)
+    
+    # Check if the email already exists
+    existing_organization = organizations_collection.find_one({"email": organization.email})
+    if existing_organization:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Hash password before saving
+    hashed_password = hash_password(organization.password)
+    
+    # Create the organization data
+    organization_data = {
+        "logo": organization.logo,
+        "name": organization.name,
+        "website_url": organization.website_url,
+        "organization_type": organization.organization_type,
+        "about": organization.about,
+        "email": organization.email,
+        "contact_number": organization.contact_number,
+        "address": organization.address,
+        "causes_supported": organization.causes_supported,
+        "password": hashed_password
+    }
+
+    # Insert organization data into MongoDB
+    result = organizations_collection.insert_one(organization_data)
+
+    # Return success response
+    return {"message": "Organization registered successfully", "organization_id": str(result.inserted_id)}
