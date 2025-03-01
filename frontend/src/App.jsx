@@ -1,17 +1,21 @@
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SplashScreen from "./components/loading/SplashScreen";
 import HomePage from "./pages/HomePage";
 import EventMap from "./pages/EventMap";
-import CreateEventPage from "./pages/CreateEventPage"; // Import your new page
+import CreateEventPage from "./pages/CreateEventPage";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Home Page (Landing Page) */}
-        <Route path="/" element={<HomePage />} />
+        {/* Splash Screen appears at "/" */}
+        <Route path="/" element={<SplashScreen />} />
 
-        {/* Events Page with Interactive Map */}
+        {/* Homepage route */}
+        <Route path="/home" element={<HomePage />} />
+
+        {/* Other routes */}
         <Route path="/events" element={<EventMap />} />
 
         {/* Create Event Page */}
