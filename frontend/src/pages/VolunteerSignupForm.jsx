@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+
 
 const VolunteerSignupForm = () => {
     const [firstName, setFirstName] = useState("");
@@ -8,7 +8,6 @@ const VolunteerSignupForm = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [message, setMessage] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,42 +22,14 @@ const VolunteerSignupForm = () => {
             return;
         }
 
-        const volunteerData = {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            password: password,
-            password_confirmation: confirmPassword,
-        };
 
-        try {
-            const response = await fetch('http://127.0.0.1:8000/auth/volunteer/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(volunteerData),
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                // Successfully registered
-                alert(data.message);
-            } else {
-                setError(data.detail);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            setError("An error occurred. Please try again.");
-        }
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r via-orange-500 from-orange-200 to-orange-50 pb-10">
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20"
-            >
+        <div class="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
+            <div class="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20 "></div>
+
+            <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-160 bg-white rounded-lg px-5 sm:px-15 py-8 border border-gray-300 border-opacity-50 my-15">
                 <div className="mb-3 text-center">
                     <h1 className="text-3xl font-bold text-orange-700">PledgeIt</h1>
                 </div>
@@ -67,8 +38,9 @@ const VolunteerSignupForm = () => {
                     <h2 className="text-2xl font-bold text-gray-700">Create your personal account</h2>
                 </div>
 
+
+
                 {error && <p className="text-red-600 text-center">{error}</p>} {/* Show errors */}
-                {message && <p className="text-green-600 text-center">{message}</p>} {/* Show success message */}
 
                 {/* Social Login Buttons */}
                 <div className="flex flex-col items-center justify-center mx-30">
@@ -91,71 +63,41 @@ const VolunteerSignupForm = () => {
                 <div className="flex gap-x-4">
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">First Name *</label>
-                        <input
-                            type="text"
-                            placeholder="First Name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                        />
+                        <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
                     </div>
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Last Name *</label>
-                        <input
-                            type="text"
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                        />
+                        <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
                     </div>
                 </div>
 
                 <div>
                     <label className="block text-gray-600 mb-1">Email Address *</label>
-                    <input
-                        type="email"
-                        placeholder="Email Address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                    />
+                    <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
                 </div>
+
 
                 <div className="flex gap-x-4">
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Password *</label>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                        />
+                        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
                     </div>
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Confirm Password *</label>
-                        <input
-                            type="password"
-                            placeholder="Confirm Password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                        />
+                        <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
                     </div>
                 </div>
 
-                <button
-                    type="submit"
-                    className="w-full mt-5 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring focus:ring-blue-200"
-                >
+                <button type="submit" className="w-full mt-5 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring focus:ring-blue-200">
                     Create Account
                 </button>
 
-                <div className="text-center">
-                    <p className="mt-5">Already have an account?</p>
-                    <a href="/logIn" className="font-bold text-red-500 hover:text-red-700">Log In</a>
-                </div>
+
             </form>
         </div>
     );
