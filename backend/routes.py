@@ -106,7 +106,7 @@ async def add_event(event: Event):
     event_dict = event.dict()
 
     # Geocode the event location
-    event_dict = await geocode_location(event_dict)
+    # event_dict = await geocode_location(event_dict)
 
 # @router.get("/events/")
 # async def fetch_events():
