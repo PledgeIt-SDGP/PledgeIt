@@ -26,8 +26,10 @@ const VolunteerSignupForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r via-orange-500 from-orange-200 to-orange-50 pb-10">
-      <form onSubmit={handleSubmit} className="space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20">
+<div class="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
+  <div class="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20 "></div>
+    
+      <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-160 bg-white rounded-lg px-5 sm:px-15 py-8 border border-gray-300 border-opacity-50 my-15">
         <div className="mb-3 text-center">
           <h1 className="text-3xl font-bold text-orange-700">PledgeIt</h1>
         </div>
@@ -95,10 +97,7 @@ const VolunteerSignupForm = () => {
           Create Account
         </button>
 
-        <div className="text-center">
-          <p className="mt-5">Already have an account?</p>
-          <a href="/logIn" className="font-bold text-red-500 hover:text-red-700">Log In</a>
-        </div>
+
       </form>
     </div>
   );
