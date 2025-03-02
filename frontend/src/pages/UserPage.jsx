@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Building } from 'lucide-react'; // Import icons
+import { User, Building } from 'lucide-react'; 
 
 const UserPage = () => {
     const [selectedOption, setSelectedOption] = useState(null);
@@ -80,6 +80,7 @@ const UserPage = () => {
             </div>
         </div>
     );
+    
 };
 
 export default UserPage;
