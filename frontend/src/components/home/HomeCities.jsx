@@ -12,7 +12,7 @@ function HomeCities() {
             Sri Lanka
           </span>
         </h2>
-        <p className="text-gray-600 text-lg mt-4">
+        <p className="text-gray-600 text-lg mt-4 text-justify">
           Join us in making an impact in the cities of{" "}
           <strong>Colombo, Galle, and Kandy</strong>! These cities are hubs for
           change, and you can be a part of it.
