@@ -7,9 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Build and dependency directories
+node_modules/
+dist/
+dist-ssr/
 *.local
 
 # Editor directories and files
@@ -22,3 +23,29 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+
+# Environment variables file
+.env
+
+# FastAPI logs
+*.log
+
+# IDE/editor files (additional entries)
+.vscode/
+.idea/
+*.swp
+
+# FastAPI configuration files
+instance/
+
+# System files
+.DS_Store
+Thumbs.db
