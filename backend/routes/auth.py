@@ -90,7 +90,25 @@ async def auth_callback(request: Request):
 
         user = user_info.json()
         print("🔹 User Info:", user)  # Debugging user info
-        return {"user_info": user}
+
+        # Check if the user already exists
+        existing_user = volunteers_collection.find_one({"email": user.get('email')})
+        if existing_user:
+            return {"message": "User already exists", "volunteer_id": str(existing_user['_id'])}
+        
+        # If the user doesn't exist, create a new volunteer record in MongoDB
+        volunteer_data = {
+            "first_name": user.get("given_name"),
+            "last_name": user.get("family_name"),
+            "email": user.get("email"),
+            "password": None,  # No password for Google login
+            "profile_image": user.get("picture")  # Adding the profile image URL from Google
+        }
+
+        # Insert volunteer data into MongoDB~
+        result = volunteers_collection.insert_one(volunteer_data)
+
+        return {"message": "Volunteer registered successfully via Google", "volunteer_id": str(result.inserted_id)}
 
     except HTTPException as e:
         print(f"🔹 Error: {e.detail}")
