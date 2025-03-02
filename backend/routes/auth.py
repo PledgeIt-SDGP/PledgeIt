@@ -1,11 +1,17 @@
-from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Request, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel, Field, validator
 from passlib.context import CryptContext
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 from authlib.integrations.starlette_client import OAuth
 import httpx
+from uuid import uuid4
+import shutil
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Create a router for authentication routes
 router = APIRouter()
@@ -25,6 +31,13 @@ db = client[os.getenv('DB_NAME')]
 volunteers_collection = db[os.getenv('VOLUNTEERS_COLLECTION')]
 organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
 
+ORG_LOGO_UPLOAD_DIR = "organization_logos"
+os.makedirs(ORG_LOGO_UPLOAD_DIR, exist_ok=True)
+
+# Valid causes for organizations
+VALID_CAUSES = {"Environmental", "Community Service", "Education", "Healthcare",
+                "Animal Welfare", "Disaster Relief", "Lifestyle & Culture", "Fundraising & Charity"}
+
 # Pydantic model for volunteer registration
 class VolunteerRegister(BaseModel):
     first_name: str
@@ -33,8 +46,8 @@ class VolunteerRegister(BaseModel):
     password: str
     password_confirmation: str
 
+# Pydantic model for organization registration
 class OrganizationRegister(BaseModel):
-    logo: str  # URL or path to logo image
     name: str
     website_url: str
     organization_type: str = Field(..., pattern="^(Private Business|NGO|Educational Institution|Other)$")
@@ -45,6 +58,12 @@ class OrganizationRegister(BaseModel):
     causes_supported: list[str] = Field(..., min_items=1, max_items=8)
     password: str
     password_confirmation: str
+
+    @validator("causes_supported")
+    def validate_causes(cls, values):
+        if not set(values).issubset(VALID_CAUSES):
+            raise ValueError("Invalid cause selected.")
+        return values
 
 # Function to hash passwords
 def hash_password(password: str):
@@ -64,117 +83,98 @@ oauth.register(
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     access_token_url='https://oauth2.googleapis.com/token',
     client_kwargs={"scope": "email profile"},
-    redirect_uri='http://127.0.0.1:8000/auth/callback'  # Make sure this URI is correct in Google Developer Console
+    redirect_uri='http://127.0.0.1:8000/auth/callback'  # Ensure correct in Google Developer Console
 )
 
 # Google OAuth login route
 @router.get('/auth/google')
 async def login_via_google(request: Request):
-    redirect_uri = 'http://127.0.0.1:8000/auth/callback'  # Ensure this matches your Google console
+    redirect_uri = 'http://127.0.0.1:8000/auth/callback'
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 # Google OAuth callback route
 @router.get('/auth/callback')
 async def auth_callback(request: Request):
     try:
-        # Get Google token
         google_token = await oauth.google.authorize_access_token(request)
-        print("🔹 Google Token Response:", google_token)
+        if "access_token" not in google_token:
+            raise HTTPException(status_code=400, detail="Google authentication failed")
 
-        # Fetch user info from Google using the access token
         async with httpx.AsyncClient() as client:
             user_info = await client.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo",  # Correct user info endpoint
+                "https://www.googleapis.com/oauth2/v3/userinfo",
                 headers={"Authorization": f"Bearer {google_token['access_token']}"}
             )
-
         user = user_info.json()
-        print("🔹 User Info:", user)  # Debugging user info
+        logging.info(f"🔹 User Info: {user}")
 
-        # Check if the user already exists
         existing_user = volunteers_collection.find_one({"email": user.get('email')})
-        if existing_user:
-            return {"message": "User already exists", "volunteer_id": str(existing_user['_id'])}
-        
-        # If the user doesn't exist, create a new volunteer record in MongoDB
+        existing_org = organizations_collection.find_one({"email": user.get('email')})
+        if existing_user or existing_org:
+            return {"message": "User already exists", "id": str(existing_user['_id'] if existing_user else existing_org['_id'])}
+
         volunteer_data = {
             "first_name": user.get("given_name"),
             "last_name": user.get("family_name"),
             "email": user.get("email"),
-            "password": None,  # No password for Google login
-            "profile_image": user.get("picture")  # Adding the profile image URL from Google
+            "password": None,
+            "profile_image": user.get("picture")
         }
-
-        # Insert volunteer data into MongoDB~
         result = volunteers_collection.insert_one(volunteer_data)
-
         return {"message": "Volunteer registered successfully via Google", "volunteer_id": str(result.inserted_id)}
-
-    except HTTPException as e:
-        print(f"🔹 Error: {e.detail}")
-        return {"error": "Authentication failed", "message": str(e)}
     except Exception as e:
-        print(f"🔹 Unexpected Error: {e}")
+        logging.error(f"🔹 Unexpected Error: {e}")
         return {"error": "Unexpected error", "message": str(e)}
 
 # Volunteer Registration route
 @router.post('/auth/volunteer/register')
 async def register_volunteer(volunteer: VolunteerRegister):
-    # Verify passwords
     verify_passwords(volunteer.password, volunteer.password_confirmation)
-    
-    # Check if the email already exists
-    existing_user = volunteers_collection.find_one({"email": volunteer.email})
-    if existing_user:
+    if volunteers_collection.find_one({"email": volunteer.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Hash password before saving
     hashed_password = hash_password(volunteer.password)
-    
-    # Create the volunteer data
-    volunteer_data = {
+    result = volunteers_collection.insert_one({
         "first_name": volunteer.first_name,
         "last_name": volunteer.last_name,
         "email": volunteer.email,
         "password": hashed_password
-    }
-
-    # Insert volunteer data into MongoDB
-    result = volunteers_collection.insert_one(volunteer_data)
-
-    # Return success response
+    })
     return {"message": "Volunteer registered successfully", "volunteer_id": str(result.inserted_id)}
 
 # Organization Registration route
 @router.post('/auth/organization/register')
-async def register_organization(organization: OrganizationRegister):
-    # Verify passwords
-    verify_passwords(organization.password, organization.password_confirmation)
-    
-    # Check if the email already exists
-    existing_organization = organizations_collection.find_one({"email": organization.email})
-    if existing_organization:
+async def register_organization(
+    logo: UploadFile = File(...),
+    name: str = Form(...),
+    website_url: str = Form(...),
+    organization_type: str = Form(...),
+    about: str = Form(...),
+    email: str = Form(...),
+    contact_number: str = Form(...),
+    address: str = Form(...),
+    causes_supported: list[str] = Form(...),
+    password: str = Form(...),
+    password_confirmation: str = Form(...)
+):
+    verify_passwords(password, password_confirmation)
+    if organizations_collection.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Hash password before saving
-    hashed_password = hash_password(organization.password)
-    
-    # Create the organization data
-    organization_data = {
-        "logo": organization.logo,
-        "name": organization.name,
-        "website_url": organization.website_url,
-        "organization_type": organization.organization_type,
-        "about": organization.about,
-        "email": organization.email,
-        "contact_number": organization.contact_number,
-        "address": organization.address,
-        "causes_supported": organization.causes_supported,
+    hashed_password = hash_password(password)
+    file_extension = logo.filename.split(".")[-1]
+    unique_filename = f"{uuid4()}.{file_extension}"
+    file_path = os.path.join(ORG_LOGO_UPLOAD_DIR, unique_filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(logo.file, buffer)
+    result = organizations_collection.insert_one({
+        "logo": f"/organization_logos/{unique_filename}",
+        "name": name,
+        "website_url": website_url,
+        "organization_type": organization_type,
+        "about": about,
+        "email": email,
+        "contact_number": contact_number,
+        "address": address,
+        "causes_supported": causes_supported,
         "password": hashed_password
-    }
-
-    # Insert organization data into MongoDB
-    result = organizations_collection.insert_one(organization_data)
-
-    # Return success response
-    return {"message": "Organization registered successfully", "organization_id": str(result.inserted_id)}
+    })
+    return {"message": "Organization registered successfully", "organization_id": str(result.inserted_id), "logo_url": f"/organization_logos/{unique_filename}"}
