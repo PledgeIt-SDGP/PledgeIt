@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-
 const VolunteerSignupForm = () => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -12,22 +11,59 @@ const VolunteerSignupForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validation: Check if all fields are filled
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError("All fields are required.");
             return;
         }
 
+        // Validation: Check if passwords match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
 
+        // Log form data to console
+        console.log({
+            firstName,
+            lastName,
+            email,
+            password,
+            confirmPassword
+        });
 
+        // Send data to backend here (optional: using axios/fetch)
+        // Example API call
+        try {
+            const response = await fetch("http://127.0.0.1:8000/auth/volunteer/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    password: password,
+                    password_confirmation: confirmPassword,
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                // Handle successful registration (maybe redirect to login page)
+                alert("Registration successful! Please log in.");
+            } else {
+                setError(data.detail || "An error occurred");
+            }
+        } catch (err) {
+            setError("An error occurred while submitting the form.");
+        }
     };
 
     return (
-        <div class="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
-            <div class="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20 "></div>
+        <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
+            <div className="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20"></div>
 
             <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-160 bg-white rounded-lg px-5 sm:px-15 py-8 border border-gray-300 border-opacity-50 my-15">
                 <div className="mb-3 text-center">
@@ -37,8 +73,6 @@ const VolunteerSignupForm = () => {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-700">Create your personal account</h2>
                 </div>
-
-
 
                 {error && <p className="text-red-600 text-center">{error}</p>} {/* Show errors */}
 
@@ -60,44 +94,71 @@ const VolunteerSignupForm = () => {
                     <span className="px-2 text-gray-500">OR</span>
                     <hr className="flex-grow border-t" />
                 </div>
+
+                {/* Form Fields */}
                 <div className="flex gap-x-4">
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">First Name *</label>
-                        <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+                        <input
+                            type="text"
+                            placeholder="First Name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                        />
                     </div>
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Last Name *</label>
-                        <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+                        <input
+                            type="text"
+                            placeholder="Last Name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                        />
                     </div>
                 </div>
 
                 <div>
                     <label className="block text-gray-600 mb-1">Email Address *</label>
-                    <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+                    <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                    />
                 </div>
-
 
                 <div className="flex gap-x-4">
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Password *</label>
-                        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                        />
                     </div>
                     <div className="flex-1">
                         <label className="block text-gray-600 mb-1">Confirm Password *</label>
-                        <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+                        <input
+                            type="password"
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                        />
                     </div>
                 </div>
 
-                <button type="submit" className="w-full mt-5 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring focus:ring-blue-200">
+                <button
+                    type="submit"
+                    className="w-full mt-5 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring focus:ring-blue-200"
+                >
                     Create Account
                 </button>
-
-
             </form>
         </div>
     );
