@@ -8,6 +8,11 @@ const VolunteerSignupForm = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
 
+    // Function to handle Google login
+    const handleGoogleLogin = () => {
+        window.location.href = "http://127.0.0.1:8000/auth/google"; // Redirect to the Google OAuth route
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -78,7 +83,7 @@ const VolunteerSignupForm = () => {
 
                 {/* Social Login Buttons */}
                 <div className="flex flex-col items-center justify-center mx-30">
-                    <button className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                    <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
                         <img
                             src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
                             alt="Google"
