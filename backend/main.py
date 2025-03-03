@@ -46,7 +46,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # Ensure the uploads directory exists for serving organization logos
 ORG_LOGO_UPLOAD_DIR = "organization_logos"
 os.makedirs(ORG_LOGO_UPLOAD_DIR, exist_ok=True)
-app.mount("/organization_logos", StaticFiles(directory=ORG_LOGO_UPLOAD_DIR), name="organization_logos")
+app.mount("/uploads/organization_logos", StaticFiles(directory=ORG_LOGO_UPLOAD_DIR), name="organization_logos")
 
 
 # Include event routes

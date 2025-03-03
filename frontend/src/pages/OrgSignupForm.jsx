@@ -65,49 +65,38 @@ const OrgSignupForm = () => {
         }
     };
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-
-        if (!orgLogo) {
-            setMessage("Please upload an organization logo.");
-            setLoading(false);
-            return;
-        }
 
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
-            setLoading(false);
             return;
-        } else {
-            setPasswordError('');
         }
 
-
-        const formDataToSend = new FormData();
-        formDataToSend.append('orgLogo', orgLogo);
-        formDataToSend.append('orgName', orgName);
-        formDataToSend.append('websiteUrl', websiteUrl);
-        formDataToSend.append('orgType', orgType);
-        formDataToSend.append('description', description);
-        formDataToSend.append('email', email);
-        formDataToSend.append('contactNumber', contactNumber);
-        formDataToSend.append('address', address);
-        formDataToSend.append('selectedCategories', JSON.stringify(selectedCategories));
-        formDataToSend.append('password', password);
-        formDataToSend.append('confirmPassword', confirmPassword);
-
+        const formData = new FormData();
+        formData.append('orgLogo', orgLogo);
+        formData.append('orgName', orgName);
+        formData.append('websiteUrl', websiteUrl);
+        formData.append('orgType', orgType);
+        formData.append('description', description);
+        formData.append('email', email);
+        formData.append('contactNumber', contactNumber);
+        formData.append('address', address);
+        formData.append('causesSupported', JSON.stringify(selectedCategories));
+        formData.append('password', password);
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/orgsignup", formDataToSend);   // Replace with your backend URL (ideally from env vars)
+            const response = await axios.post(
+                'http://localhost:8000/api/organizations/signup',  // Adjust based on your backend route
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
 
-            setMessage(response.data.message);
+            alert("Organization registered successfully!");
+            console.log(response.data);
         } catch (error) {
-            setMessage(error.response?.data?.detail || "An error occurred");
-        } finally {
-            setLoading(false);
+            console.error("Error registering organization:", error.response?.data || error.message);
+            alert("Registration failed. Please try again.");
         }
     };
 
