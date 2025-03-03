@@ -45,7 +45,7 @@ const LoginPage = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="e.g., User@gmail.com"
+                            placeholder="user@gmail.com"
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
                             required
                         />
@@ -57,7 +57,7 @@ const LoginPage = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
+                            placeholder="enter your password"
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
                             required
                         />
@@ -79,7 +79,7 @@ const LoginPage = () => {
 
                     <div className="mt-4 text-center">
                         <p className='text-gray-600'>Don't have an account?</p>
-                        <a href="/user" className="text-md text-red-600 font-semibold hover:font-bold"> Sign in</a>
+                        <a href="/UserPage" className="text-md text-red-600 font-semibold hover:font-bold"> Sign in</a>
                     </div>
 
                 </form>
