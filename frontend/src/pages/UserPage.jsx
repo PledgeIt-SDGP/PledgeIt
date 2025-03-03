@@ -73,7 +73,7 @@ const UserPage = () => {
                 </div>
                 <p className="mt-8 text-center text-gray-600">
                     Already have an account?{' '}
-                    <a href="/login" className="text-lg text-red-500 font-medium hover:underline">
+                    <a href="/Login" className="text-lg text-red-500 font-medium hover:underline">
                         Log In
                     </a>
                 </p>
