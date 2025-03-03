@@ -1,12 +1,42 @@
-from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile
+from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends
 from typing import List, Optional
-from database import events_collection
+from database import events_collection  # Existing import for events_collection
+from database import organizations_collection  # Imported for fetching authenticated organization
 from models import Event, ContactPerson
 from geocoding import get_coordinates
 import datetime
 import os
 import uuid
 import uuid as uuid_lib  # For converting legacy UUID strings if needed
+
+# ------------------ ADDED DEPENDENCY FOR AUTHENTICATION ------------------
+from fastapi.security import OAuth2PasswordBearer
+import jwt
+from dotenv import load_dotenv
+
+load_dotenv()  # Ensure environment variables are loaded
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = "YOUR_SECRET_KEY"  # Replace with your actual secret key
+ALGORITHM = "HS256"
+
+def get_current_organization(token: str = Depends(oauth2_scheme)):
+    """
+    Decodes the JWT token to extract the organization email (assumed to be in the "sub" field)
+    and returns the corresponding organization document from the database.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        organization = organizations_collection.find_one({"email": email})
+        if organization is None:
+            raise HTTPException(status_code=401, detail="Organization not found")
+        return organization
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+# ------------------ END OF ADDED DEPENDENCY ------------------
 
 router = APIRouter()
 
@@ -209,7 +239,8 @@ async def create_event(
     contact_person_number: str = Form(...),
     registration_deadline: str = Form(...),  # Format: YYYY-MM-DD
     additional_notes: Optional[str] = Form(None),
-    image_url: UploadFile = File(...)
+    image_url: UploadFile = File(...),
+    current_org: dict = Depends(get_current_organization)  # Dependency to get authenticated organization
 ):
     """
     Creates a new event:
@@ -220,6 +251,9 @@ async def create_event(
     - Automatically initializes the total_registered_volunteers to 0.
     - Stores all event details in the database.
     """
+    # Override the provided organization with the authenticated organization's name
+    organization = current_org.get("name")
+    
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
 
