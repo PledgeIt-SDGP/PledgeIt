@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const VolunteerSignupForm = () => {
     const [firstName, setFirstName] = useState("");
@@ -7,44 +7,35 @@ const VolunteerSignupForm = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [showError, setShowError] = useState(false);
 
-    // Function to handle Google login
+    // Handle Google Login Redirect
     const handleGoogleLogin = () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google"; // Redirect to the Google OAuth route
+        window.location.href = "http://127.0.0.1:8000/auth/google";
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation: Check if all fields are filled
+        // Validate required fields
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError("All fields are required.");
+            setShowError(true);
             return;
         }
 
-        // Validation: Check if passwords match
+        // Validate password match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
+            setShowError(true);
             return;
         }
 
-        // Log form data to console
-        console.log({
-            firstName,
-            lastName,
-            email,
-            password,
-            confirmPassword
-        });
-
-        // Send data to backend here (optional: using axios/fetch)
-        // Example API call
         try {
             const response = await fetch("http://127.0.0.1:8000/auth/volunteer/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     first_name: firstName,
                     last_name: lastName,
@@ -54,23 +45,40 @@ const VolunteerSignupForm = () => {
                 }),
             });
 
-            const data = await response.json();
-            if (response.ok) {
-                // Handle successful registration (maybe redirect to login page)
-                alert("Registration successful! Please log in.");
-            } else {
-                setError(data.detail || "An error occurred");
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || "An error occurred.");
             }
+
+            // Success message
+            setSuccess("Registration successful !");
+            setError("");
+            setShowError(false);
+
+            // Clear success message after 4 seconds
+            setTimeout(() => setSuccess(""), 4000);
         } catch (err) {
-            setError("An error occurred while submitting the form.");
+            setError(err.message || "An error occurred while submitting the form.");
+            setShowError(true);
         }
     };
+
+    // Hide error message after 4 seconds
+    useEffect(() => {
+        if (showError) {
+            const timer = setTimeout(() => setShowError(false), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [showError]);
 
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
             <div className="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20"></div>
 
-            <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-160 bg-white rounded-lg px-5 sm:px-15 py-8 border border-gray-300 border-opacity-50 my-15">
+            <form
+                onSubmit={handleSubmit}
+                className="relative space-y-4 w-[90%] sm:w-160 bg-white rounded-lg px-5 sm:px-15 py-8 border border-gray-300 border-opacity-50 my-15"
+            >
                 <div className="mb-3 text-center">
                     <h1 className="text-3xl font-bold text-orange-700">PledgeIt</h1>
                 </div>
@@ -79,11 +87,12 @@ const VolunteerSignupForm = () => {
                     <h2 className="text-2xl font-bold text-gray-700">Create your personal account</h2>
                 </div>
 
-                {error && <p className="text-red-600 text-center">{error}</p>} {/* Show errors */}
-
-                {/* Social Login Buttons */}
+                {/* Social Login Button */}
                 <div className="flex flex-col items-center justify-center mx-30">
-                    <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                    <button
+                        onClick={handleGoogleLogin}
+                        className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
+                    >
                         <img
                             src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
                             alt="Google"
@@ -165,6 +174,18 @@ const VolunteerSignupForm = () => {
                     Create Account
                 </button>
             </form>
+
+            {/* Toast Notifications */}
+            {showError && (
+                <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white py-2 px-4 rounded-lg shadow-md">
+                    {error}
+                </div>
+            )}
+            {success && (
+                <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white py-2 px-4 rounded-lg shadow-md">
+                    {success}
+                </div>
+            )}
         </div>
     );
 };
