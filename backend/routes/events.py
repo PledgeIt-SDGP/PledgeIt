@@ -1,42 +1,12 @@
-from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends
+from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
-from database import events_collection  # Existing import for events_collection
-from database import organizations_collection  # Imported for fetching authenticated organization
+from database import events_collection
 from models import Event, ContactPerson
 from geocoding import get_coordinates
 import datetime
 import os
 import uuid
 import uuid as uuid_lib  # For converting legacy UUID strings if needed
-
-# ------------------ ADDED DEPENDENCY FOR AUTHENTICATION ------------------
-from fastapi.security import OAuth2PasswordBearer
-import jwt
-from dotenv import load_dotenv
-
-load_dotenv()  # Ensure environment variables are loaded
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-SECRET_KEY = "YOUR_SECRET_KEY"  # Replace with your actual secret key
-ALGORITHM = "HS256"
-
-def get_current_organization(token: str = Depends(oauth2_scheme)):
-    """
-    Decodes the JWT token to extract the organization email (assumed to be in the "sub" field)
-    and returns the corresponding organization document from the database.
-    """
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-        organization = organizations_collection.find_one({"email": email})
-        if organization is None:
-            raise HTTPException(status_code=401, detail="Organization not found")
-        return organization
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-# ------------------ END OF ADDED DEPENDENCY ------------------
 
 router = APIRouter()
 
@@ -47,6 +17,32 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Ensure TTL index on expireAt field: automatically delete events after expireAt time is reached
 events_collection.create_index("expireAt", expireAfterSeconds=0)
 
+# ------------------------------
+# New Dependency for Organization Authentication
+# ------------------------------
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+load_dotenv()
+
+def get_current_organization(x_org_email: str = Header(None)):
+    """
+    Dependency that extracts the authenticated organization's email from the header
+    and returns its record from the organizations collection.
+    """
+    if not x_org_email:
+         raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
+    client = MongoClient(os.getenv('MONGO_URI'))
+    db = client[os.getenv('DB_NAME')]
+    organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
+    org = organizations_collection.find_one({"email": x_org_email})
+    if not org:
+         raise HTTPException(status_code=401, detail="Organization not found or not authorized")
+    return org
+
+# ------------------------------
+# Existing Helper Functions
+# ------------------------------
 def event_serializer(event) -> dict:
     """
     Converts a MongoDB event document into a dictionary for API responses.
@@ -141,6 +137,9 @@ def renumber_events():
         events_collection.update_one({"_id": event["_id"]}, {"$set": {"event_id": new_id}})
         new_id += 1
 
+# ------------------------------
+# Endpoints
+# ------------------------------
 @router.get("/events/filter", response_model=List[Event])
 async def filter_events(
     category: Optional[str] = Query(None),
@@ -240,7 +239,7 @@ async def create_event(
     registration_deadline: str = Form(...),  # Format: YYYY-MM-DD
     additional_notes: Optional[str] = Form(None),
     image_url: UploadFile = File(...),
-    current_org: dict = Depends(get_current_organization)  # Dependency to get authenticated organization
+    current_org: dict = Depends(get_current_organization)
 ):
     """
     Creates a new event:
@@ -250,10 +249,11 @@ async def create_event(
     - Automatically determines the status based on the registration deadline.
     - Automatically initializes the total_registered_volunteers to 0.
     - Stores all event details in the database.
+    - **New Feature:** Overrides the organization field with the authenticated organization's name.
     """
-    # Override the provided organization with the authenticated organization's name
-    organization = current_org.get("name")
-    
+    # Override organization with authenticated organization's name
+    organization = current_org["name"]
+
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
 
