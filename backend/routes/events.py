@@ -10,25 +10,32 @@ import uuid as uuid_lib  # For converting legacy UUID strings if needed
 
 router = APIRouter()
 
-# Ensure the uploads directory exists
+# ------------------------------
+# Setup and Configuration
+# ------------------------------
+
+# Create the uploads directory if it doesn't exist
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Ensure TTL index on expireAt field: automatically delete events after expireAt time is reached
+# Create a TTL index on the "expireAt" field.
+# This ensures that events are automatically deleted after the expireAt time is reached.
 events_collection.create_index("expireAt", expireAfterSeconds=0)
 
 # ------------------------------
-# New Dependency for Organization Authentication
+# Dependency for Organization Authentication
 # ------------------------------
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+# Load environment variables from a .env file
 load_dotenv()
 
 def get_current_organization(x_org_email: str = Header(None)):
     """
-    Dependency that extracts the authenticated organization's email from the header
-    and returns its record from the organizations collection.
+    Dependency that extracts the authenticated organization's email from the header.
+    Looks up the organization in the organizations collection.
+    Raises a 401 error if the header is missing or if the organization is not found.
     """
     if not x_org_email:
          raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
@@ -41,13 +48,15 @@ def get_current_organization(x_org_email: str = Header(None)):
     return org
 
 # ------------------------------
-# Existing Helper Functions
+# Helper Functions
 # ------------------------------
+
 def event_serializer(event) -> dict:
     """
     Converts a MongoDB event document into a dictionary for API responses.
-    Ensures that the event_id is returned as an integer and converts
-    date/time strings into proper Python objects.
+    - Ensures that event_id is returned as an integer (converting if needed).
+    - Parses date/time strings into proper Python date/time objects.
+    Raises a 500 error if event_id format or date/time fields are invalid.
     """
     from datetime import datetime
 
@@ -67,7 +76,7 @@ def event_serializer(event) -> dict:
             if isinstance(event.get("date"), str)
             else event.get("date")
         )
-        # Handle time string that may be in HH:MM format
+        # Handle time string that may be in HH:MM format (append seconds if necessary)
         time_str = event["time"]
         if isinstance(time_str, str):
             if len(time_str.strip()) == 5:
@@ -119,8 +128,8 @@ def event_serializer(event) -> dict:
 
 def get_next_event_id() -> int:
     """
-    Returns the next event_id as the current count of events plus one.
-    (Assumes that only documents with numeric event_id exist.)
+    Returns the next sequential event_id.
+    This is calculated by counting the events with a numeric event_id and adding one.
     """
     count = events_collection.count_documents({"event_id": {"$type": "int"}})
     return count + 1
@@ -128,8 +137,8 @@ def get_next_event_id() -> int:
 def renumber_events():
     """
     Renumbers all events in the database to maintain sequential event_ids.
-    Called after an event is deleted.
-    Only considers events with numeric event_id.
+    This function is called after an event is deleted.
+    Only events with numeric event_id are considered.
     """
     events = list(events_collection.find({"event_id": {"$type": "int"}}).sort("created_at", 1))
     new_id = 1
@@ -140,6 +149,7 @@ def renumber_events():
 # ------------------------------
 # Endpoints
 # ------------------------------
+
 @router.get("/events/filter", response_model=List[Event])
 async def filter_events(
     category: Optional[str] = Query(None),
@@ -152,16 +162,15 @@ async def filter_events(
     city: Optional[str] = Query(None)  # Using city as the filter parameter
 ):
     """
-    Filters events based on the following parameters:
-    - category: matches the event category (case-insensitive). If multiple categories are provided (comma-separated),
-      any event with a category matching any of the values will be returned.
-    - organization: matches the event's organization (using an exact match)
-    - skills: comma-separated list; event must have at least one matching skill
-    - search: matches event names (case-insensitive)
-    - date: matches the event date (exact match)
-    - status: matches the event status (case-insensitive)
-    - city: matches the event city (case-insensitive)
-    Only returns events with a numeric event_id.
+    Filters events based on provided query parameters:
+    - category: Event category (supports comma-separated values and case-insensitive matching)
+    - organization: Exact match for the event's organization
+    - skills: Comma-separated list; event must include at least one matching skill
+    - search: Case-insensitive search on event names
+    - date: Exact match on event date
+    - status: Case-insensitive match on event status
+    - city: Case-insensitive match on event city
+    Only events with a numeric event_id are returned.
     """
     query = {"event_id": {"$type": "int"}}
     if category and category.strip():
@@ -193,7 +202,7 @@ async def filter_events(
 @router.get("/events/clear", response_model=List[Event])
 async def clear_filters():
     """
-    Returns all events, effectively clearing any applied filters.
+    Returns all events (clearing any applied filters).
     """
     events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [Event(**event_serializer(event)) for event in events]
@@ -201,7 +210,7 @@ async def clear_filters():
 @router.get("/events", response_model=List[Event])
 async def get_events():
     """
-    Fetches all events from the database that have a numeric event_id.
+    Fetches all events from the database with a numeric event_id.
     """
     events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [Event(**event_serializer(event)) for event in events]
@@ -210,7 +219,8 @@ async def get_events():
 async def get_event(event_id: int):
     """
     Fetches a single event by its sequential event_id.
-    Matches documents where event_id is stored as an integer or string.
+    Matches documents where event_id is stored as an integer or as a string.
+    Raises a 404 error if no matching event is found.
     """
     event = events_collection.find_one({
         "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
@@ -242,18 +252,98 @@ async def create_event(
     current_org: dict = Depends(get_current_organization)
 ):
     """
-    Creates a new event:
+    Creates a new event with the provided form data.
     - Generates a sequential event_id.
-    - Converts the provided address to latitude and longitude.
-    - Validates and uploads the event image.
-    - Automatically determines the status based on the registration deadline.
-    - Automatically initializes the total_registered_volunteers to 0.
-    - Stores all event details in the database.
-    - **New Feature:** Overrides the organization field with the authenticated organization's name.
+    - Overrides the organization with the authenticated organization's name.
+    - Converts the address into latitude and longitude.
+    - Validates the uploaded image format and saves the file.
+    - Determines the event status based on the registration deadline.
+    - Sets total_registered_volunteers to 0.
+    - Sets the event's expireAt field for automatic deletion one day after the event starts.
     """
+
     # Override organization with authenticated organization's name
     organization = current_org["name"]
 
+    # ------------------------------
+    # Additional Validations Start
+    # ------------------------------
+
+    # Validate that required text fields are not empty or whitespace only.
+    if not event_name.strip():
+        raise HTTPException(status_code=400, detail="Event name cannot be empty.")
+    if not description.strip():
+        raise HTTPException(status_code=400, detail="Description cannot be empty.")
+    if not category.strip():
+        raise HTTPException(status_code=400, detail="Category cannot be empty.")
+    if not date.strip():
+        raise HTTPException(status_code=400, detail="Date cannot be empty.")
+    if not time.strip():
+        raise HTTPException(status_code=400, detail="Time cannot be empty.")
+    if not venue.strip():
+        raise HTTPException(status_code=400, detail="Venue cannot be empty.")
+    if not city.strip():
+        raise HTTPException(status_code=400, detail="City cannot be empty.")
+    if not address.strip():
+        raise HTTPException(status_code=400, detail="Address cannot be empty.")
+    if not duration.strip():
+        raise HTTPException(status_code=400, detail="Duration cannot be empty.")
+    if not skills_required.strip():
+        raise HTTPException(status_code=400, detail="Skills required cannot be empty.")
+    if not contact_email.strip():
+        raise HTTPException(status_code=400, detail="Contact email cannot be empty.")
+    if not contact_person_name.strip():
+        raise HTTPException(status_code=400, detail="Contact person name cannot be empty.")
+    if not contact_person_number.strip():
+        raise HTTPException(status_code=400, detail="Contact person number cannot be empty.")
+    if not registration_deadline.strip():
+        raise HTTPException(status_code=400, detail="Registration deadline cannot be empty.")
+
+    # Validate email format for contact_email using a simple regex.
+    import re
+    email_regex = r"[^@]+@[^@]+\.[^@]+"
+    if not re.match(email_regex, contact_email):
+        raise HTTPException(status_code=400, detail="Invalid contact email format.")
+
+    # Validate date format for 'date' field.
+    try:
+        datetime.datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Expected YYYY-MM-DD.")
+
+    # Validate time format for 'time' field (supporting HH:MM:SS or HH:MM).
+    try:
+        if len(time.strip()) == 5:
+            datetime.datetime.strptime(time + ":00", "%H:%M:%S")
+        else:
+            datetime.datetime.strptime(time, "%H:%M:%S")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid time format. Expected HH:MM:SS or HH:MM.")
+
+    # Validate date format for 'registration_deadline' field.
+    try:
+        datetime.datetime.strptime(registration_deadline, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid registration deadline format. Expected YYYY-MM-DD.")
+
+    # Validate that an image file has been uploaded and has a filename.
+    if not image_url.filename:
+         raise HTTPException(status_code=400, detail="Uploaded image must have a filename.")
+
+    # Validate uploaded image file type via content_type and file extension.
+    allowed_types = ["image/jpeg", "image/png", "image/jpg"]
+    if image_url.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid image format. Only JPG, JPEG, PNG allowed.")
+    allowed_extensions = [".jpg", ".jpeg", ".png"]
+    ext = os.path.splitext(image_url.filename)[1].lower()
+    if ext not in allowed_extensions:
+         raise HTTPException(status_code=400, detail="Invalid image file extension.")
+
+    # ------------------------------
+    # Additional Validations End
+    # ------------------------------
+
+    # Generate the next sequential event ID
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
 
@@ -271,34 +361,31 @@ async def create_event(
     if category in category_mapping:
         category = category_mapping[category]
 
-    # Convert address to coordinates
+    # Convert address to coordinates (latitude and longitude)
     latitude, longitude = get_coordinates(address)
     if latitude is None or longitude is None:
         raise HTTPException(status_code=400, detail="Unable to convert address to coordinates.")
     
-    allowed_types = ["image/jpeg", "image/png", "image/jpg"]
-    if image_url.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Invalid image format. Only JPG, JPEG, PNG allowed.")
-    
+    # Save the uploaded image file to the uploads directory
     image_path = f"{UPLOAD_DIR}/{event_id}_{image_url.filename}"
     with open(image_path, "wb") as buffer:
         buffer.write(await image_url.read())
     image_url_path = f"/uploads/{event_id}_{image_url.filename}"
     
-    # Compute status based on registration deadline
+    # Compute event status based on registration deadline
     from datetime import datetime, timedelta
     deadline_date = datetime.strptime(registration_deadline, "%Y-%m-%d").date()
     current_date = datetime.utcnow().date()
     status = "Open" if deadline_date >= current_date else "Closed"
     
-    # Automatically initialize total_registered_volunteers to 0
+    # Initialize total registered volunteers to 0
     total_registered_volunteers = 0
 
-    # Calculate event's expireAt field (logical deletion time)
-    # Here we assume the event should be deleted one day after its scheduled start time.
+    # Calculate event's expireAt field (for automatic deletion one day after event start)
     event_datetime = datetime.strptime(f"{date} {time if len(time.strip()) > 5 else time + ':00'}", "%Y-%m-%d %H:%M:%S")
     expireAt = event_datetime + timedelta(days=1)
     
+    # Construct the event data dictionary to be inserted into the database
     event_data = {
         "event_id": event_id,
         "event_name": event_name,
@@ -329,14 +416,15 @@ async def create_event(
         "expireAt": expireAt  # Added expireAt field for automatic deletion
     }
 
+    # Insert the new event into the MongoDB collection
     events_collection.insert_one(event_data)
     return {"message": "Event created successfully", "event_id": event_id}
 
 @router.get("/events/autocomplete", response_model=List[str])
 async def autocomplete_events(search: str = Query(...)):
     """
-    Returns a list of distinct event names starting with the search term (case-insensitive),
-    useful for auto-prediction on the frontend.
+    Returns a list of distinct event names that start with the provided search term (case-insensitive).
+    This endpoint is useful for implementing autocomplete features on the frontend.
     """
     query = {"event_name": {"$regex": f"^{search}", "$options": "i"}}
     suggestions = events_collection.distinct("event_name", query)
@@ -345,22 +433,26 @@ async def autocomplete_events(search: str = Query(...)):
 @router.delete("/events/{event_id}")
 async def delete_event(event_id: int):
     """
-    Deletes an event by its event_id and renumbers remaining events sequentially.
-    Matches documents where event_id is stored as an int or a string.
+    Deletes an event by its event_id.
+    The query matches documents where event_id is stored as an integer or as a string.
+    After deletion, it calls renumber_events() to maintain sequential event_ids.
+    Raises a 404 error if no matching event is found.
     """
     result = events_collection.delete_one({
         "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
     })
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
+    # Renumber remaining events to maintain sequential IDs
     renumber_events()
     return {"message": "Event deleted successfully"}
 
 @router.put("/events/{event_id}")
 async def update_event(event_id: int, updated_event: Event):
     """
-    Updates an existing event. Matches documents where event_id is stored as an int or a string.
-    Raises a 404 error if no event is found with the given event_id.
+    Updates an existing event using the provided event data.
+    Matches documents where event_id is stored as an integer or as a string.
+    If no event is found with the given event_id, a 404 error is raised.
     """
     result = events_collection.update_one(
         {"$or": [{"event_id": event_id}, {"event_id": str(event_id)}]},
