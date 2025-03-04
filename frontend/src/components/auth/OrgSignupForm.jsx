@@ -65,8 +65,6 @@ const OrgSignupForm = () => {
         }
     };
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -85,23 +83,34 @@ const OrgSignupForm = () => {
             setPasswordError('');
         }
 
-
         const formDataToSend = new FormData();
-        formDataToSend.append('orgLogo', orgLogo);
-        formDataToSend.append('orgName', orgName);
-        formDataToSend.append('websiteUrl', websiteUrl);
-        formDataToSend.append('orgType', orgType);
-        formDataToSend.append('description', description);
+        formDataToSend.append('logo', orgLogo);  // Backend expects 'logo'
+        formDataToSend.append('name', orgName);  // Match FastAPI field names
+        formDataToSend.append('website_url', websiteUrl);
+        formDataToSend.append('organization_type', orgType);
+        formDataToSend.append('about', description);
         formDataToSend.append('email', email);
-        formDataToSend.append('contactNumber', contactNumber);
+        formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-        formDataToSend.append('selectedCategories', JSON.stringify(selectedCategories));
-        formDataToSend.append('password', password);
-        formDataToSend.append('confirmPassword', confirmPassword);
 
+        // Convert selected category names to an array (not IDs)
+        categoriesState.forEach(category => {
+            if (category.selected) {
+                formDataToSend.append('causes_supported', category.name);
+            }
+        });
+
+        formDataToSend.append('password', password);
+        formDataToSend.append('password_confirmation', confirmPassword);
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/orgsignup", formDataToSend);   // Replace with your backend URL (ideally from env vars)
+            const response = await axios.post(
+                "http://127.0.0.1:8000/auth/organization/register", // Correct API URL
+                formDataToSend,
+                {
+                    headers: { "Content-Type": "multipart/form-data" }
+                }
+            );
 
             setMessage(response.data.message);
         } catch (error) {
