@@ -14,35 +14,64 @@ const SplashScreen = () => {
         navigate("/home");
       }, 800);
     }, 3200);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [navigate]);
+
+  // Framer Motion variants for smooth transitions
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 1.2, ease: "easeInOut" } },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.8, ease: "easeInOut" } }
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 1.5, ease: "easeOut" } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.8, ease: "easeInOut" } }
+  };
+
+  const heartContainerVariants = {
+    animate: {
+      scale: [1, 1.15, 1],
+      transition: { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+    }
+  };
+
+  const heartGlowVariants = {
+    animate: {
+      boxShadow: [
+        "0px 0px 15px rgba(255, 77, 77, 0.4)",
+        "0px 0px 35px rgba(255, 153, 102, 0.6)",
+        "0px 0px 15px rgba(255, 77, 77, 0.4)"
+      ],
+      transition: { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+    }
+  };
+
+  const heartVariants = {
+    animate: {
+      scale: [1, 1.1, 1],
+      transition: { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+    }
+  };
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 flex flex-col items-center justify-center z-50 bg-white text-center"
         >
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.9 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="relative flex flex-col items-center space-y-8"
-          >
-            {/* "PledgeIt" Title + "Make a Difference..." (Fade in smoothly together) */}
+          <motion.div className="relative flex flex-col items-center space-y-8">
+            {/* Title and subtitle with smooth fade and slide animations */}
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
+              variants={textVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               className="flex flex-col items-center"
             >
               <h1
@@ -58,28 +87,18 @@ const SplashScreen = () => {
                 Make a difference, one pledge at a time
               </p>
             </motion.div>
-
-            {/* Heart Icon with Soft, Rhythmic Beat & Glow */}
+            {/* Heart icon with dual pulse and glow animations for extra impact */}
             <motion.div
               className="relative flex items-center justify-center mt-4"
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+              variants={heartContainerVariants}
+              animate="animate"
             >
               <motion.div
                 className="w-32 h-32 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-red-400 overflow-hidden"
-                animate={{
-                  boxShadow: [
-                    "0px 0px 15px rgba(255, 77, 77, 0.4)",
-                    "0px 0px 35px rgba(255, 153, 102, 0.6)",
-                    "0px 0px 15px rgba(255, 77, 77, 0.4)"
-                  ]
-                }}
-                transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+                variants={heartGlowVariants}
+                animate="animate"
               >
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-                >
+                <motion.div variants={heartVariants} animate="animate">
                   <Heart className="w-16 h-16 text-red-600" />
                 </motion.div>
               </motion.div>
