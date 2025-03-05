@@ -21,7 +21,7 @@ const HomeAboutUs = () => {
             <p className="mx-5 text-center text-center text-white/90 text-lg lg:text-3xl lg:mx-50">
               "We aims to bridge the gap in accessible volunteer opportunities,
               making it easy for individuals to connect with causes. We are
-              working towards a cleaner and healthier society. and gain
+              working towards a cleaner and healthier society and gain
               recognition for their efforts."
             </p>
           </div>

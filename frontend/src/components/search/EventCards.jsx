@@ -9,9 +9,17 @@ function EventCards(props) {
   };
 
   const slice = props.filteredEvent.slice(0, noOfElement);
+
+  if (slice.length === 0) {
+    return (
+      <div className="text-center text-xl mt-10 text-orange-400">
+        <p>Sorry! No events found </p>
+      </div>
+    );
+  }
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:ml-10 lg:grid-cols-3 gap-7 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:ml-10 lg:grid-cols-2 xl:grid-cols-3 gap-7 mt-6 ">
         {slice.map((event) => {
           const eventDate = new Date(event.date);
           const month = eventDate.toLocaleString("default", { month: "short" });
