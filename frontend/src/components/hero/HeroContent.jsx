@@ -22,11 +22,14 @@ function heroContent() {
           Colombo, Galle, Kandy, and beyond. Your journey to making a difference
           starts here.
         </p>
-        <button
+        <button> 
+          <Link
+          to="/userpage"
           type="button"
           className="text-white font-medium rounded-full text-sm px-6 py-4 text-center mb-2 dark:bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 animate-gradient"
         >
           Start your journey
+          </Link>
         </button>
         <button>
           <Link

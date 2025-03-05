@@ -19,7 +19,7 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage("");
+        setMessage('');
 
         try {
             const response = await axios.post("http://127.0.0.1:8000/auth/login", formData);
@@ -32,7 +32,11 @@ const LoginPage = () => {
 
             // Redirect based on role
             setTimeout(() => {
-                window.location.href = role === "volunteer" ? "/volunteer-dashboard" : "/organization-dashboard";
+                if (role === "volunteer") {
+                    window.location.href = "/volunteer-dashboard";
+                } else if (role === "organization") {
+                    window.location.href = "/organization-dashboard";
+                }
             }, 1500);
 
         } catch (error) {
@@ -97,7 +101,6 @@ const LoginPage = () => {
                                         alt={showPassword ? "Hide password" : "Show password"}
                                     />
                                 </button>
-
                             </div>
                         </div>
 
