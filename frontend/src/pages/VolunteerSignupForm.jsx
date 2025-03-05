@@ -63,6 +63,16 @@ const VolunteerSignupForm = () => {
         }
     };
 
+    // Check for URL redirect for Google login response
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const redirectUrl = queryParams.get('redirect_url');
+        if (redirectUrl) {
+            // Redirect user after successful Google login
+            window.location.href = redirectUrl;
+        }
+    }, []);
+
     // Hide error message after 4 seconds
     useEffect(() => {
         if (showError) {

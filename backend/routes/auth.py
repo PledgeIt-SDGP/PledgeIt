@@ -202,7 +202,9 @@ async def login(email: str = Form(...), password: str = Form(...), response: Res
     # Set refresh token in cookies
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="Lax")
 
-    return {"access_token": access_token, "token_type": "bearer", "role": role}
+    # Redirect based on role
+    redirect_url = "/volunteer/dashboard" if role == "volunteer" else "/organization/dashboard"
+    return {"access_token": access_token, "token_type": "bearer", "role": role, "redirect_url": redirect_url}
 
 # Google OAuth Login
 @router.get('/auth/google')
@@ -222,8 +224,11 @@ async def auth_callback(request: Request):
     existing_user = volunteers_collection.find_one({"email": user.get('email')}) or organizations_collection.find_one({"email": user.get('email')})
 
     if existing_user:
-        return {"message": "User already exists", "id": str(existing_user['_id'])}
+        role = "volunteer" if existing_user in volunteers_collection.find() else "organization"
+        redirect_url = "/volunteer/dashboard" if role == "volunteer" else "/organization/dashboard"
+        return {"message": "User already exists", "id": str(existing_user['_id']), "redirect_url": redirect_url}
 
+    # Register as volunteer if new user
     result = volunteers_collection.insert_one({
         "first_name": user.get("given_name"),
         "last_name": user.get("family_name"),
@@ -231,7 +236,9 @@ async def auth_callback(request: Request):
         "password": None,
         "profile_image": user.get("picture")
     })
-    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id)}
+    
+    # Redirect to volunteer dashboard
+    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id), "redirect_url": "/volunteer/dashboard"}
 
 # Refresh token route
 @router.post('/auth/refresh')
