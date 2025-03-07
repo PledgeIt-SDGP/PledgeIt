@@ -4,7 +4,8 @@ import HomePage from "./pages/Home";
 import SearchFilters from "./pages/SearchFilter";
 import EventDetails from "./components/eventDetails/EventDetails";
 import HomeEvent from "./components/home/HomeEvent";
-import VDashboard from "./components/volunteerDashboard/VDashboard";
+import VolunteerHome from "./components/volunteerDashboard/VolunteerHome";
+import VolunteerDashboard from "./pages/VolunteerDashboard";
 
 function App() {
   return (
@@ -15,7 +16,9 @@ function App() {
         <Route path="/latestEvents" element={<HomeEvent />} />
         <Route path="/details" element={<EventDetails />} />
         <Route path="/details/:id" element={<EventDetails />} />
-        <Route path="/volunteerDashboard" element={<VDashboard />} />
+        <Route path="/volunteerHome" element={<VolunteerHome />} />
+        <Route path="/dashboard" element={<VolunteerDashboard />} />
+
       </Routes>
     </Router>
   );
