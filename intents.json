@@ -1,0 +1,110 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": [
+        "Hi",
+        "Hey",
+        "How are you",
+        "Hello",
+        "Good day"
+      ],
+      "responses": [
+        "Hello! How can I assist you with volunteering today?",
+        "Hi there! Ready to help you find a volunteering opportunity.",
+        "Hey! What volunteer opportunity are you looking for today?"
+      ]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": [
+        "Bye",
+        "See you later",
+        "Goodbye"
+      ],
+      "responses": [
+        "Goodbye! Thanks for considering to volunteer.",
+        "See you later! Don't forget to volunteer!",
+        "Take care! We're always here when you're ready to volunteer."
+      ]
+    },
+    {
+      "tag": "thanks",
+      "patterns": [
+        "Thanks",
+        "Thank you",
+        "That's helpful",
+        "Thank you so much!"
+      ],
+      "responses": [
+        "You're welcome! Happy to help you find volunteering opportunities.",
+        "Anytime! Let me know if you need further assistance.",
+        "Glad I could assist! Reach out if you have more questions."
+      ]
+    },
+    {
+      "tag": "volunteer_opportunities",
+      "patterns": [
+        "What volunteer opportunities are available?",
+        "Tell me about volunteer opportunities",
+        "I want to volunteer, what can I do?",
+        "Show me volunteer opportunities",
+        "What can I volunteer for?",
+        "Give me some volunteer options",
+        "What are the volunteer opportunities?"
+      ],
+      "responses": [
+        "Here are some volunteer opportunities: [List opportunities]. Please tell me your location and availability.",
+        "Let me find some volunteering activities for you! Please provide your location and availability."
+      ]
+    },
+    {
+      "tag": "volunteer_registration",
+      "patterns": [
+        "How can I register for an event?",
+        "Can I register for a volunteer opportunity?",
+        "I want to sign up for a volunteering event"
+      ],
+      "responses": [
+        "To register, let me know the event you'd like to join, and I'll assist you.",
+        "Please provide the event ID or title you'd like to register for."
+      ]
+    },
+    {
+      "tag": "volunteer_remove",
+      "patterns": [
+        "I want to withdraw from a volunteer event",
+        "Cancel my registration for the event",
+        "Remove my registration"
+      ],
+      "responses": [
+        "Your registration has been successfully removed from the event.",
+        "You're no longer registered for this event. Hope to see you next time!"
+      ]
+    },
+    {
+      "tag": "event_feedback",
+      "patterns": [
+        "Can I leave feedback for the event?",
+        "How can I provide feedback on an event?",
+        "I want to rate my volunteer experience"
+      ],
+      "responses": [
+        "Please share your feedback with us, and we'll make sure to improve our events.",
+        "We'd love to hear your thoughts. What was your experience like?"
+      ]
+    },
+    {
+      "tag": "error",
+      "patterns": [
+        "I didn't understand that",
+        "Can you help me again?",
+        "Sorry, I don't get it"
+      ],
+      "responses": [
+        "Sorry, I didn't quite catch that. Could you rephrase?",
+        "I didn't understand that. Can you try again?"
+      ]
+    }
+  ]
+}
