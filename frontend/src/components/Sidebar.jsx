@@ -1,53 +1,57 @@
-import { Calendar, Home, MapPin, Menu, Settings } from "lucide-react";
+import {
+  Calendar,
+  HeartHandshake,
+  Home,
+  MapPin,
+  Menu,
+  Settings,
+  UserRound,
+} from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import VDashboard from "./volunteerDashboard/VDashboard";
+import { NavLink } from "react-router-dom";
 
-// Separate MenuItem component for better readability and reusability
-const MenuItem = ({ icon, name, path, isActive }) => {
+const MenuItem = ({ icon, name, path }) => {
   return (
-    <li
-      className={`
-      flex items-center rounded-lg cursor-pointer transition-colors duration-200 font-bold 
-      ${
-        isActive
-          ? "bg-orange-100 text-orange-700"
-          : "text-gray-700 hover:bg-orange-50"
+    <NavLink
+      to={path}
+      className={({ isActive }) =>
+        `flex items-center cursor-pointer transition-all duration-200 font-bold rounded-md ${
+          isActive
+            ? "bg-gradient-to-r from-red-500 to-orange-400 text-white"
+            : "text-gray-800 hover:bg-gray-200"
+        } p-3`
       }
-    `}
     >
       {React.cloneElement(icon, {
         "aria-hidden": true,
-        className: "h-5 w-5 ml-3 ",
+        className: "h-5 w-5",
       })}
-      <Link
-        to={path}
-        className="font-medium text-sm p-3 w-full "
-        aria-current={isActive ? "page" : undefined}
-      >
-        {name}
-      </Link>
-    </li>
+      <span className="ml-3 text-sm">{name}</span>
+    </NavLink>
   );
 };
 
 const Sidebar = () => {
   const menuItems = [
-    { name: "Home", path: "/volunteerDashboard", icon: <Home /> },
+    { name: "Home", path: "/volunteerHome", icon: <Home /> },
     { name: "Events", path: "/event", icon: <Calendar /> },
     { name: "Map", path: "/map", icon: <MapPin /> },
-    { name: "Settings", path: "/settings", icon: <Settings /> },
+    { name: "Profile", path: "/profile", icon: <UserRound /> },
+    { name: "Settings", path: "/set", icon: <Settings /> },
   ];
 
-  const currentPath = window.location.pathname;
-
+  const [user] = useState({
+    username: "unknown",
+    profile_picture: "",
+    type: "NGO",
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen md:w-64 sm:w-0 bg-white shadow-md border-r border-gray-100 fixed z-100">
-      {/* Toggle Button for Small Screens */}
+    <div className=" md:w-60 sm:w-0 bg-white shadow-md border-r border-gray-100 min-h-screen">
+      {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-5 left-5 z-10 bg-orange-300 text-white p-2 rounded-full"
+        className="md:hidden fixed top-5 left-5 z-1000 bg-orange-500 text-white p-2 rounded "
         onClick={() => setIsOpen(!isOpen)}
       >
         <Menu />
@@ -55,30 +59,39 @@ const Sidebar = () => {
 
       {/* Sidebar Content */}
       <div
-        className={`flex flex-col h-screen w-64 bg-gray-50 shadow-md border-r border-gray-100 ${
-          isOpen ? "block" : "hidden sm:block md:block"
+        className={`fixed z-100 top-0 left-0 flex flex-col min-h-screen w-60 shadow-md transition-transform duration-300 ease-in-out ${
+          isOpen
+            ? "translate-x-0 bg-white"
+            : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="flex items-center justify-center h-16 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-orange-600">PledgeIt</h1>
+        {/* Logo */}
+        <div className="flex items-center py-18 sm:py-10 px-5 border-b border-gray-200 ">
+          <HeartHandshake className="h-8 w-8 text-orange-700 mr-2" />
+          <h1 className="text-2xl font-bold text-orange-700 ">PledgeIt</h1>
         </div>
 
-        <div className="p-5">
-          <p className="text-sm text-gray-500">
-            Manage your account and preferences.
-          </p>
-          <div className="p-3 bg-red-50">profile comes here</div>
-        </div>
-
-        <ul className="flex-1 p-4 pt-0 space-y-1">
+        {/* Navigation */}
+        <nav className="flex-1 flex-grow p-3 space-y-2">
           {menuItems.map((item) => (
-            <MenuItem
-              key={item.name}
-              {...item}
-              isActive={currentPath === item.path}
-            />
+            <MenuItem key={item.name} {...item} />
           ))}
-        </ul>
+        </nav>
+
+        {/* Profile Section */}
+        <div className="flex items-center gap-3 p-4 border-t border-gray-200 bg-gray-50 ">
+          <img
+            src={user.profile_picture || "https://i.pravatar.cc/150?u=1"}
+            alt="Profile"
+            className="h-10 w-10 rounded-full object-cover"
+          />
+          <div>
+            <p className="font-semibold text-sm">
+              {user.username || "Loading..."}
+            </p>
+            <p className="text-xs text-gray-500">{user.type}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ function EventCards(props) {
   }
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:ml-10 lg:grid-cols-2 xl:grid-cols-3 gap-7 mt-6 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-7 mt-6 ">
         {slice.map((event) => {
           const eventDate = new Date(event.date);
           const month = eventDate.toLocaleString("default", { month: "short" });
