@@ -5,6 +5,8 @@ import VolSignUp from "./pages/VolunteerSignupForm";
 import OrgSignUp from "./pages/OrgSignupForm";
 import UserPage from "./pages/UserPage";
 import Login from "./pages/LoginForm"
+import VolDash from "./pages/volunteer-dashboard"
+import OrgDash from "./pages/organization-dashboard"
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/VolSignUp" element={<VolSignUp />} />
         <Route path="/OrgSignUp" element={<OrgSignUp />} />
+        <Route path="/Vol-Dashboard" element={<VolDash />} />
+        <Route path="/Org-Dashboard" element={<OrgDash />} />
       </Routes>
     </Router>
   );

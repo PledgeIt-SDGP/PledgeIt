@@ -20,31 +20,41 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
-
+      
         try {
-            const response = await axios.post("http://127.0.0.1:8000/auth/login", formData);
-
+            // Format the formData as URLSearchParams for x-www-form-urlencoded
+            const params = new URLSearchParams();
+            params.append('email', formData.email);
+            params.append('password', formData.password);
+    
+            const response = await axios.post("http://127.0.0.1:8000/auth/login", params, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
+    
             const { access_token, role } = response.data;
             localStorage.setItem("token", access_token);
             localStorage.setItem("role", role);
-
+    
+            console.log("Logged in successfully with role:", role); // Debugging log
+    
             setMessage("Login successful!");
-
-            // Redirect based on role
+    
             setTimeout(() => {
                 if (role === "volunteer") {
-                    window.location.href = "/volunteer-dashboard";
+                    window.location.href = "/Vol-Dashboard"; 
                 } else if (role === "organization") {
-                    window.location.href = "/organization-dashboard";
-                }
+                    window.location.href = "/Org-Dashboard"; 
+                }                
             }, 1500);
-
+    
         } catch (error) {
             setMessage(error.response?.data?.detail || "Login failed. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    };      
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">
