@@ -35,14 +35,15 @@ load_dotenv()
 def get_current_organization(x_org_email: str = Header(None)):
     """
     Dependency that extracts the authenticated organization's email from the header.
-    Looks up the organization in the organizations collection.
-    Raises a 401 error if the header is missing or if the organization is not found.
+    For testing, if no header is provided, it returns a dummy organization.
     """
     if not x_org_email:
-         raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
+         # TEMPORARY: Return a dummy organization for testing without authentication
+         return {"name": "Test Organization", "email": "test_org@example.com"}
+    
     client = MongoClient(os.getenv('MONGO_URI'))
     db = client[os.getenv('DB_NAME')]
-    organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION', 'organisation')]
+    organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION', 'organizations')]
     org = organizations_collection.find_one({"email": x_org_email})
     if not org:
          raise HTTPException(status_code=401, detail="Organization not found or not authorized")

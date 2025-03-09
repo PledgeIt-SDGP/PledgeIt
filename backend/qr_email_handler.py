@@ -4,6 +4,10 @@ from io import BytesIO
 import smtplib
 from email.message import EmailMessage
 import logging
+import json
+
+# Import the events_collection so we can fetch event details if needed
+from database import events_collection
 
 # Configure logging for this module
 logger = logging.getLogger(__name__)
@@ -34,7 +38,7 @@ def generate_qr_code(data: str) -> BytesIO:
     Generates a QR code image for the provided data.
     
     Args:
-        data (str): The data to be encoded in the QR code (e.g., "EventID:12345").
+        data (str): The data to be encoded in the QR code (e.g., a JSON string with event details).
         
     Returns:
         BytesIO: In-memory binary stream containing the PNG image.
@@ -60,12 +64,12 @@ def generate_qr_code(data: str) -> BytesIO:
 
 def send_email_with_qr(recipient: str, subject: str, html_content: str, qr_buffer: BytesIO):
     """
-    Sends an email with a QR code attachment.
+    Sends an email with the QR code attached as a file named 'qr_code.png'.
     
     Args:
-        recipient (str): Recipient's email address.
-        subject (str): Email subject.
-        html_content (str): HTML formatted email body.
+        recipient (str): The recipient's email address.
+        subject (str): The subject line of the email.
+        html_content (str): The HTML body of the email.
         qr_buffer (BytesIO): The QR code image in a BytesIO stream.
     """
     try:
@@ -74,14 +78,15 @@ def send_email_with_qr(recipient: str, subject: str, html_content: str, qr_buffe
         msg["From"] = FROM_EMAIL
         msg["To"] = recipient
 
-        # Set plain text content as a fallback
+        # Provide a fallback text-only content
         msg.set_content("This email contains a QR code attachment. Please view it using an HTML compatible email client.")
+        # Add the HTML part
         msg.add_alternative(html_content, subtype="html")
 
         # Attach the QR code image
         qr_data = qr_buffer.read()
         msg.add_attachment(qr_data, maintype="image", subtype="png", filename="qr_code.png")
-        logger.info("Attached QR code for recipient: %s", recipient)
+        logger.info("Attached QR code as 'qr_code.png' for recipient: %s", recipient)
 
         # Send the email over a secure connection
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -93,64 +98,137 @@ def send_email_with_qr(recipient: str, subject: str, html_content: str, qr_buffe
         logger.error("Error sending email to %s: %s", recipient, str(e))
         raise
 
-def send_event_qr_to_organization(event_id: int, organization_email: str):
+def send_event_qr_to_organization(event_id: int, organization_email: str, event_details: dict = None):
     """
-    Generates a unique QR code for an event and sends it to the organization's email address.
+    Fetches or uses provided event details, generates a JSON payload (including a redirect_url),
+    creates a QR code from it, and sends it as an attached PNG file 
+    to the organization's email.
     
     Args:
         event_id (int): Unique identifier for the event.
         organization_email (str): Email address of the organization.
+        event_details (dict, optional): Event details, if already available.
+            If None, function fetches the event details from MongoDB.
     """
     try:
-        # Generate QR code data. Customize payload as needed.
-        qr_data = f"EventID:{event_id}"
+        # If no event_details are provided, fetch from the database
+        if event_details is None:
+            event_details = events_collection.find_one({"event_id": event_id})
+            if event_details is None:
+                # If not found, store minimal data
+                event_details = {"event_id": event_id}
+
+        # Add a redirect_url field so scanning the QR can open the detail page
+        redirect_url = f"https://pledgeit.com/events/{event_id}"
+        event_details["redirect_url"] = redirect_url
+        
+        # Convert event_details to JSON string
+        import json
+        qr_data = json.dumps(event_details, default=str)
         qr_buffer = generate_qr_code(qr_data)
 
-        subject = f"QR Code for Your Event (ID: {event_id})"
+        subject = f"Your PledgeIt Event QR Code (Event ID {event_id})"
         html_content = f"""
         <html>
-          <body style="font-family: Arial, sans-serif; color: #333;">
-            <h2 style="color: #2a7ae2;">Event QR Code</h2>
-            <p>Dear Organization,</p>
-            <p>Your event (ID: {event_id}) has been successfully created. Please find attached your unique QR code for attendance tracking.</p>
-            <p>Please keep this QR code safe and use it during event check-ins.</p>
-            <p>Thank you,</p>
-            <p><strong>PledgeIt Team</strong></p>
+          <body style="margin: 0; padding: 20px; background-color: #FAFAFA; color: #333;
+                       font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5;">
+            <div style="max-width: 600px; margin: auto; background-color: #FFFFFF; border: 1px solid #E0E0E0;
+                        border-radius: 8px; padding: 20px;">
+              <h2 style="margin-top: 0; text-align: center; font-weight: 600; font-size: 18px; color: #111;">
+                PledgeIt: Event QR Code
+              </h2>
+              <p style="margin-bottom: 12px;">
+                Hello,<br><br>
+                Your event (ID: <strong>{event_id}</strong>) has been created on PledgeIt.
+                We have attached your unique QR code for attendance tracking. Please keep it safe.
+              </p>
+              <ul style="padding-left: 20px; margin-bottom: 12px;">
+                <li><strong>Event ID:</strong> {event_details.get("event_id", event_id)}</li>
+                <li><strong>Event Name:</strong> {event_details.get("event_name", "N/A")}</li>
+                <li><strong>Date:</strong> {event_details.get("date", "N/A")}</li>
+                <li><strong>Time:</strong> {event_details.get("time", "N/A")}</li>
+                <li><strong>Venue:</strong> {event_details.get("venue", "N/A")}</li>
+              </ul>
+              <p style="margin-bottom: 12px;">
+                Thank you for using PledgeIt. We look forward to a successful event!
+              </p>
+              <p style="text-align: center; margin: 0;">
+                Regards,<br>
+                <strong>PledgeIt Team</strong>
+              </p>
+            </div>
           </body>
         </html>
         """
+        # Attach and send the QR
         send_email_with_qr(organization_email, subject, html_content, qr_buffer)
     except Exception as e:
         logger.error("Failed to send event QR code to organization: %s", str(e))
         raise
 
-def send_event_qr_to_volunteer(event_id: int, volunteer_email: str):
+def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_details: dict = None):
     """
-    Generates a unique QR code for an event and sends it to the volunteer's email address.
+    Fetches or uses provided event details, generates a JSON payload (including a redirect_url),
+    creates a QR code from it, and sends it as an attached PNG file 
+    to the volunteer's email.
     
     Args:
         event_id (int): Unique identifier for the event.
         volunteer_email (str): Email address of the volunteer.
+        event_details (dict, optional): Event details, if already available.
+            If None, function fetches the event details from MongoDB.
     """
     try:
-        # Generate QR code data. You can include volunteer-specific info if desired.
-        qr_data = f"EventID:{event_id}"
+        # If no event_details are provided, fetch from the database
+        if event_details is None:
+            event_details = events_collection.find_one({"event_id": event_id})
+            if event_details is None:
+                # If not found, store minimal data
+                event_details = {"event_id": event_id}
+
+        # Add a redirect_url field so scanning the QR can open the detail page
+        redirect_url = f"https://pledgeit.com/events/{event_id}"
+        event_details["redirect_url"] = redirect_url
+
+        # Convert event_details to JSON string
+        import json
+        qr_data = json.dumps(event_details, default=str)
         qr_buffer = generate_qr_code(qr_data)
 
-        subject = f"Your Attendance QR Code for Event ID: {event_id}"
+        subject = f"Your PledgeIt Event QR Code (Event ID {event_id})"
         html_content = f"""
         <html>
-          <body style="font-family: Arial, sans-serif; color: #333;">
-            <h2 style="color: #2a7ae2;">Event Attendance QR Code</h2>
-            <p>Dear Volunteer,</p>
-            <p>You have successfully registered for the event (ID: {event_id}). Please find your unique QR code attached.</p>
-            <p>Present this QR code at the event for attendance verification.</p>
-            <p>Thank you for your commitment and participation!</p>
-            <p>Best Regards,</p>
-            <p><strong>PledgeIt Team</strong></p>
+          <body style="margin: 0; padding: 20px; background-color: #FAFAFA; color: #333;
+                       font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5;">
+            <div style="max-width: 600px; margin: auto; background-color: #FFFFFF; border: 1px solid #E0E0E0;
+                        border-radius: 8px; padding: 20px;">
+              <h2 style="margin-top: 0; text-align: center; font-weight: 600; font-size: 18px; color: #111;">
+                PledgeIt: Attendance QR Code
+              </h2>
+              <p style="margin-bottom: 12px;">
+                Hello,<br><br>
+                You have successfully registered for the event (ID: <strong>{event_id}</strong>).
+                Please find attached your unique QR code for attendance verification.
+              </p>
+              <ul style="padding-left: 20px; margin-bottom: 12px;">
+                <li><strong>Event ID:</strong> {event_details.get("event_id", event_id)}</li>
+                <li><strong>Event Name:</strong> {event_details.get("event_name", "N/A")}</li>
+                <li><strong>Date:</strong> {event_details.get("date", "N/A")}</li>
+                <li><strong>Time:</strong> {event_details.get("time", "N/A")}</li>
+                <li><strong>Venue:</strong> {event_details.get("venue", "N/A")}</li>
+              </ul>
+              <p style="margin-bottom: 12px;">
+                Show this QR code upon arrival. We appreciate your support and look forward to your participation!
+              </p>
+              <p style="text-align: center; margin: 0;">
+                Best Regards,<br>
+                <strong>PledgeIt Team</strong>
+              </p>
+            </div>
           </body>
         </html>
         """
+        # Attach and send the QR
         send_email_with_qr(volunteer_email, subject, html_content, qr_buffer)
     except Exception as e:
         logger.error("Failed to send event QR code to volunteer: %s", str(e))
