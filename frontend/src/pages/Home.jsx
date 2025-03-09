@@ -10,11 +10,13 @@ import HomeEvent from "../components/home/HomeEvent";
 import HomeCarousel from "../components/home/HomCarousel";
 import HomeTimeLine from "../components/home/HomeTimeLine";
 import { FooterWithSitemap } from "../components/nav&footer/Footer";
+import NavBar from "../components/nav&footer/ResponsiveAppBar";
 
 const Home = () => {
   return (
     <>
-      <div className="relative flex flex-row items-center px-10 space-y-8 mt-25 min-h-screen">
+    <NavBar />
+      <div className="relative flex flex-row items-center mt-12 px-10  min-h-screen lg:mt-0">
         {/* Left Content */}
         <div className="flex flex-col justify-center max-w-2xl space-y-6">
           <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
@@ -22,7 +24,7 @@ const Home = () => {
             Welcome to PledgeIt
           </span>
 
-          <h1 className="text-6xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-gray-900 lg:text-6xl">
             Empowering Change
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-red-600 to-pink-600">
               Across Sri Lanka
@@ -59,7 +61,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="mt-30">
+      <div id="about" className="mt-10" >
         <HomeAboutUs />
       </div>
       <div className="text-4xl text-center text-black font-bold py-10 mt-10">
@@ -78,7 +80,7 @@ const Home = () => {
         <HomeCities />
       </div>
 
-      <div className="my-10">
+      <div  id="events" className="my-10">
         <HomeEvent />
       </div>
 
@@ -94,7 +96,7 @@ const Home = () => {
         />
 
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <span className="text-white text-md mt-5 font-extrabold md:text-2xl lg:text-3xl">
+          <span className="text-white  text-xl mt-5 font-extrabold md:text-2xl lg:text-3xl">
             Join with us in making a difference today & <br />A better future!
           </span>
           <br />
