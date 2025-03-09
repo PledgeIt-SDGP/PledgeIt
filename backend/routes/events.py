@@ -37,21 +37,19 @@ from pymongo import MongoClient
 load_dotenv()
 
 def get_current_organization(x_org_email: str = Header(None)):
-    """
-    Dependency that extracts the authenticated organization's email from the header.
-    For testing, if no header is provided, it returns a dummy organization.
-    """
     if not x_org_email:
-         # TEMPORARY: Return a dummy organization for testing without authentication
-         return {"name": "Test Organization", "email": "test_org@example.com"}
-    
+        raise HTTPException(status_code=401, detail="Missing authentication header.")
+
     client = MongoClient(os.getenv('MONGO_URI'))
     db = client[os.getenv('DB_NAME')]
     organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION', 'organizations')]
     org = organizations_collection.find_one({"email": x_org_email})
+
     if not org:
-         raise HTTPException(status_code=401, detail="Organization not found or not authorized")
+        raise HTTPException(status_code=401, detail="Organization not found or not authorized")
+    
     return org
+
 # ------------------------------
 # Helper Functions
 # ------------------------------
