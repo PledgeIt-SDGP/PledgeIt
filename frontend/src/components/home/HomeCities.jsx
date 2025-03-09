@@ -24,7 +24,7 @@ function HomeCities() {
         <img
           src="assests/map4.png"
           alt="Map"
-          className="w-70 h-auto md:w-100 lg:w-100 h-auto"
+          className="w-70 h-auto md:w-80 lg:w-80 h-auto"
         />
       </div>
     </div>
