@@ -125,7 +125,7 @@ def event_serializer(event) -> dict:
         "additional_notes": event.get("additional_notes", ""),
         "status": event["status"],
         "total_registered_volunteers": event["total_registered_volunteers"],
-        "created_at": created_at_val,
+        "created_at": event.get("created_at"),
     }
 
 def get_next_event_id() -> int:
@@ -442,13 +442,21 @@ async def autocomplete_events(search: str = Query(...)):
     return suggestions
 
 @router.delete("/events/{event_id}")
-async def delete_event(event_id: int):
+async def delete_event(event_id: int, current_org: dict = Depends(get_current_organization)):
     """
     Deletes an event by its event_id.
     The query matches documents where event_id is stored as an integer or as a string.
     After deletion, it calls renumber_events() to maintain sequential event_ids.
     Raises a 404 error if no matching event is found.
     """
+    event = events_collection.find_one({"event_id": event_id})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Ensure the authenticated organization is the owner of the event
+    if event["organization"] != current_org["name"]:
+        raise HTTPException(status_code=403, detail="Permission denied. You cannot delete this event.")
+    
     result = events_collection.delete_one({
         "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
     })
@@ -459,12 +467,21 @@ async def delete_event(event_id: int):
     return {"message": "Event deleted successfully"}
 
 @router.put("/events/{event_id}")
-async def update_event(event_id: int, updated_event: Event):
+async def update_event(event_id: int, updated_event: Event, current_org: dict = Depends(get_current_organization)):
     """
     Updates an existing event using the provided event data.
     Matches documents where event_id is stored as an integer or as a string.
     If no event is found with the given event_id, a 404 error is raised.
     """
+    # Fetch the event from the database to verify ownership
+    event = events_collection.find_one({"event_id": event_id})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Ensure only the event owner can update it
+    if event["organization"] != current_org["name"]:
+        raise HTTPException(status_code=403, detail="Permission denied. You cannot update this event.")
+    
     update_data = updated_event.dict()
 
     # Convert date fields (if any) to datetime.datetime objects since BSON cannot encode datetime.date
