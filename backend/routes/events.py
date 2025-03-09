@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
 from database import events_collection
@@ -418,6 +419,14 @@ async def create_event(
 
     # Insert the new event into the MongoDB collection
     events_collection.insert_one(event_data)
+
+    try:
+        from qr_email_handler import send_event_qr_to_organization
+        send_event_qr_to_organization(event_id, current_org["email"])
+    except Exception as e:
+        # Log the error; you can decide if you want to propagate the exception or simply log and continue
+        logging.error(f"Failed to send QR code email to organization: {e}")
+
     return {"message": "Event created successfully", "event_id": event_id}
 
 @router.get("/events/autocomplete", response_model=List[str])
