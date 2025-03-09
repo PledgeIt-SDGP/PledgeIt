@@ -121,42 +121,77 @@ def send_event_qr_to_organization(event_id: int, organization_email: str, event_
         # Add a redirect_url field so scanning the QR can open the detail page
         redirect_url = f"https://pledgeit.com/events/{event_id}"
         event_details["redirect_url"] = redirect_url
-        
+
+        # --- NEW FEATURE: Add QR code expiration date (one day after the event) ---
+        if "date" in event_details and "time" in event_details:
+            try:
+                from datetime import datetime, timedelta
+                # Try parsing assuming time is stored as HH:MM:SS; if not, try appending seconds
+                try:
+                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}", "%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}:00", "%Y-%m-%d %H:%M:%S")
+                expiration_dt = event_dt + timedelta(days=1)
+                event_details["qr_expiration"] = expiration_dt.isoformat()
+            except Exception as exp:
+                logger.warning("Could not compute QR expiration for event_id %s: %s", event_id, str(exp))
+        # --- End new feature ---
+
         # Convert event_details to JSON string
-        import json
         qr_data = json.dumps(event_details, default=str)
         qr_buffer = generate_qr_code(qr_data)
 
         subject = f"Your PledgeIt Event QR Code (Event ID {event_id})"
         html_content = f"""
         <html>
-          <body style="margin: 0; padding: 20px; background-color: #FAFAFA; color: #333;
-                       font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5;">
-            <div style="max-width: 600px; margin: auto; background-color: #FFFFFF; border: 1px solid #E0E0E0;
-                        border-radius: 8px; padding: 20px;">
-              <h2 style="margin-top: 0; text-align: center; font-weight: 600; font-size: 18px; color: #111;">
-                PledgeIt: Event QR Code
-              </h2>
-              <p style="margin-bottom: 12px;">
-                Hello,<br><br>
-                Your event (ID: <strong>{event_id}</strong>) has been created on PledgeIt.
-                We have attached your unique QR code for attendance tracking. Please keep it safe.
-              </p>
-              <ul style="padding-left: 20px; margin-bottom: 12px;">
-                <li><strong>Event ID:</strong> {event_details.get("event_id", event_id)}</li>
-                <li><strong>Event Name:</strong> {event_details.get("event_name", "N/A")}</li>
-                <li><strong>Date:</strong> {event_details.get("date", "N/A")}</li>
-                <li><strong>Time:</strong> {event_details.get("time", "N/A")}</li>
-                <li><strong>Venue:</strong> {event_details.get("venue", "N/A")}</li>
-              </ul>
-              <p style="margin-bottom: 12px;">
-                Thank you for using PledgeIt. We look forward to a successful event!
-              </p>
-              <p style="text-align: center; margin: 0;">
-                Regards,<br>
-                <strong>PledgeIt Team</strong>
-              </p>
-            </div>
+          <body style="margin:0; padding:0; background-color:#F7F7F7;">
+            <table align="center" width="600" style="border-collapse:collapse; background-color:#ffffff; font-family:Arial, sans-serif;">
+              <tr>
+                <td style="background-color:#000; padding:20px; text-align:center;">
+                  <span style="color:#fff; font-size:24px; font-weight:bold;">PledgeIt</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:30px;">
+                  <h2 style="color:#D32F2F; text-align:center;">Event QR Code</h2>
+                  <p style="color:#333333; font-size:16px;">
+                    Dear Organization,<br><br>
+                    Your event (ID: <strong>{event_id}</strong>) has been successfully created on <span style="color:#D32F2F;">PledgeIt</span>.
+                    Please find attached your unique QR code for attendance tracking.
+                  </p>
+                  <table style="width:100%; margin:20px 0; font-size:14px;">
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Event ID:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_id", event_id)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Event Name:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_name", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Date:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("date", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Time:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("time", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Venue:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("venue", "N/A")}</td>
+                    </tr>
+                  </table>
+                  <p style="color:#333333; font-size:16px; text-align:center;">
+                    Please keep this QR code safe. It will be used for tracking event attendance.
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="background-color:#000; padding:15px; text-align:center;">
+                  <p style="margin:0; color:#fff; font-size:12px;">&copy; 2025 PledgeIt. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
         """
@@ -190,41 +225,75 @@ def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_detail
         redirect_url = f"https://pledgeit.com/events/{event_id}"
         event_details["redirect_url"] = redirect_url
 
+        # --- NEW FEATURE: Add QR code expiration date (one day after the event) ---
+        if "date" in event_details and "time" in event_details:
+            try:
+                from datetime import datetime, timedelta
+                try:
+                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}", "%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}:00", "%Y-%m-%d %H:%M:%S")
+                expiration_dt = event_dt + timedelta(days=1)
+                event_details["qr_expiration"] = expiration_dt.isoformat()
+            except Exception as exp:
+                logger.warning("Could not compute QR expiration for event_id %s: %s", event_id, str(exp))
+        # --- End new feature ---
+
         # Convert event_details to JSON string
-        import json
         qr_data = json.dumps(event_details, default=str)
         qr_buffer = generate_qr_code(qr_data)
 
-        subject = f"Your PledgeIt Event QR Code (Event ID {event_id})"
+        subject = f"Your PledgeIt Attendance QR Code (Event ID {event_id})"
         html_content = f"""
         <html>
-          <body style="margin: 0; padding: 20px; background-color: #FAFAFA; color: #333;
-                       font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5;">
-            <div style="max-width: 600px; margin: auto; background-color: #FFFFFF; border: 1px solid #E0E0E0;
-                        border-radius: 8px; padding: 20px;">
-              <h2 style="margin-top: 0; text-align: center; font-weight: 600; font-size: 18px; color: #111;">
-                PledgeIt: Attendance QR Code
-              </h2>
-              <p style="margin-bottom: 12px;">
-                Hello,<br><br>
-                You have successfully registered for the event (ID: <strong>{event_id}</strong>).
-                Please find attached your unique QR code for attendance verification.
-              </p>
-              <ul style="padding-left: 20px; margin-bottom: 12px;">
-                <li><strong>Event ID:</strong> {event_details.get("event_id", event_id)}</li>
-                <li><strong>Event Name:</strong> {event_details.get("event_name", "N/A")}</li>
-                <li><strong>Date:</strong> {event_details.get("date", "N/A")}</li>
-                <li><strong>Time:</strong> {event_details.get("time", "N/A")}</li>
-                <li><strong>Venue:</strong> {event_details.get("venue", "N/A")}</li>
-              </ul>
-              <p style="margin-bottom: 12px;">
-                Show this QR code upon arrival. We appreciate your support and look forward to your participation!
-              </p>
-              <p style="text-align: center; margin: 0;">
-                Best Regards,<br>
-                <strong>PledgeIt Team</strong>
-              </p>
-            </div>
+          <body style="margin:0; padding:0; background-color:#F7F7F7;">
+            <table align="center" width="600" style="border-collapse:collapse; background-color:#ffffff; font-family:Arial, sans-serif;">
+              <tr>
+                <td style="background-color:#000; padding:20px; text-align:center;">
+                  <span style="color:#fff; font-size:24px; font-weight:bold;">PledgeIt</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:30px;">
+                  <h2 style="color:#D32F2F; text-align:center;">Attendance QR Code</h2>
+                  <p style="color:#333333; font-size:16px;">
+                    Dear Volunteer,<br><br>
+                    You have successfully registered for the event (ID: <strong>{event_id}</strong>) on <span style="color:#D32F2F;">PledgeIt</span>.
+                    Please find attached your unique QR code for attendance verification.
+                  </p>
+                  <table style="width:100%; margin:20px 0; font-size:14px;">
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Event ID:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_id", event_id)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Event Name:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_name", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Date:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("date", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Time:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("time", "N/A")}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Venue:</strong></td>
+                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("venue", "N/A")}</td>
+                    </tr>
+                  </table>
+                  <p style="color:#333333; font-size:16px; text-align:center;">
+                    Please present this QR code upon arrival for attendance verification.
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="background-color:#000; padding:15px; text-align:center;">
+                  <p style="margin:0; color:#fff; font-size:12px;">&copy; 2025 PledgeIt. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
         """
