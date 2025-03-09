@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import axios from "axios";
-
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
 
 const categories = [
@@ -130,7 +129,7 @@ const OrgSignupForm = () => {
                 <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20 ">
                     {/* Header Section */}
                     <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold  text-orange-700 ">PlegeIt</h1> {/* Title and Info Section */}
+                        <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1> {/* Title and Info Section */}
 
                         <h2 className="text-2xl font-bold text-gray-700 pb-5 mt-2">Create an Organization account</h2>
                     </div>
