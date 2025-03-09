@@ -10,7 +10,7 @@ const SITEMAP = [
   },
   {
     title: "Help Center",
-    links: ["Discord", "Twitter", "GitHub", "Contact Us"],
+    links: ["Terms & Conditions", "Contact Us"],
   },
 
   {

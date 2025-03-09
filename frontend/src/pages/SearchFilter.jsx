@@ -51,6 +51,8 @@ const SearchFilters = () => {
   };
 
   const handleSearch = (e) => {
+    const inputDate = filters.date ? new Date(filters.date) : null;
+
     e.preventDefault();
     const filtered = events.filter((event) => {
       const matchesType =
@@ -67,11 +69,10 @@ const SearchFilters = () => {
         filters.city === "Any" ||
         event.city.toLowerCase() === filters.city.toLowerCase();
 
-      const matchesYear =
-        filters.date === "" ||
-        new Date(event.date).getFullYear() === Number(filters.date);
+      const eventDate = new Date(event.date);
+      const matchesDate = !inputDate || eventDate >= inputDate;
 
-      return matchesType && matchesName && matchesCity && matchesYear;
+      return matchesType && matchesName && matchesCity && matchesDate;
     });
     setFilteredEvent(filtered);
   };
@@ -91,8 +92,7 @@ const SearchFilters = () => {
   }
 
   return (
-   
-    <VolunteerDashboard >
+    <VolunteerDashboard>
       <div className="flex flex-col lg:flex-row gap-6 min-h-screen">
         <div className="max-w-7xl mx-auto p-4">
           <h1 className="text-2xl font-bold text-center mb-6">
@@ -163,7 +163,9 @@ const SearchFilters = () => {
                   fullWidth
                   variant="outlined"
                   className="bg-gray-20 rounded-lg"
-                  onChange={handleInputChange}
+                  onChange={(e) =>
+                    setFilters({ ...filters, date: e.target.value })
+                  }
                 />
                 <TextField
                   label="Event Name"
@@ -190,9 +192,7 @@ const SearchFilters = () => {
         </div>
       </div>
       <Footer1 />
-
-      </VolunteerDashboard >
-    
+    </VolunteerDashboard>
   );
 };
 

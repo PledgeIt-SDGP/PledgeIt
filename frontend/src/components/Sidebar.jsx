@@ -1,6 +1,5 @@
 import {
   Calendar,
-  HeartHandshake,
   Home,
   MapPin,
   Menu,
@@ -67,7 +66,7 @@ const Sidebar = () => {
       >
         {/* Logo */}
         <div className="flex items-center py-18 sm:py-10 px-5 border-b border-gray-200 ">
-          <HeartHandshake className="h-8 w-8 text-orange-700 mr-2" />
+          <img src="assests/logo.png" className="h-10 w-12 text-orange-700 mr-2" />
           <h1 className="text-2xl font-bold text-orange-700 ">PledgeIt</h1>
         </div>
 

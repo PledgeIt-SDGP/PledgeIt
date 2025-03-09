@@ -46,7 +46,7 @@ function EventCards(props) {
                 <h2 className="text-lg font-semibold text-gray-800">
                   {event.event_name}
                 </h2>
-                <p className="bg-gray-200 text-gray-500 font-medium px-2 py-1 rounded-xl inline-block w-fit">
+                <p className="bg-orange-100 text-orange-500 font-medium px-2 py-1 rounded-xl inline-block w-fit">
                   {event.category}
                 </p>
                 <p className="text-gray-600 text-sm">{event.city}</p>
