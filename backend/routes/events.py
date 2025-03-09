@@ -42,7 +42,7 @@ def get_current_organization(x_org_email: str = Header(None)):
          raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
     client = MongoClient(os.getenv('MONGO_URI'))
     db = client[os.getenv('DB_NAME')]
-    organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
+    organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION', 'organisation')]
     org = organizations_collection.find_one({"email": x_org_email})
     if not org:
          raise HTTPException(status_code=401, detail="Organization not found or not authorized")
@@ -374,16 +374,17 @@ async def create_event(
     image_url_path = f"/uploads/{event_id}_{image_url.filename}"
     
     # Compute event status based on registration deadline
-    from datetime import datetime, timedelta
-    deadline_date = datetime.strptime(registration_deadline, "%Y-%m-%d").date()
-    current_date = datetime.utcnow().date()
+    # Use an alias (dt) to avoid shadowing the module-level datetime
+    from datetime import datetime as dt, timedelta, timezone
+    deadline_date = dt.strptime(registration_deadline, "%Y-%m-%d").date()
+    current_date = dt.now(timezone.utc).date()  # Use timezone-aware UTC datetime
     status = "Open" if deadline_date >= current_date else "Closed"
     
     # Initialize total registered volunteers to 0
     total_registered_volunteers = 0
 
     # Calculate event's expireAt field (for automatic deletion one day after event start)
-    event_datetime = datetime.strptime(f"{date} {time if len(time.strip()) > 5 else time + ':00'}", "%Y-%m-%d %H:%M:%S")
+    event_datetime = dt.strptime(f"{date} {time if len(time.strip()) > 5 else time + ':00'}", "%Y-%m-%d %H:%M:%S")
     expireAt = event_datetime + timedelta(days=1)
     
     # Construct the event data dictionary to be inserted into the database
@@ -413,7 +414,7 @@ async def create_event(
         "additional_notes": additional_notes,
         "status": status,
         "total_registered_volunteers": total_registered_volunteers,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": dt.now(timezone.utc).isoformat(),  # Use a timezone-aware ISO 8601 timestamp
         "expireAt": expireAt  # Added expireAt field for automatic deletion
     }
 
@@ -463,9 +464,17 @@ async def update_event(event_id: int, updated_event: Event):
     Matches documents where event_id is stored as an integer or as a string.
     If no event is found with the given event_id, a 404 error is raised.
     """
+    update_data = updated_event.dict()
+
+    # Convert date fields (if any) to datetime.datetime objects since BSON cannot encode datetime.date
+    if "date" in update_data and isinstance(update_data["date"], datetime.date) and not isinstance(update_data["date"], datetime.datetime):
+        update_data["date"] = datetime.datetime.combine(update_data["date"], datetime.time())
+    if "registration_deadline" in update_data and isinstance(update_data["registration_deadline"], datetime.date) and not isinstance(update_data["registration_deadline"], datetime.datetime):
+        update_data["registration_deadline"] = datetime.datetime.combine(update_data["registration_deadline"], datetime.time())
+    
     result = events_collection.update_one(
         {"$or": [{"event_id": event_id}, {"event_id": str(event_id)}]},
-        {"$set": updated_event.dict()}
+        {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
