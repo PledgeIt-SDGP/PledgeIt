@@ -105,13 +105,6 @@ async def register_organization(organization: Organization):
 async def add_event(event: Event):
     event_dict = event.dict()
 
-    # Geocode the event location
-    # event_dict = await geocode_location(event_dict)
-
-# @router.get("/events/")
-# async def fetch_events():
-#     return await get_events()
-
     # Generate a QR code for the event
     qr_code_bytes = await generate_qr_code(event_dict["event_id"])
     qr_code_base64 = base64.b64encode(qr_code_bytes).decode()
