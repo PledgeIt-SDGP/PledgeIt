@@ -24,7 +24,7 @@ const HomeEvent = () => {
 
   return (
     <div
-      className="relative mt-10 mb-10 p-20 bg-cover bg-center"
+      className="relative mt-10 mb-10 bg-cover p-5 bg-center lg:p-15"
       style={{ backgroundImage: "url('assests/bg3.png')" }}
     >
       {" "}
@@ -34,18 +34,18 @@ const HomeEvent = () => {
         </h2>
 
         {/* Scrollable container */}
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide whitespace-nowrap px-4 py-4">
+        <div className="flex gap-7 overflow-x-auto scrollbar-hide whitespace-nowrap px-3 py-4">
           {events.map((event) => (
             <div
               key={event.event_id}
-              className="bg-white shadow-lg rounded-lg  flex-shrink-0 w-100"
+              className="bg-white shadow-lg rounded-xl  flex-shrink-0 w-80 lg:w-90"
             >
               <img
                 src={event.image_url}
                 alt={event.event_name}
-                className="w-full h-60 object-cover"
+                className=" h-60 object-cover rounded-t-xl"
               />
-              <div className="p-4 flex flex-col space-y-2">
+              <div className="p-3 flex flex-col space-y-3">
                 <h2 className="text-lg font-semibold text-gray-800">
                   {event.event_name}
                 </h2>

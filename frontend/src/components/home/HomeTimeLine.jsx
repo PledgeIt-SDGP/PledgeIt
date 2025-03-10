@@ -93,7 +93,7 @@ function TimeLine() {
             </TimelineItem>
           </Timeline>
         </div>
-        <div className="lg:flex flex-col mt-10 w-[27rem] md:w-[30rem] md:mt-50 lg:w-[50rem] lg:pl-30 lg:mt-15">
+        <div className="lg:flex flex-col mt-10 w-[27rem] md:w-[30rem] md:mt-130  lg:w-[50rem] lg:pl-30 lg:mt-15">
           <img src="assests/features4.png" alt="line" />
         </div>
       </div>

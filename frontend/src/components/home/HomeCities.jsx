@@ -4,7 +4,7 @@ function HomeCities() {
   return (
     <div className="bg-white flex flex-col border border-gray-100 lg:flex-row items-center gap-5 p-10 rounded-3xl shadow-lg lg:gap-30">
       {/* Text Section */}
-      <div className="flex flex-col max-w-lg mx-10">
+      <div className="flex flex-col max-w-lg lg:mx-10">
         {" "}
         <h2 className="text-4xl font-bold">
           We focus on 3 main cities in{" "}

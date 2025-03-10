@@ -100,7 +100,7 @@ const Home = () => {
             Join with us in making a difference today & <br />A better future!
           </span>
           <br />
-          <button className="mt-2 px-3 py-1 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 text-sm text-white font-semibold rounded-lg shadow-md hover:bg-gray-200  lg:mt-4 lg:px-6 lg:py-3 lg:text-base">
+          <button className="mt-2 px-3 py-3 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 text-sm text-white font-semibold rounded-lg shadow-md hover:bg-gray-200  md:text-lg md:px-4 md:py-3  lg:mt-4 lg:px-6 lg:py-3 lg:text-xl">
             Get Involved
           </button>
         </div>
