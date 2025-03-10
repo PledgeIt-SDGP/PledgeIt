@@ -107,7 +107,7 @@ const EventForm = () => {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-gray-500 p-6">
-            <div className="absolute inset-0 bg-[url('orgbackground.jpg')] bg-cover bg-center opacity-20"></div>
+            <div className="absolute inset-0 bg-[url('eventbackground.jpg')] bg-cover bg-center opacity-20"></div>
 
             <div className="relative w-full md:w-[80%] lg:w-[70%] xl:w-[50%] mx-auto p-6 md:p-8 lg:p-10 bg-gray-50 shadow-lg rounded-lg mt-10">
                 <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1>
