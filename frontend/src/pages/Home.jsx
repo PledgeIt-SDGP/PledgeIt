@@ -9,16 +9,16 @@ import HomeAboutUs from "../components/home/HomeAboutUs";
 import HomeEvent from "../components/home/HomeEvent";
 import HomeCarousel from "../components/home/HomCarousel";
 import HomeTimeLine from "../components/home/HomeTimeLine";
-import { FooterWithSitemap } from "../components/nav&footer/Footer";
-import NavBar from "../components/nav&footer/ResponsiveAppBar";
+import { FooterWithSitemap } from "../components/Footer";
+import NavBar from "../components/nav_footer/ResponsiveAppBar";
 
 const Home = () => {
   return (
     <>
     <NavBar />
-      <div className="relative flex flex-row items-center mt-12 px-10  min-h-screen lg:mt-0">
+      <div className="relative flex flex-row items-center mt-8 px-10  md:mt-10 lg:mt-10 w-full">
         {/* Left Content */}
-        <div className="flex flex-col justify-center max-w-2xl space-y-6">
+        <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
           <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
             <Heart className="w-6 h-6 text-orange-600" />
             Welcome to PledgeIt
@@ -61,7 +61,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div id="about" className="mt-10" >
+      <div  className="mt-20 lg:mt-30" >
         <HomeAboutUs />
       </div>
       <div className="text-4xl text-center text-black font-bold py-10 mt-10">
@@ -100,7 +100,7 @@ const Home = () => {
             Join with us in making a difference today & <br />A better future!
           </span>
           <br />
-          <button className="mt-2 px-3 py-3 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 text-sm text-white font-semibold rounded-lg shadow-md hover:bg-gray-200  md:text-lg md:px-4 md:py-3  lg:mt-4 lg:px-6 lg:py-3 lg:text-xl">
+          <button className="mt-2 px-3 py-1 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 text-sm text-white font-semibold rounded-lg shadow-md hover:bg-gray-200  md:text- md:px-6 md:py-3  lg:mt-4 lg:px-6 lg:py-3 lg:text-xl">
             Get Involved
           </button>
         </div>

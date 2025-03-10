@@ -19,8 +19,8 @@ function TimeLine() {
       <div className="text-3xl font-bold text-black text-center mb-6 lg:text-4xl ">
         Features We Offer
       </div>
-      <div className="md:flex flex-col-2  lg:flex flex-col-2 ">
-        <div className="w-[20rem]  lg:w-[32rem] pl-20">
+      <div className="md:flex flex-col-2  lg:flex flex-col-2">
+        <div className="w-[20rem]  lg:w-[32rem] lg:pl-20">
           <Timeline>
             <TimelineItem>
               <TimelineConnector />
@@ -93,7 +93,7 @@ function TimeLine() {
             </TimelineItem>
           </Timeline>
         </div>
-        <div className="lg:flex flex-col mt-10 w-[27rem] md:w-[30rem] md:mt-130  lg:w-[50rem] lg:pl-30 lg:mt-15">
+        <div className="lg:flex flex-col mt-10  w-[20rem] md:w-[30rem] md:mt-130  lg:w-[50rem] lg:pl-30 lg:mt-15">
           <img src="assests/features4.png" alt="line" />
         </div>
       </div>
