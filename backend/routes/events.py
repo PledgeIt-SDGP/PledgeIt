@@ -67,6 +67,27 @@ def calculate_social_impact_score(description: str) -> float:
     except Exception as e:
         print(f"Error calculating social impact score: {e}")
         return 5.0  # Default score if API fails
+    
+    def calculate_xp_points(social_impact_score: float, duration: str) -> int:
+        """
+        Calculates the experience points based on the social impact score and event duration.
+        """
+    try:
+        # Extract numeric value from duration (e.g., "5 hours" -> 5)
+        duration_parts = duration.split()
+        duration_hours = float(duration_parts[0])
+        
+        # Handle different time units if needed
+        if len(duration_parts) > 1 and "minute" in duration_parts[1].lower():
+            duration_hours = duration_hours / 60
+        elif len(duration_parts) > 1 and "day" in duration_parts[1].lower():
+            duration_hours = duration_hours * 24
+            
+        xp = (social_impact_score / 10) * (duration_hours * 10)
+        return int(xp)
+    except Exception as e:
+        print(f"Error calculating XP points: {e}")
+        return 0  # Default XP if calculation fails
 
 def event_serializer(event) -> dict:
     """
