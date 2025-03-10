@@ -1,25 +1,24 @@
-import { Calendar, Heart, HeartHandshake, Home, MapPin, Menu, Settings, User, UserRound } from "lucide-react";
+import { Calendar, HeartHandshake, Home, MapPin, Menu, Settings, UserRound } from "lucide-react";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 
-// Separate MenuItem component for better readability and reusability
 const MenuItem = ({ icon, name, path }) => {
   return (
     <NavLink
       to={path}
       className={({ isActive }) =>
-        `flex items-center cursor-pointer transition-colors duration-100 font-bold  ${
+        `flex items-center cursor-pointer transition-all duration-200 font-bold rounded-md ${
           isActive
-            ? "bg-gradient-to-r from-red-500 to-orange-400 text-gray-50"
-            : "text-gray-800 hover:bg-gray-200  hover:text-gray-900  "
-        }`
+            ? "bg-gradient-to-r from-red-500 to-orange-400 text-white"
+            : "text-gray-800 hover:bg-gray-200"
+        } p-3`
       }
     >
       {React.cloneElement(icon, {
         "aria-hidden": true,
-        className: "h-5 w-8 ml-5",
+        className: "h-5 w-5",
       })}
-      <span className="font-medium text-sm p-3 w-full ">{name}</span>
+      <span className="ml-3 text-sm">{name}</span>
     </NavLink>
   );
 };
@@ -27,51 +26,62 @@ const MenuItem = ({ icon, name, path }) => {
 const Sidebar = () => {
   const menuItems = [
     { name: "Home", path: "/orgHome", icon: <Home /> },
-    { name: "Events", path: "/dash", icon: <Calendar /> },
-    { name: "Map", path: "/dash", icon: <MapPin /> },
-    { name: "Profile", path: "/profile", icon: <UserRound/> },
+    { name: "Events", path: "/event", icon: <Calendar /> },
+    { name: "Map", path: "/map", icon: <MapPin /> },
+    { name: "Profile", path: "/profile", icon: <UserRound /> },
     { name: "Settings", path: "/set", icon: <Settings /> },
   ];
 
-
+  const [user] = useState({
+    username: "unknown",
+    profile_picture: "",
+    type: "NGO",
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen md:w-55 sm:w-0 bg-white shadow-md border-r border-gray-100">
-      {/* Toggle Button for Small Screens */}
+    <div className=" md:w-60 sm:w-0 bg-white shadow-md border-r border-gray-100 min-h-screen">
+      {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-5 left-5 z-1000 bg-orange-300 text-white p-2 "
+        className="md:hidden fixed top-5 left-5 z-1000 bg-orange-500 text-white p-2 rounded "
         onClick={() => setIsOpen(!isOpen)}
       >
-        
         <Menu />
       </button>
 
       {/* Sidebar Content */}
       <div
-        className={`fixed top-0 left-0 flex flex-col min-h-screen w-55 shadow-md transition-all duration-300 ease-in-out ${
-          isOpen ? "block" : "hidden sm:block md:block"
+        className={`fixed z-100 top-0 left-0 flex flex-col h-full w-60 shadow-md transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0 bg-white" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="flex flex-row py-15 px-5 h-35 border-b border-gray-200">
-          <HeartHandshake className="h-8 w-8 text-red-500 mr-2" />
-          <h1 className="text-2xl font-bold text-orange-550">PledgeIt</h1>
+        {/* Logo */}
+        <div className="flex items-center py-18 sm:py-10 px-5 border-b border-gray-200 ">
+          {/* <HeartHandshake className="h-8 w-8 text-orange-700 mr-2" /> */}
+          <img src="logo.png" alt="" className="w-15"/>
+          <h1 className="text-2xl font-bold text-red-600 ">PledgeIt</h1>
         </div>
 
-  
-
-        <ul className="flex-1 pt-0 space-y-1">
+        {/* Navigation */}
+        <nav className="flex-1 flex-grow p-3 space-y-2">
           {menuItems.map((item) => (
             <MenuItem key={item.name} {...item} />
           ))}
-        </ul>
+        </nav>
 
-        <div className="flex fixed bottom-0 border-t border-gray-200 w-55">
-          <div className="flex-1 bg-red-50 p-8"></div>
-          <div className="flex-10 p-5 bg-red-100">profile Name</div>
+        {/* Profile Section */}
+        <div className="flex items-center gap-3 p-4 border-t border-gray-200 bg-gray-50 ">
+          <img
+            src={user.profile_picture || "https://i.pravatar.cc/150?u=1"}
+            alt="Profile"
+            className="h-10 w-10 rounded-full object-cover"
+          />
+          <div>
+            <p className="font-semibold text-sm">{user.username || "Loading..."}</p>
+            <p className="text-xs text-gray-500">{user.type}</p>
+          </div>
         </div>
       </div>
-      
     </div>
   );
 };

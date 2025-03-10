@@ -64,7 +64,7 @@ const UserPage = () => {
                         className={`mt-12 py-3 px-8 rounded-md text-white font-bold transition 
                         ${selectedOption
                                 ? 'bg-red-600 hover:bg-red-600 cursor-pointer'
-                                : 'bg-red-500 cursor-not-allowed'
+                                : 'bg-gray-400'
                         }`}
                         disabled={!selectedOption}
                     >
