@@ -7,6 +7,7 @@ import datetime
 import os
 import uuid
 import uuid as uuid_lib  # For converting legacy UUID strings if needed
+import openai 
 
 router = APIRouter()
 
