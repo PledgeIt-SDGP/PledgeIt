@@ -29,16 +29,14 @@ function TimeLine() {
                   <HomeIcon className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
-                  Timeline Title Here.
+                  XP Points & Leaderboard
                 </Typography>
               </TimelineHeader>
-              <TimelineBody className="pb-8">
-                <Typography color="gary" className="font-normal text-gray-600">
-                  The key to more success is to have a lot of pillows. Put it
-                  this way, it took me twenty five years to get these plants,
-                  twenty five years of blood sweat and tears, and I&apos;m never
-                  giving up, I&apos;m just getting started. I&apos;m up to
-                  something. Fan luv.
+              <TimelineBody className="pb-9">
+                <Typography color="gray" className="font-normal text-gray-600">
+                  Gain XP points for every event you participate in! Level up,
+                  unlock rewards, and see how you rank among fellow volunteers
+                  on our interactive leaderboard.
                 </Typography>
               </TimelineBody>
             </TimelineItem>
@@ -49,16 +47,14 @@ function TimeLine() {
                   <BellIcon className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
-                  Timeline Title Here.
+                  Automated Attendance for Organizations
                 </Typography>
               </TimelineHeader>
-              <TimelineBody className="pb-8">
-                <Typography color="gary" className="font-normal text-gray-600">
-                  The key to more success is to have a lot of pillows. Put it
-                  this way, it took me twenty five years to get these plants,
-                  twenty five years of blood sweat and tears, and I&apos;m never
-                  giving up, I&apos;m just getting started. I&apos;m up to
-                  something. Fan luv.
+              <TimelineBody className="pb-9">
+                <Typography color="gray" className="font-normal text-gray-600">
+                  Say goodbye to manual check-ins! Our automated system ensures
+                  accurate attendance tracking, making event management seamless
+                  for organizers.
                 </Typography>
               </TimelineBody>
             </TimelineItem>
@@ -68,16 +64,30 @@ function TimeLine() {
                   <CurrencyDollarIcon className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
-                  Timeline Title Here.
+                  Instant Chat Support
+                </Typography>
+              </TimelineHeader>
+              <TimelineBody className="pb-9">
+                <Typography color="gray" className="font-normal text-gray-600">
+                  Need help? Our chatbot is available 24/7 to assist you with
+                  event details, volunteer guidelines, and more.
+                </Typography>
+              </TimelineBody>
+            </TimelineItem>
+            <TimelineItem>
+              <TimelineHeader>
+                <TimelineIcon className="p-2">
+                  <CurrencyDollarIcon className="h-4 w-4" />
+                </TimelineIcon>
+                <Typography variant="h5" color="blue-gray">
+                  Easy Searching with Filters
                 </Typography>
               </TimelineHeader>
               <TimelineBody>
-                <Typography color="gary" className="font-normal text-gray-600">
-                  The key to more success is to have a lot of pillows. Put it
-                  this way, it took me twenty five years to get these plants,
-                  twenty five years of blood sweat and tears, and I&apos;m never
-                  giving up, I&apos;m just getting started. I&apos;m up to
-                  something. Fan luv.
+                <Typography color="gray" className="font-normal text-gray-600">
+                  Find the perfect volunteering opportunity effortlessly! Use
+                  our advanced filter options to sort by location, type of
+                  event, or causes that matter to you.
                 </Typography>
               </TimelineBody>
             </TimelineItem>
