@@ -9,8 +9,8 @@ import HomeAboutUs from "../components/home/HomeAboutUs";
 import HomeEvent from "../components/home/HomeEvent";
 import HomeCarousel from "../components/home/HomCarousel";
 import HomeTimeLine from "../components/home/HomeTimeLine";
-import { FooterWithSitemap } from "../components/Footer";
-import NavBar from "../components/nav_footer/ResponsiveAppBar";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
 
 const Home = () => {
   return (
@@ -105,7 +105,7 @@ const Home = () => {
           </button>
         </div>
       </div>
-      <FooterWithSitemap />
+      <Footer />
     </>
   );
 };
