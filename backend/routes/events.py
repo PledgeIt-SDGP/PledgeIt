@@ -1,9 +1,9 @@
 import logging
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
-from database import events_collection
-from models import Event
-from geocoding import get_coordinates
+from database.database import events_collection
+from models.models import Event
+from services.geocoding import get_coordinates
 import datetime
 import os
 import uuid as uuid_lib  
@@ -416,7 +416,7 @@ async def create_event(
     events_collection.insert_one(event_data)
 
     try:
-        from qr_email_handler import send_event_qr_to_organization
+        from services.qr_email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
     except Exception as e:
         logging.error(f"Failed to send QR code email to organization: {e}")

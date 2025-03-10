@@ -7,7 +7,7 @@ import logging
 import json
 
 # Import the events_collection so we can fetch event details if needed
-from database import events_collection
+from database.database import events_collection
 
 # Configure logging for this module
 logger = logging.getLogger(__name__)
