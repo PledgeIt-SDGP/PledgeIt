@@ -2,22 +2,15 @@ import logging
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
 from database import events_collection
-from models import Event, ContactPerson
+from models import Event
 from geocoding import get_coordinates
 import datetime
 import os
-import uuid
-import uuid as uuid_lib  # For converting legacy UUID strings if needed
-
-# Import Cloudinary libraries for image upload
+import uuid as uuid_lib  
 import cloudinary
 import cloudinary.uploader
 
 router = APIRouter()
-
-# ------------------------------
-# Setup and Configuration
-# ------------------------------
 
 # Create the uploads directory if it doesn't exist
 UPLOAD_DIR = "uploads"
@@ -27,13 +20,11 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # This ensures that events are automatically deleted after the expireAt time is reached.
 events_collection.create_index("expireAt", expireAfterSeconds=0)
 
-# ------------------------------
 # Dependency for Organization Authentication
-# ------------------------------
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-# Load environment variables from a .env file
+# Load environment variables from the .env file
 load_dotenv()
 
 def get_current_organization(x_org_email: str = Header(None)):
@@ -49,10 +40,6 @@ def get_current_organization(x_org_email: str = Header(None)):
         raise HTTPException(status_code=401, detail="Organization not found or not authorized")
     
     return org
-
-# ------------------------------
-# Helper Functions
-# ------------------------------
 
 def event_serializer(event) -> dict:
     """
@@ -158,11 +145,10 @@ async def filter_events(
     category: Optional[str] = Query(None),
     organization: Optional[str] = Query(None),
     skills: Optional[str] = Query(None),
-    # Removed the venue parameter and its filtering logic.
     search: Optional[str] = Query(None),
     date: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    city: Optional[str] = Query(None)  # Using city as the filter parameter
+    city: Optional[str] = Query(None)  
 ):
     """
     Filters events based on provided query parameters:
@@ -197,9 +183,9 @@ async def filter_events(
     if city and city.strip():
         query["city"] = {"$regex": city, "$options": "i"}
     
-    print(f"🔍 MongoDB Query: {query}")
+    print(f"MongoDB Query: {query}")
     events = list(events_collection.find(query))
-    print(f"✅ Found {len(events)} matching events.")
+    print(f"Found {len(events)} matching events.")
     return [Event(**event_serializer(event)) for event in events]
 
 @router.get("/events/clear", response_model=List[Event])
@@ -342,10 +328,6 @@ async def create_event(
     if ext not in allowed_extensions:
          raise HTTPException(status_code=400, detail="Invalid image file extension.")
 
-    # ------------------------------
-    # Additional Validations End
-    # ------------------------------
-
     # Generate the next sequential event ID
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
@@ -387,10 +369,9 @@ async def create_event(
         raise HTTPException(status_code=500, detail=f"Image upload failed: {e}")
 
     # Compute event status based on registration deadline
-    # Use an alias (dt) to avoid shadowing the module-level datetime
     from datetime import datetime as dt, timedelta, timezone
     deadline_date = dt.strptime(registration_deadline, "%Y-%m-%d").date()
-    current_date = dt.now(timezone.utc).date()  # Use timezone-aware UTC datetime
+    current_date = dt.now(timezone.utc).date()  
     status = "Open" if deadline_date >= current_date else "Closed"
     
     # Initialize total registered volunteers to 0
@@ -427,8 +408,8 @@ async def create_event(
         "additional_notes": additional_notes,
         "status": status,
         "total_registered_volunteers": total_registered_volunteers,
-        "created_at": dt.now(timezone.utc).isoformat(),  # Use a timezone-aware ISO 8601 timestamp
-        "expireAt": expireAt  # Added expireAt field for automatic deletion
+        "created_at": dt.now(timezone.utc).isoformat(),  
+        "expireAt": expireAt  
     }
 
     # Insert the new event into the MongoDB collection
@@ -438,7 +419,6 @@ async def create_event(
         from qr_email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
     except Exception as e:
-        # Log the error; you can decide if you want to propagate the exception or simply log and continue
         logging.error(f"Failed to send QR code email to organization: {e}")
 
     return {"message": "Event created successfully", "event_id": event_id}
