@@ -11,11 +11,33 @@ import HomeCarousel from "../components/home/HomCarousel";
 import HomeTimeLine from "../components/home/HomeTimeLine";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import { motion } from "framer-motion";
+
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+  
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
+  };
+  
+  
 
 const Home = () => {
+
   return (
     <>
-    <NavBar />
+      <NavBar />
+      {/* Hero Section */}
+      <motion.div 
+        initial="hidden" 
+        animate="visible" 
+        variants={fadeInUp} 
+        className="relative flex flex-row items-center mt-8 px-10 md:mt-10 lg:mt-10 w-full"
+      >
       <div className="relative flex flex-row items-center mt-8 px-10  md:mt-10 lg:mt-10 w-full">
         {/* Left Content */}
         <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
@@ -60,35 +82,64 @@ const Home = () => {
           <HomeImage />
         </div>
       </div>
+      </motion.div>
 
-      <div  className="mt-20 lg:mt-30" >
+      <div className="mt-20 lg:mt-30">
         <HomeAboutUs />
       </div>
-      <div className="text-4xl text-center text-black font-bold py-10 mt-10">
-        Why Choose Us?{" "}
-      </div>
 
-      <div className="flex flex-row gap-7 mx-10 mb-20">
+      <motion.div 
+      variants={fadeInUp} 
+      initial="hidden" 
+      whileInView="visible" 
+      viewport={{ once: true }} 
+      
+      className="text-4xl text-center text-black font-bold py-10 mt-10">
+        Why Choose Us?{" "}
+      </motion.div>
+
+      <motion.div
+       whileInView={{scale:[1,0.8,1] }}
+        variants={fadeIn}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-row gap-7 mx-10 mb-20"
+      >
         <HomeFeature />
-      </div>
+      </motion.div>
 
       <div className="my-10">
         <HomeCarousel />
       </div>
 
-      <div className="mx-10 my-10">
+      <motion.div
+           variants={fadeInUp} 
+           initial="hidden" 
+           whileInView="visible" 
+           viewport={{ once: true }} 
+            className="mx-10 my-10">
         <HomeCities />
-      </div>
+      </motion.div>
 
-      <div  id="events" className="my-10">
+      <motion.div 
+      variants={fadeInUp} 
+      initial="hidden" 
+      whileInView="visible" 
+      viewport={{ once: true }} 
+              className="my-10">
         <HomeEvent />
-      </div>
+      </motion.div>
 
-      <div className="m-10">
+      <motion.div 
+              variants={fadeInUp} 
+              initial="hidden" 
+              whileInView="visible" 
+              viewport={{ once: true }} 
+      className="m-10">
         <HomeTimeLine />
-      </div>
+      </motion.div>
 
-      <div className="relative flex mt-10 md:block lg:block">
+      <motion.div className="relative flex mt-10 md:block lg:block">
         <img
           src="/assests/bg4.png"
           alt="bg1"
@@ -104,7 +155,7 @@ const Home = () => {
             Get Involved
           </button>
         </div>
-      </div>
+      </motion.div>
       <Footer />
     </>
   );
