@@ -1,6 +1,7 @@
 const HomeAboutUs = () => {
   return (
-    <div className="relative w-full h-[600px]  ">
+    
+    <div  id="HomeAboutUs" className="relative w-full h-[600px]  ">
       {/* Background Video */}
       <video
         className="absolute top-0 left-0 w-[1500px] h-[600px] object-cover"

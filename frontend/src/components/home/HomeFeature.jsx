@@ -30,7 +30,7 @@ const features = [
 function HomeFeature() {
   return (
     <>
-      <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div id="HomeFeature" className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feature, index) => (
           <div
             key={index}

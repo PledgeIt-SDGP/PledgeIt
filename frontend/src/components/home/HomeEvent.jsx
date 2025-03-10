@@ -34,7 +34,7 @@ const HomeEvent = () => {
         </h2>
 
         {/* Scrollable container */}
-        <div className="flex gap-7 overflow-x-auto scrollbar-hide whitespace-nowrap px-3 py-4">
+        <div className="flex gap-7 overflow-x-auto  scrollbar-hide whitespace-nowrap px-3 py-4">
           {events.map((event) => (
             <div
               key={event.event_id}

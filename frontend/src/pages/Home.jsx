@@ -13,129 +13,152 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 
-
 const fadeInUp = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-  };
-  
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
-  };
-  
-  
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } },
+};
 
 const Home = () => {
-
   return (
     <>
       <NavBar />
       {/* Hero Section */}
-      <motion.div 
-        initial="hidden" 
-        animate="visible" 
-        variants={fadeInUp} 
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
         className="relative flex flex-row items-center mt-8 px-10 md:mt-10 lg:mt-10 w-full"
       >
-      <div className="relative flex flex-row items-center mt-8 px-10  md:mt-10 lg:mt-10 w-full">
-        {/* Left Content */}
-        <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
-          <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
-            <Heart className="w-6 h-6 text-orange-600" />
-            Welcome to PledgeIt
-          </span>
-
-          <h1 className="text-4xl font-bold text-gray-900 lg:text-6xl">
-            Empowering Change
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-red-600 to-pink-600">
-              Across Sri Lanka
+        <div id="Home" className="relative flex flex-row items-center mt-8 px-10  md:mt-10 lg:mt-10 w-full">
+          {/* Left Content */}
+          <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
+            <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
+              <Heart className="w-6 h-6 text-orange-600" />
+              Welcome to PledgeIt
             </span>
-          </h1>
 
-          <p className="text-lg text-gray-600">
-            Join a vibrant community of change-makers transforming lives in
-            Colombo, Galle, Kandy, and beyond. Your journey to making a
-            difference starts here.
-          </p>
+            <motion.h1
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="text-4xl font-bold text-gray-900 lg:text-6xl"
+            >
+              Empowering Change
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-red-600 to-pink-600">
+                Across Sri Lanka
+              </span>
+            </motion.h1>
 
-          <div className="flex space-x-4">
-            <Link
-              to="/event"
-              className="px-6 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80"
+            <motion.p
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="text-lg text-gray-600"
             >
-              Start your journey
-            </Link>
-            <Link
-              to="/about"
-              className="px-6 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50"
+              Join a vibrant community of change-makers transforming lives in
+              Colombo, Galle, Kandy, and beyond. Your journey to making a
+              difference starts here.
+            </motion.p>
+
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex space-x-4"
             >
-              Learn More
-            </Link>
+              <Link
+                to="/event"
+                className="px-6 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80"
+              >
+                Start your journey
+              </Link>
+              <Link
+                to="/about"
+                className="px-6 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50"
+              >
+                Learn More
+              </Link>
+            </motion.div>
+
+            <HomeCards />
           </div>
 
-          <HomeCards />
+          <div className="hidden lg:block mx-10">
+            {/* Right Image */}
+            <HomeImage />
+          </div>
         </div>
-
-        <div className="hidden lg:block mx-10">
-          {/* Right Image */}
-          <HomeImage />
-        </div>
-      </div>
       </motion.div>
 
       <div className="mt-20 lg:mt-30">
         <HomeAboutUs />
       </div>
 
-      <motion.div 
-      variants={fadeInUp} 
-      initial="hidden" 
-      whileInView="visible" 
-      viewport={{ once: true }} 
-      
-      className="text-4xl text-center text-black font-bold py-10 mt-10">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-4xl text-center text-black font-bold py-10 mt-10"
+      >
         Why Choose Us?{" "}
       </motion.div>
 
       <motion.div
-       whileInView={{scale:[1,0.8,1] }}
-        variants={fadeIn}
+        variants={fadeInUp}
         initial="hidden"
-        animate="visible"
+        whileInView="visible"
+        viewport={{ once: true }}
         className="flex flex-row gap-7 mx-10 mb-20"
       >
         <HomeFeature />
       </motion.div>
 
-      <div className="my-10">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="my-10"
+      >
         <HomeCarousel />
-      </div>
+      </motion.div>
 
       <motion.div
-           variants={fadeInUp} 
-           initial="hidden" 
-           whileInView="visible" 
-           viewport={{ once: true }} 
-            className="mx-10 my-10">
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="mx-10 my-10"
+      >
         <HomeCities />
       </motion.div>
 
-      <motion.div 
-      variants={fadeInUp} 
-      initial="hidden" 
-      whileInView="visible" 
-      viewport={{ once: true }} 
-              className="my-10">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="my-10"
+      >
         <HomeEvent />
       </motion.div>
 
-      <motion.div 
-              variants={fadeInUp} 
-              initial="hidden" 
-              whileInView="visible" 
-              viewport={{ once: true }} 
-      className="m-10">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="m-10"
+      >
         <HomeTimeLine />
       </motion.div>
 
