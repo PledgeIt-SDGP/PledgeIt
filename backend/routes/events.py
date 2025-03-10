@@ -8,12 +8,65 @@ import os
 import uuid
 import uuid as uuid_lib  # For converting legacy UUID strings if needed
 import openai 
+import json
 
 router = APIRouter()
 
 # Ensure the uploads directory exists
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+#Define the Deepseek api key
+DEEPSEEK_API_KEY = "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"
+
+def calculate_social_impact_score(description: str) -> float:
+    """
+    calls Deepseek API to analyze the event description and return social impact score.
+
+    """
+
+    try:
+        url = "https://api.deepseek.com/v1/chat/completions"
+
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
+        }
+
+        prompt = f"""Analyze the following volunteer event description and provide a social impact score out of 10.
+        Consider factors like environmental benefit, community development, education, and long-term positive impact.
+        Respond with ONLY a number between 0 and 10, with no explanation or additional text.
+
+        Event description: {description}
+
+        Social Impact Score (0-10): """
+
+        data = {
+            "model":"deepseek-chat",
+            "messages": [{"role": "user", "content":prompt}],
+            "temperature":0.3,
+            "max_tokens": 10
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+
+        response_data = response.json()
+        score_text = response_data["chioces"][0]["message"]["content"].strip()
+
+        # Extract the numeric value (handling potential formatting issues)
+        score = 0
+        for word in score_text.split():
+            try:
+                score = float(word)
+                break
+            except ValueError:
+                continue
+                
+        return min(max(score, 0), 10)  # Ensure score is between 0 and 10
+    except Exception as e:
+        print(f"Error calculating social impact score: {e}")
+        return 5.0  # Default score if API fails
 
 def event_serializer(event) -> dict:
     """
