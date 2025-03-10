@@ -55,6 +55,7 @@ const LoginPage = () => {
             setLoading(false);
         }
     };      
+    
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">

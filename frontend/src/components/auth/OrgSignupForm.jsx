@@ -121,7 +121,6 @@ const OrgSignupForm = () => {
 
     return (
         <>
-
             <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
 
                 <div className="absolute inset-0 bg-[url('orgbackground.jpg')] bg-cover bg-center opacity-20 "></div>
