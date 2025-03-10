@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
-from database import events_collection
-from models import Event, ContactPerson
-from geocoding import get_coordinates
+from backend.database.database import events_collection
+from backend.models.models import Event, ContactPerson
+from backend.services.geocoding import get_coordinates
 import datetime
 import os
 import uuid
