@@ -18,14 +18,14 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <ul className="hidden md:flex space-x-6 items-center ml-auto  ">
           <li>
-            <a href="#Home" className="text-gray-700 hover:text-blue-600">
+            <a href="#Home" className="text-gray-700 hover:text-orange-600">
               Home
             </a>
           </li>
           <li>
             <a
               href="#HomeAboutUs"
-              className="text-gray-700 hover:text-blue-600"
+              className="text-gray-700 hover:text-orange-600"
             >
               About
             </a>
@@ -33,7 +33,7 @@ export default function Navbar() {
           <li>
             <a
               href="#HomeFeature"
-              className="text-gray-700 hover:text-blue-600"
+              className="text-gray-700 hover:text-orange-600"
             >
               Features
             </a>
@@ -57,14 +57,14 @@ export default function Navbar() {
         <div className="md:hidden bg-white shadow-md">
           <ul className="flex flex-col items-center space-y-4 p-4">
             <li>
-              <a href="#Home" className="text-gray-700 hover:text-blue-600">
+              <a href="#Home" className="text-gray-700 hover:text-orange-600">
                 Home
               </a>
             </li>
             <li>
               <a
                 href="#HomeAboutUs"
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-orange-600"
               >
                 About
               </a>
@@ -72,7 +72,7 @@ export default function Navbar() {
             <li>
               <a
                 href="#HomeFeatures"
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-orange-600"
               >
                 Features
               </a>

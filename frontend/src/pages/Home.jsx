@@ -32,9 +32,9 @@ const Home = () => {
         initial="hidden"
         animate="visible"
         variants={fadeInUp}
-        className="relative flex flex-row items-center mt-8 px-10 md:mt-10 lg:mt-10 w-full"
+        className="relative flex flex-row items-center mt-8 px-5 md:mt-10  md:px-4 lg:px-8 lg:mt-5 w-full"
       >
-        <div id="Home" className="relative flex flex-row items-center mt-8 px-10  md:mt-10 lg:mt-10 w-full">
+        <div id="Home" className="relative flex flex-row items-center mt-8 md:px-4 lg:px-8  md:mt-5 lg:mt-10 w-full">
           {/* Left Content */}
           <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
             <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
@@ -76,13 +76,13 @@ const Home = () => {
             >
               <Link
                 to="/event"
-                className="px-6 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80"
+                className="px-4 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 lg:px-6 lg:py-3"
               >
                 Start your journey
               </Link>
               <Link
                 to="/about"
-                className="px-6 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50"
+                className="px-4 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50 lg:px-6 lg:py-3 "
               >
                 Learn More
               </Link>
