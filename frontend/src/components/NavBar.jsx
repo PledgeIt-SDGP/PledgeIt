@@ -5,7 +5,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-md w-full scroll top-0 z-50  ">
+    <nav className="bg-white shadow-md  z-50 ">
       <div className="container flex justify-between  items-center py-4  px-6 ">
         {/* Logo */}
         <div className="flex items-center pl-6 ">
@@ -16,7 +16,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex space-x-6 items-center ml-auto  " >
+        <ul className="hidden md:flex space-x-6 items-center ml-auto  ">
           <li>
             <a href="#Home" className="text-gray-700 hover:text-blue-600">
               Home
@@ -38,7 +38,7 @@ export default function Navbar() {
               Features
             </a>
           </li>
-          <button className="bg-orange-600 hover:opacity-90 text-sm text-white  rounded-2xl shadow-md hover:bg-orange-500  md:px-6 md:py-2  lg:px-6 lg:py-2 lg:text-md">
+          <button className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-90 text-sm text-white  rounded-2xl shadow-md hover:bg-orange-500  md:px-6 md:py-2  lg:px-6 lg:py-2 lg:text-md">
             Sign Up
           </button>
         </ul>
@@ -62,12 +62,18 @@ export default function Navbar() {
               </a>
             </li>
             <li>
-              <a href="#HomeAboutUs" className="text-gray-700 hover:text-blue-600">
+              <a
+                href="#HomeAboutUs"
+                className="text-gray-700 hover:text-blue-600"
+              >
                 About
               </a>
             </li>
             <li>
-              <a href="#HomeFeatures" className="text-gray-700 hover:text-blue-600">
+              <a
+                href="#HomeFeatures"
+                className="text-gray-700 hover:text-blue-600"
+              >
                 Features
               </a>
             </li>

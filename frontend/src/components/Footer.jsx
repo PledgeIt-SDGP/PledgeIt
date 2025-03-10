@@ -29,20 +29,20 @@ const currentYear = new Date().getFullYear();
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-gray-900 text-white">
-      <div className="mx-auto w-full max-w-7xl px-8">
+    <footer className="relative w-full bg-gray-900 text-white ">
+      <div className="mx-auto w-full max-w-7xl px-4">
         <div className="flex items-center gap-2 mb-4 pt-5">
           <Heart className="w-6 h-6 text-orange-500" />
           <span className="text-xl font-bold">PledgeIt</span>
         </div>
 
-        <div className="mx-auto grid w-full grid-cols-1 gap-15 py-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid w-full grid-cols-1 gap-17 py-10 md:grid-cols-3 lg:grid-cols-3">
           {SITEMAP.map(({ title, links }, key) => (
             <div key={key} className="w-full">
-              <Typography variant="small" color="blue-gray" className="mb-4 font-bold uppercase opacity-50">
+              <Typography variant="small" color="blue-gray" className="mb-6 font-bold uppercase opacity-50 ">
                 {title}
               </Typography>
-              <ul className="space-y-1">
+              <ul className="space-y-4">
                 {links.map(({ name, href }, index) => (
                   <li key={index}>
                     <a href={href} className="hover:underline">
