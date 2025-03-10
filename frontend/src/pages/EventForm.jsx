@@ -145,7 +145,7 @@ const EventForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">What will volunteers do? *</label>
-                        <input type="text" name="skills_required" placeholder="e.g., Distribute food packages, assist in event setup"
+                        <input type="text" name="skills_required" placeholder="e.g., Distribute food packages, Assist in event setup"
                             onChange={handleChange} className="w-full p-2 border rounded" />
                     </div>
                     <div className="mb-5">
@@ -178,7 +178,7 @@ const EventForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">Venue for the Event*</label>
-                        <input type="text" name="venue" placeholder="Venue" onChange={handleChange} required className="w-full p-2 border rounded" />
+                        <input type="text" name="venue" placeholder="Place where the event will be held" onChange={handleChange} required className="w-full p-2 border rounded" />
                     </div>
 
                     <div className="mb-5">
@@ -211,7 +211,7 @@ const EventForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">Event Duration *</label>
-                        <input type="text" name="duration" placeholder="Duration (e.g. 2 hours)" onChange={handleChange} required className="w-full p-2 border rounded" />
+                        <input type="text" name="duration" placeholder="e.g. 2 hours (Give in hours)" onChange={handleChange} required className="w-full p-2 border rounded" />
                     </div>
 
                     <div className="mb-5">
@@ -221,7 +221,7 @@ const EventForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">Contact Email *</label>
-                        <input type="email" name="contact_email" placeholder="Contact Email" onChange={handleChange} required className="w-full p-2 border rounded" />
+                        <input type="email" name="contact_email" placeholder="Contact Person Email" onChange={handleChange} required className="w-full p-2 border rounded" />
                     </div>
 
                     <div className="mb-5">
@@ -244,7 +244,7 @@ const EventForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">Additional notes*</label>
-                        <textarea name="additional_notes" placeholder="Additional Notes" onChange={handleChange} className="w-full p-2 border rounded"></textarea>
+                        <textarea name="additional_notes" placeholder="Additional notes that might be worth mentioning" onChange={handleChange} className="w-full p-2 border rounded"></textarea>
                     </div>
 
 
