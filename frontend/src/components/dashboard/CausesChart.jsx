@@ -25,10 +25,12 @@ const CausesChart = ({ causesData }) => {
   return (
     <Box sx={{ 
       width: '100%', 
-      height: 400, 
+      height: 340, 
       display: 'flex', 
       flexDirection: 'column', 
-      alignItems: 'center' 
+      alignItems: 'center', 
+      backgroundColor:"",
+      
     }}>
       <PieChart
         series={[
@@ -41,28 +43,16 @@ const CausesChart = ({ causesData }) => {
             startAngle: 0,
             endAngle: 360,
             cx: 150,
-            cy: 150,
+            cy: 120,
             highlightScope: { faded: 'global', highlighted: 'item' },
             faded: { innerRadius: 20, additionalRadius: -10, color: 'gray' },
-
           }
         ]}
         colors={colors}
         width={550}
-        height={300}
+        height={250}
       />
       
-      {/* Legend with Custom Styling */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        flexWrap: 'wrap', 
-        gap: 2, 
-        mt: 2 
-      }}>
-        
-       
-      </Box>
     </Box>
   );
 };
