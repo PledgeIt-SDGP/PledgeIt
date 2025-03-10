@@ -7,11 +7,9 @@ import {
   TimelineBody,
   Typography,
 } from "@material-tailwind/react";
-import {
-  HomeIcon,
-  BellIcon,
-  CurrencyDollarIcon,
-} from "@heroicons/react/24/solid";
+
+import { AdjustmentsHorizontalIcon, ChatBubbleOvalLeftEllipsisIcon, CurrencyDollarIcon } from "@heroicons/react/20/solid";
+import { ArrowRightFromLine, Sparkles } from "lucide-react";
 
 function TimeLine() {
   return (
@@ -26,7 +24,7 @@ function TimeLine() {
               <TimelineConnector />
               <TimelineHeader>
                 <TimelineIcon className="p-2">
-                  <HomeIcon className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
                   XP Points & Leaderboard
@@ -44,7 +42,7 @@ function TimeLine() {
               <TimelineConnector />
               <TimelineHeader>
                 <TimelineIcon className="p-2">
-                  <BellIcon className="h-4 w-4" />
+                  <ArrowRightFromLine className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
                   Automated Attendance for Organizations
@@ -61,7 +59,7 @@ function TimeLine() {
             <TimelineItem>
               <TimelineHeader>
                 <TimelineIcon className="p-2">
-                  <CurrencyDollarIcon className="h-4 w-4" />
+                  <ChatBubbleOvalLeftEllipsisIcon className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
                   Instant Chat Support
@@ -77,7 +75,7 @@ function TimeLine() {
             <TimelineItem>
               <TimelineHeader>
                 <TimelineIcon className="p-2">
-                  <CurrencyDollarIcon className="h-4 w-4" />
+                  <AdjustmentsHorizontalIcon className="h-4 w-4" />
                 </TimelineIcon>
                 <Typography variant="h5" color="blue-gray">
                   Easy Searching with Filters

@@ -38,6 +38,8 @@ export default function Navbar() {
               Features
             </a>
           </li>
+          {/*Add signup page */}
+
           <button className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-90 text-sm text-white  rounded-2xl shadow-md hover:bg-orange-500  md:px-6 md:py-2  lg:px-6 lg:py-2 lg:text-md">
             Sign Up
           </button>

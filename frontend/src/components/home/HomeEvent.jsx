@@ -57,8 +57,9 @@ const HomeEvent = () => {
                   {event.description}
                 </p>
                 <div className="text-md font-semibold text-orange-600">
+                  {/*Add signup page */}
                   <Link
-                    to={`/details/${event.event_id}`}
+                    to={`/signup`}
                     className="view-more-link"
                   >
                     View More →

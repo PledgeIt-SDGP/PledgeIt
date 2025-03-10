@@ -75,13 +75,13 @@ const Home = () => {
               className="flex space-x-4"
             >
               <Link
-                to="/event"
+                to="/signup"
                 className="px-4 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 lg:px-6 lg:py-3"
               >
                 Start your journey
               </Link>
               <Link
-                to="/about"
+                href="/about"
                 className="px-4 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50 lg:px-6 lg:py-3 "
               >
                 Learn More
