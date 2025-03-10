@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Depends, Header
 from typing import List, Optional
-from backend.database.database import events_collection
-from backend.models.models import Event, ContactPerson
-from backend.services.geocoding import get_coordinates
+from database.database import events_collection
+from models.models import Event, ContactPerson
+from services.geocoding import get_coordinates
 import datetime
 import os
 import uuid
@@ -38,13 +38,13 @@ def get_current_organization(x_org_email: str = Header(None)):
     Raises a 401 error if the header is missing or if the organization is not found.
     """
     if not x_org_email:
-         raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
+        raise HTTPException(status_code=401, detail="Missing X-Org-Email header for organization authentication")
     client = MongoClient(os.getenv('MONGO_URI'))
     db = client[os.getenv('DB_NAME')]
     organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
     org = organizations_collection.find_one({"email": x_org_email})
     if not org:
-         raise HTTPException(status_code=401, detail="Organization not found or not authorized")
+        raise HTTPException(status_code=401, detail="Organization not found or not authorized")
     return org
 
 # ------------------------------
