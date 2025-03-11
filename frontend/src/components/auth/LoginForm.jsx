@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -20,7 +19,7 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
-      
+
         try {
             // Format the formData as URLSearchParams for x-www-form-urlencoded
             const params = new URLSearchParams();

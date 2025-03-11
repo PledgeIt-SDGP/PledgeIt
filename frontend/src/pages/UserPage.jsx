@@ -26,7 +26,7 @@ const UserPage = () => {
                     {/* Volunteer Option */}
                     <div
                         className={`flex flex-col items-center p-8 border rounded-md w-75 cursor-pointer backdrop-blur-sm border-gray-100 transition hover:scale-105 hover:shadow-lg hover:shadow-red-500
-              ${selectedOption === 'volunteer' ? 'border-red-100 shadow-lg backdrop-blur-sm shadow-red-400' : 'border-gray-300 hover:shadow'}`}
+            ${selectedOption === 'volunteer' ? 'border-red-100 shadow-lg backdrop-blur-sm shadow-red-400' : 'border-gray-300 hover:shadow'}`}
                         onClick={() => setSelectedOption('volunteer')}
                     >
                         <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
@@ -43,7 +43,7 @@ const UserPage = () => {
                     {/* Organization Option */}
                     <div
                         className={`flex flex-col items-center p-8 border rounded-md w-75 cursor-pointer backdrop-blur-sm border-gray-100 transition hover:scale-105 hover:shadow-lg hover:shadow-red-500
-              ${selectedOption === 'organization' ? 'border-red-100 shadow-lg backdrop-blur-sm shadow-red-400' : 'border-gray-300 hover:shadow'}`}
+            ${selectedOption === 'organization' ? 'border-red-100 shadow-lg backdrop-blur-sm shadow-red-400' : 'border-gray-300 hover:shadow'}`}
                         onClick={() => setSelectedOption('organization')}
                     >
                         <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
