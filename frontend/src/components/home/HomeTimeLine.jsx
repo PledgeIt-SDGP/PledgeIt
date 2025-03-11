@@ -91,8 +91,8 @@ function TimeLine() {
             </TimelineItem>
           </Timeline>
         </div>
-        <div className="lg:flex flex-col mt-10  w-[20rem] md:w-[30rem] md:mt-130  lg:w-[50rem] lg:pl-30 lg:mt-15">
-          <img src="assests/features4.png" alt="line" />
+        <div className="lg:flex flex-col mt-10  w-[20rem] md:w-[30rem] md:mt-130  lg:w-[40rem] lg:pl-30 lg:mt-15">
+          <img src="assests/features.png" alt="line" />
         </div>
       </div>
     </>
