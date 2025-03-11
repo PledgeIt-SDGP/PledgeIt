@@ -8,11 +8,13 @@ import VolunteerDashboard from "../../pages/VolunteerDashboard";
 function VolunteerHome() {
   const { id } = useParams(); // Get user ID from URL
   const [volunteer, setVolunteer] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchVolunteer = async () => {
       try {
-        const response = await fetch("/events.json");
+        const response = await fetch("/volunteer.json");
         const data = await response.json();
 
         const volunteer = data.events.find(
@@ -31,6 +33,35 @@ function VolunteerHome() {
 
     fetchVolunteer();
   }, [id]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const response = await fetch("/events.json"); // Fetch from the JSON file
+        const jsonData = await response.json();
+
+        if (!jsonData.events) return;
+
+        // Calculate Active Volunteers
+        const activeVolunteers = jsonData.events.reduce(
+          (sum, events) => sum + (events.total_registered_volunteers || 0),
+          0
+        );
+
+        // Calculate Monthly Events
+        const currentMonth = new Date().getMonth() + 1;
+        const monthlyEvents = jsonData.events.filter(
+          (events) => new Date(events.date).getMonth() + 1 === currentMonth
+        ).length;
+
+        setStats({ activeVolunteers, monthlyEvents });
+      } catch (error) {
+        console.error("Error fetching events data:", error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   return (
     <>
@@ -118,11 +149,21 @@ function VolunteerHome() {
               Volunteer Stats
               <BarChart />
             </div>
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100">
-              Card 4
-            </div>
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100">
-              Card 5
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 overflow-y-auto h-96 overflow-x-hidden">
+              <div className="text-gray-800 mt-2">
+                <h3 className="text-lg font-semibold">Upcoming Events</h3>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-1 mt-4">
+                  {events.map((event) => (
+                    <div
+                      key={event.id}
+                      className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-gray-100"
+                    >
+                      <h4 className="text-md font-medium">{event.name}</h4>
+                      <p className="text-gray-600 text-sm">{event.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
