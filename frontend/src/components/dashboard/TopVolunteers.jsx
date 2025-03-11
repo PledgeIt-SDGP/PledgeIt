@@ -73,9 +73,9 @@ const TopVolunteers = () => {
     <Card 
       sx={{ 
         minWidth: 300, 
-        maxWidth: 450, 
+        maxWidth: "90%", 
         mx: 'auto', 
-        boxShadow: 3,
+        boxShadow: 0,
         borderRadius: 3,
         overflow: 'hidden',
       }}
@@ -159,9 +159,9 @@ const TopVolunteers = () => {
                             variant="outlined" 
                           
                             sx={{ 
-                              bgcolor: 'background.paper',
-                              borderColor: 'primary.main',
-                              color: 'primary.main',
+                              bgcolor: 'gray.100',
+                              borderColor: 'gray.500',
+                              color: 'black',
                               marginLeft:2,
                             }}
                           />

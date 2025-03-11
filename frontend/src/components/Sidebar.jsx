@@ -61,8 +61,8 @@ const Sidebar = () => {
         <div className="flex items-center justify-center py-8 px-5 border-b border-gray-100">
           <div className="relative">
             <div className="flex items-center relative">
-              <div className="bg-gradient-to-br from-red-300 to-orange-100 p-1 rounded-lg mr-3 shadow-md">
-                <img src="logo.png" alt="PledgeIt Logo" className="w-15 h-12 object-contain" />
+              <div>
+                <img src="logo.png" alt="PledgeIt Logo" className="w-15 h-13 object-contain" />
               </div>
               <h1 className="text-2xl font-bold text-red-600">
                 PledgeIt
