@@ -13,11 +13,6 @@ const VolunteerSignupForm = () => {
 
     const navigate = useNavigate();
 
-    // Handle Google Login Redirect
-    const handleGoogleLogin = () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google";
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -92,29 +87,6 @@ const VolunteerSignupForm = () => {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-700">Create your personal account</h2>
                 </div>
-
-                {/* Social Login Button */}
-                <div className="flex flex-col items-center justify-center mx-30">
-                    <button
-                        onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
-                    >
-                        <img
-                            src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
-                            alt="Google"
-                            className="h-5 mr-3"
-                        />
-                        Continue with Google
-                    </button>
-                </div>
-
-                {/* Divider */}
-                <div className="my-8 flex items-center justify-center w-full">
-                    <hr className="flex-grow border-t" />
-                    <span className="px-2 text-gray-500">OR</span>
-                    <hr className="flex-grow border-t" />
-                </div>
-
                 {/* Form Fields */}
                 <div className="flex gap-x-4">
                     <div className="flex-1">

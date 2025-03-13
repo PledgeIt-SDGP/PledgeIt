@@ -11,10 +11,6 @@ const LoginPage = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleGoogleLogin = () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google";
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -25,36 +21,36 @@ const LoginPage = () => {
             const params = new URLSearchParams();
             params.append('email', formData.email);
             params.append('password', formData.password);
-    
+
             const response = await axios.post("http://127.0.0.1:8000/auth/login", params, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
             });
-    
+
             const { access_token, role } = response.data;
             localStorage.setItem("token", access_token);
             localStorage.setItem("role", role);
-    
+
             console.log("Logged in successfully with role:", role); // Debugging log
-    
+
             setMessage("Login successful!");
-    
+
             setTimeout(() => {
                 if (role === "volunteer") {
-                    window.location.href = "/Vol-Dashboard"; 
+                    window.location.href = "/Vol-Dashboard";
                 } else if (role === "organization") {
-                    window.location.href = "/Org-Dashboard"; 
-                }                
+                    window.location.href = "/Org-Dashboard";
+                }
             }, 1500);
-    
+
         } catch (error) {
             setMessage(error.response?.data?.detail || "Login failed. Please try again.");
         } finally {
             setLoading(false);
         }
-    };      
-    
+    };
+
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">
@@ -62,18 +58,6 @@ const LoginPage = () => {
                 <div className="bg-white p-8 rounded-xl shadow-lg mx-auto w-full max-w-md py-15">
                     <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Welcome Back!</h2>
                     <p className="text-center text-gray-500 mb-6">Enter your credentials to log in</p>
-
-                    <button
-                        onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100 mb-4"
-                    >
-                        <img
-                            src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
-                            alt="Google"
-                            className="h-5 mr-3"
-                        />
-                        Continue with Google
-                    </button>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>

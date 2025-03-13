@@ -108,20 +108,6 @@ class OrganizationRegister(BaseModel):
             raise ValueError("Invalid cause selected.")
         return values
 
-# Google OAuth
-oauth = OAuth()
-oauth.register(
-    name='google',
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    access_token_url='https://oauth2.googleapis.com/token',
-    client_kwargs={"scope": "email profile"},
-    redirect_uri='http://127.0.0.1:8000/auth/callback'
-)
-
-### 🔹 Authentication Routes
-
 # Register Volunteer
 @router.post('/auth/volunteer/register')
 async def register_volunteer(volunteer: VolunteerRegister):
@@ -268,37 +254,3 @@ async def volunteer_dashboard(user: dict = Depends(role_required("volunteer"))):
 @router.get('/OrgDash')
 async def organization_dashboard(user: dict = Depends(role_required("organization"))):
     return {"message": "Welcome to the organization dashboard!"}
-
-# Google OAuth Login
-@router.get('/auth/google')
-async def login_via_google(request: Request):
-    redirect_uri = 'http://127.0.0.1:8000/auth/callback'
-    return await oauth.google.authorize_redirect(request, redirect_uri)
-
-# Google OAuth Callback
-@router.get('/auth/callback')
-async def auth_callback(request: Request):
-    google_token = await oauth.google.authorize_access_token(request)
-    user_info = await httpx.AsyncClient().get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        headers={"Authorization": f"Bearer {google_token['access_token']}"}
-    )
-    user = user_info.json()
-    existing_user = get_user_by_email(user.get('email'))
-
-    if existing_user:
-        role = "volunteer" if existing_user in volunteers_collection.find() else "organization"
-        redirect_url = "/VolDash" if role == "volunteer" else "/OrgDash"
-        return {"message": "User already exists", "id": str(existing_user['_id']), "redirect_url": redirect_url}
-
-    # Register as volunteer if new user
-    result = volunteers_collection.insert_one({
-        "first_name": user.get("given_name"),
-        "last_name": user.get("family_name"),
-        "email": user.get("email"),
-        "password": None,
-        "profile_image": user.get("picture")
-    })
-    
-    # Redirect to volunteer dashboard
-    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id)}
