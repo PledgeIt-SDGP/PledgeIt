@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router-dom";
 
 const VolunteerSignupForm = () => {
     const [firstName, setFirstName] = useState("");
@@ -10,6 +10,8 @@ const VolunteerSignupForm = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [showError, setShowError] = useState(false);
+
+    const navigate = useNavigate();
 
     // Handle Google Login Redirect
     const handleGoogleLogin = () => {
@@ -57,7 +59,10 @@ const VolunteerSignupForm = () => {
             setShowError(false);
 
             // Clear success message after 4 seconds
-            setTimeout(() => setSuccess(""), 4000);
+            setTimeout(() => {
+                setSuccess("");
+                navigate("/volunteerHome");
+            }, 4000);
         } catch (err) {
             setError(err.message || "An error occurred while submitting the form.");
             setShowError(true);

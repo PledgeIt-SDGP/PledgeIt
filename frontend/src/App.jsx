@@ -10,6 +10,8 @@ import OrgSignUp from "./components/auth/OrgSignupForm";
 import VolSignUp from "./components/auth/VolunteerSignupForm";
 import UserPage from "./pages/UserPage";
 import Login from "./components/auth/LoginForm";
+import OrganizationDashboard from "./pages/OrganizationDashboard"
+// import OrgHome from "./components/dashboard/OrgHome"
 
 function App() {
   return (
@@ -24,9 +26,8 @@ function App() {
         <Route path="/latestEvents" element={<HomeEvent />} />
         <Route path="/details" element={<EventDetails />} />
         <Route path="/details/:id" element={<EventDetails />} />
-        <Route path="/volunteerHome" element={<VolunteerHome />} />
         <Route path="/dashboard" element={<VolunteerDashboard />} />
-
+        <Route path="/orgDash" element={<OrganizationDashboard />} />
       </Routes>
     </Router>
   );

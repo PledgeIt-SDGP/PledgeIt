@@ -288,7 +288,7 @@ async def auth_callback(request: Request):
 
     if existing_user:
         role = "volunteer" if existing_user in volunteers_collection.find() else "organization"
-        redirect_url = "/volunteer/dashboard" if role == "volunteer" else "/organization/dashboard"
+        redirect_url = "/volunteerHome" if role == "volunteer" else "/orghome"
         return {"message": "User already exists", "id": str(existing_user['_id']), "redirect_url": redirect_url}
 
     # Register as volunteer if new user

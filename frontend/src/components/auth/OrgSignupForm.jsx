@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 // import axios from "axios";
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
 
@@ -37,6 +38,7 @@ const OrgSignupForm = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordError, setPasswordError] = useState('');
 
+    const navigate = useNavigate();
 
     const handleLogoChange = (e) => {
         setOrgLogo(e.target.files[0]);
@@ -112,6 +114,9 @@ const OrgSignupForm = () => {
             );
 
             setMessage(response.data.message);
+
+            navigate("/orgHome");
+
         } catch (error) {
             setMessage(error.response?.data?.detail || "An error occurred");
         } finally {
