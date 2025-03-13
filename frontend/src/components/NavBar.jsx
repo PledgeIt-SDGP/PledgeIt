@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,9 +41,13 @@ export default function Navbar() {
           </li>
           {/*Add signup page */}
 
-          <button className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-90 text-sm text-white  rounded-2xl shadow-md hover:bg-orange-500  md:px-6 md:py-2  lg:px-6 lg:py-2 lg:text-md">
-            Sign Up
-          </button>
+          <Link
+            to="/userpage"
+            className="px-4 py-3 text-sm font-medium text-white rounded-full bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 lg:px-6 lg:py-3"
+          >
+            Sign up
+          </Link>
+          
         </ul>
 
         {/* Mobile Menu Button */}

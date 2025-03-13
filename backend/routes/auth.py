@@ -261,11 +261,11 @@ async def refresh_token(refresh_token: str = Depends(oauth2_scheme)):
     return {"access_token": new_access_token, "token_type": "bearer"}
 
 # Protect routes with role-based access control
-@router.get('/volunteer/dashboard')
+@router.get('/VolDash')
 async def volunteer_dashboard(user: dict = Depends(role_required("volunteer"))):
     return {"message": "Welcome to the volunteer dashboard!"}
 
-@router.get('/organization/dashboard')
+@router.get('/OrgDash')
 async def organization_dashboard(user: dict = Depends(role_required("organization"))):
     return {"message": "Welcome to the organization dashboard!"}
 
@@ -288,7 +288,7 @@ async def auth_callback(request: Request):
 
     if existing_user:
         role = "volunteer" if existing_user in volunteers_collection.find() else "organization"
-        redirect_url = "/volunteerHome" if role == "volunteer" else "/orghome"
+        redirect_url = "/VolDash" if role == "volunteer" else "/OrgDash"
         return {"message": "User already exists", "id": str(existing_user['_id']), "redirect_url": redirect_url}
 
     # Register as volunteer if new user
@@ -301,4 +301,4 @@ async def auth_callback(request: Request):
     })
     
     # Redirect to volunteer dashboard
-    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id), "redirect_url": "/volunteer/dashboard"}
+    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id)}

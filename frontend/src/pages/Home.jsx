@@ -81,7 +81,7 @@ const Home = () => {
                 Start your journey
               </Link>
               <Link
-                to="/orgDash"
+                to="/"
                 className="px-4 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50 lg:px-6 lg:py-3 "
               >
                 Learn More

@@ -61,7 +61,7 @@ const VolunteerSignupForm = () => {
             // Clear success message after 4 seconds
             setTimeout(() => {
                 setSuccess("");
-                navigate("/volunteerHome");
+                navigate("/VolDash");
             }, 4000);
         } catch (err) {
             setError(err.message || "An error occurred while submitting the form.");
