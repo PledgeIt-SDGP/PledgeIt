@@ -10,26 +10,31 @@ const CausesChart = ({ causesData }) => {
       value: cause.value,
       label: cause.name
     }));
+
     const colors = [
-      "#FF6B6B", // Soft Coral
-      "#FFD93D", // Golden Yellow
-      "#4ECDC4", // Aqua Blue
-      "#36A2EB", // Light Blue
-      "#5B5F97", // Deep Indigo
-      "#9B59B6", // Purple Plum
-      "#20B2AA", // Teal Green
-      "#2E8B57"  // Deep Green
+      "#8B0000", // Dark Red
+      "#B22222", // Firebrick Red
+      "#DC143C", // Crimson Red
+      "#FF4500", // Orange Red
+      "#FF6347", // Tomato Orange
+      "#FF8C00", // Dark Orange
+      "#FFA500", // Orange
+      "#FFD700", // Gold
+      "#FFB6C1"  // Light Pink (Soft Red Hue)
     ];
+    
+    
 
     
   return (
     <Box sx={{ 
       width: '100%', 
-      height: 340, 
+      height: '100%', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 
       backgroundColor:"",
+      marginTop: "40px",
       
     }}>
       <PieChart
@@ -44,12 +49,14 @@ const CausesChart = ({ causesData }) => {
             endAngle: 360,
             cx: 150,
             cy: 120,
-            highlightScope: { faded: 'global', highlighted: 'item' },
-            faded: { innerRadius: 20, additionalRadius: -10, color: 'gray' },
+            highlightScope: { faded: 'global', highlighted: 'item'},
+            faded: { innerRadius: 20, additionalRadius: -10, color: 'gray'  },
+
           }
         ]}
+        
         colors={colors}
-        width={550}
+        width={500}
         height={250}
       />
       
