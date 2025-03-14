@@ -6,9 +6,12 @@ from geocoding import get_coordinates
 import datetime
 import os
 import uuid
-import uuid as uuid_lib  # For converting legacy UUID strings if needed
-import openai 
+import uuid as uuid_lib  # For converting legacy UUID strings if needed 
 import json
+from dotenv import load_dotenv  # For loading environment variables from .env file
+
+#Load environment variables from .env file
+load_dotenv("../PledgeIt/e.env")
 
 router = APIRouter()
 
@@ -16,8 +19,8 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-#Define the Deepseek api key
-DEEPSEEK_API_KEY = "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"
+# Get the DeepSeek API key from the .env file
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 def calculate_social_impact_score(description: str) -> float:
     """
