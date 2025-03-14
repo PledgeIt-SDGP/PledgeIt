@@ -328,6 +328,12 @@ async def create_event(
     if ext not in allowed_extensions:
          raise HTTPException(status_code=400, detail="Invalid image file extension.")
 
+    # Convert volunteer_requirements from string to integer representing maximum capacity.
+    try:
+         max_capacity = int(volunteer_requirements) if volunteer_requirements else 0
+    except ValueError:
+         raise HTTPException(status_code=400, detail="Invalid volunteer_requirements format. Expected an integer representing maximum capacity.")
+
     # Generate the next sequential event ID
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
@@ -396,7 +402,7 @@ async def create_event(
         "latitude": latitude,
         "longitude": longitude,
         "duration": duration,
-        "volunteer_requirements": volunteer_requirements,
+        "volunteer_requirements": max_capacity,
         "skills_required": skills_list,
         "contact_email": contact_email,
         "contact_person": {

@@ -4,6 +4,7 @@ import SplashScreen from "./components/loading/SplashScreen";
 import HomePage from "./pages/HomePage";
 import EventMap from "./pages/EventMap";
 import CreateEventPage from "./pages/CreateEventPage";
+import OrganizationDashboard from "./pages/OrganizationDashboard";
 
 function App() {
   return (
@@ -20,6 +21,8 @@ function App() {
 
         {/* Create Event Page */}
         <Route path="/create-event" element={<CreateEventPage />} />
+
+        <Route path="/dash" element={<OrganizationDashboard />} />
       </Routes>
     </Router>
   );
