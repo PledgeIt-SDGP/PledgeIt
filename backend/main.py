@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
+from routes.dashboard import router as dashboard_router
 import os
 
 app = FastAPI(
@@ -26,6 +27,9 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Include event routes
 app.include_router(event_router)
+
+# Include the dashboard endpoints
+app.include_router(dashboard_router)
 
 @app.get("/")
 def root():

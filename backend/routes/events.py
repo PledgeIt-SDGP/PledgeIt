@@ -495,20 +495,3 @@ async def update_event(event_id: int, updated_event: Event, current_org: dict = 
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
     return {"message": "Event updated successfully"}
-
-# ------------------------------
-# New Endpoint for Dashboard CausesChart
-# ------------------------------
-
-@router.get("/dashboard/causes", response_model=List[dict])
-async def get_dashboard_causes():
-    """
-    Aggregates events data by category for the dashboard CausesChart.
-    Returns a list of objects with 'name' (the cause/category) and 'value' (count).
-    """
-    pipeline = [
-        {"$group": {"_id": "$category", "value": {"$sum": 1}}},
-        {"$project": {"name": "$_id", "value": 1, "_id": 0}}
-    ]
-    causes_data = list(events_collection.aggregate(pipeline))
-    return causes_data
