@@ -39,8 +39,8 @@ const HomeCards = () => {
     {
       icon: Users,
       numbers: totalUsers,
-      title: "Total Users",
-      description: "volunteers and organizations",
+      title: "Active Users",
+      description: "and growing daily",
     },
     {
       icon: Calendar,
@@ -50,7 +50,7 @@ const HomeCards = () => {
     },
     {
       icon: MapPin,
-      numbers: 2, // Static value for cities covered
+      numbers: 3, // Static value for cities covered
       title: "Cities Covered",
       description: "nationwide impact",
     },
