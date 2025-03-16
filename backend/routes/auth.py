@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import cloudinary
 import cloudinary.uploader
 from fastapi.security import OAuth2PasswordBearer
+from bson import ObjectId
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,9 +52,6 @@ cloudinary.config(
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
-
-ORG_LOGO_UPLOAD_DIR = "organization_logos"
-os.makedirs(ORG_LOGO_UPLOAD_DIR, exist_ok=True)
 
 VALID_CAUSES = {"Environmental", "Community Service", "Education", "Healthcare", "Animal Welfare", "Disaster Relief", "Lifestyle & Culture", "Fundraising & Charity"}
 
@@ -120,17 +118,28 @@ async def register_volunteer(volunteer: VolunteerRegister):
     hashed_password = hash_password(volunteer.password)
     confirmation_token = secrets.token_urlsafe(32)
 
-    volunteers_collection.insert_one({
+    volunteer_data = {
         "first_name": volunteer.first_name,
         "last_name": volunteer.last_name,
         "email": volunteer.email,
         "password": hashed_password,
         "is_verified": False,
         "confirmation_token": confirmation_token,
-        "role": "volunteer"  # Added role
-    })
+        "role": "volunteer"
+    }
 
-    return {"message": "Registration successful."}
+    result = volunteers_collection.insert_one(volunteer_data)
+
+    # Return user details after registration
+    return {
+        "message": "Registration successful.",
+        "user": {
+            "id": str(result.inserted_id),
+            "name": f"{volunteer.first_name} {volunteer.last_name}",
+            "email": volunteer.email,
+            "role": "volunteer"
+        }
+    }
 
 # File upload validation (only allow image files)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -187,7 +196,17 @@ async def register_organization(
         "password": hashed_password,
         "role": "organization"  # Added role
     })
-    return {"message": "Organization registered successfully", "organization_id": str(result.inserted_id), "logo_url": logo_url}
+    return {
+        "message": "Organization registered successfully",
+        "organization_id": str(result.inserted_id),
+        "logo_url": logo_url,
+        "user": {
+            "id": str(result.inserted_id),
+            "name": name,
+            "email": email,
+            "role": "organization"
+        }
+    }
 
 # Role-based access control (RBAC) utility
 def role_required(required_role: str):
@@ -206,12 +225,17 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
         role = payload.get("role")
+
         if user_id is None or role is None:
             raise HTTPException(status_code=403, detail="Invalid credentials")
-        user = volunteers_collection.find_one({"_id": user_id}) or organizations_collection.find_one({"_id": user_id})
+
+        user = volunteers_collection.find_one({"_id": ObjectId(user_id)}) or \
+            organizations_collection.find_one({"_id": ObjectId(user_id)})
+
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return {"user_id": user_id, "role": role}
+
+        return {"user_id": str(user["_id"]), "role": role}
     except JWTError:
         raise HTTPException(status_code=403, detail="Could not validate credentials")
 
@@ -234,7 +258,18 @@ async def login(email: str = Form(...), password: str = Form(...), response: Res
     )
 
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    # Return user details along with the token
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": str(user["_id"]),
+            "name": user.get("first_name") or user.get("name"),  # Volunteer has first_name, Organization has name
+            "email": user.get("email"),
+            "role": user.get("role")
+        }
+    }
 
 # Refresh Token Route
 @router.post('/auth/refresh_token')

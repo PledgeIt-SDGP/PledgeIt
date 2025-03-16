@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useUser } from "../../hooks/UserContext"; // Import useUser hook
 
-const LoginPage = () => {
+const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
-
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
+    const { setUser } = useUser(); // Get setUser from User Context
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -17,30 +21,26 @@ const LoginPage = () => {
         setMessage('');
 
         try {
-            // Format the formData as URLSearchParams for x-www-form-urlencoded
             const params = new URLSearchParams();
             params.append('email', formData.email);
             params.append('password', formData.password);
 
             const response = await axios.post("http://127.0.0.1:8000/auth/login", params, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
 
-            const { access_token, role } = response.data;
-            localStorage.setItem("token", access_token);
-            localStorage.setItem("role", role);
-
-            console.log("Logged in successfully with role:", role); // Debugging log
+            const { access_token, user } = response.data;
+            localStorage.setItem("token", access_token); // Store token in localStorage
+            setUser(user); // Set user state in context
 
             setMessage("Login successful!");
 
+            // Redirect to dashboard based on role
             setTimeout(() => {
-                if (role === "volunteer") {
-                    window.location.href = "/Vol-Dashboard";
-                } else if (role === "organization") {
-                    window.location.href = "/Org-Dashboard";
+                if (user.role === "volunteer") {
+                    navigate("/volDash");
+                } else if (user.role === "organization") {
+                    navigate("/orgDash");
                 }
             }, 1500);
 
@@ -50,7 +50,6 @@ const LoginPage = () => {
             setLoading(false);
         }
     };
-
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">
@@ -117,4 +116,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default LoginForm;

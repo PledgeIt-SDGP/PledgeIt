@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useUser } from '../../hooks/UserContext'; // Import useUser hook
 
 const VolunteerSignupForm = () => {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [showError, setShowError] = useState(false);
-
     const navigate = useNavigate();
+    const { setUser } = useUser(); // Get setUser from User Context
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,46 +33,31 @@ const VolunteerSignupForm = () => {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/auth/volunteer/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: email,
-                    password: password,
-                    password_confirmation: confirmPassword,
-                }),
+            const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                password: password,
+                password_confirmation: confirmPassword,
             });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.detail || "An error occurred.");
-            }
+            const { user } = response.data;
+            setUser(user); // Set user state in context
 
-            // Success message
-            setSuccess("Registration successful !");
-            setError("");
+            setSuccess("Registration successful!");
+            setError('');
             setShowError(false);
 
-            // Clear success message after 4 seconds
+            // Redirect to dashboard after 4 seconds
             setTimeout(() => {
-                setSuccess("");
-                navigate("/VolDash");
+                navigate("/volDash");
             }, 4000);
+
         } catch (err) {
-            setError(err.message || "An error occurred while submitting the form.");
+            setError(err.response?.data?.detail || "An error occurred while submitting the form.");
             setShowError(true);
         }
     };
-
-    // Hide error message after 4 seconds
-    useEffect(() => {
-        if (showError) {
-            const timer = setTimeout(() => setShowError(false), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [showError]);
 
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">

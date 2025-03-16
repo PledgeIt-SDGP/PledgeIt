@@ -1,12 +1,21 @@
+import React from 'react';
+import { useUser } from '../hooks/UserContext'; // Import useUser hook
 
-const OrganizationDashboard = ({ children }) => {
+const OrganizationDashboard = () => {
+    const { user } = useUser(); // Get user from User Context
 
     return (
-        <>
-            <div>
-                <p>Hello Organization</p>
-            </div>
-        </>
+        <div>
+            <p>Hello Organization</p>
+            {user && (
+                <div>
+                    <h2>Welcome, {user.name}!</h2>
+                    <p>Email: {user.email}</p>
+                    <p>Role: {user.role}</p>
+                </div>
+            )}
+        </div>
     );
-}
-export default OrganizationDashboard
+};
+
+export default OrganizationDashboard;

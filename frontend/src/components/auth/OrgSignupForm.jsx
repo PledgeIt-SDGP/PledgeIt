@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-// import axios from "axios";
+import axios from "axios"; // Uncommented axios import
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
 
 const categories = [
@@ -85,8 +85,8 @@ const OrgSignupForm = () => {
         }
 
         const formDataToSend = new FormData();
-        formDataToSend.append('logo', orgLogo);  // Backend expects 'logo'
-        formDataToSend.append('name', orgName);  // Match FastAPI field names
+        formDataToSend.append('logo', orgLogo);
+        formDataToSend.append('name', orgName);
         formDataToSend.append('website_url', websiteUrl);
         formDataToSend.append('organization_type', orgType);
         formDataToSend.append('about', description);
@@ -94,7 +94,6 @@ const OrgSignupForm = () => {
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
 
-        // Convert selected category names to an array (not IDs)
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
@@ -106,16 +105,17 @@ const OrgSignupForm = () => {
 
         try {
             const response = await axios.post(
-                "http://127.0.0.1:8000/auth/organization/register", // Correct API URL
+                "http://127.0.0.1:8000/auth/organization/register",
                 formDataToSend,
                 {
                     headers: { "Content-Type": "multipart/form-data" }
                 }
             );
 
-            setMessage(response.data.message);
-
-            navigate("/orgHome");
+            setMessage("Registration successful!");
+            setTimeout(() => {
+                navigate("/OrgDash");
+            }, 1500);
 
         } catch (error) {
             setMessage(error.response?.data?.detail || "An error occurred");
@@ -127,16 +127,16 @@ const OrgSignupForm = () => {
     return (
         <>
             <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
-
                 <div className="absolute inset-0 bg-[url('orgbackground.jpg')] bg-cover bg-center opacity-20 "></div>
 
                 <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20 ">
                     {/* Header Section */}
                     <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1> {/* Title and Info Section */}
-
+                        <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1>
                         <h2 className="text-2xl font-bold text-gray-700 pb-5 mt-2">Create an Organization account</h2>
                     </div>
+
+                    {/* Logo Upload Section */}
                     <div className="flex items-center space-x-4 my-5">
                         <div className="relative w-25 h-25 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center bg-gray-200 overflow-hidden cursor-pointer">
                             {orgLogo ? (
