@@ -261,7 +261,7 @@ async def login(email: str = Form(...), password: str = Form(...), response: Res
 
     # Return user details along with the token
     return {
-        "access_token": access_token,
+        "access_token": access_token, 
         "token_type": "bearer",
         "user": {
             "id": str(user["_id"]),
@@ -331,3 +331,37 @@ async def delete_organization(user: dict = Depends(get_current_user)):
     db.refresh_tokens.delete_one({"user_id": user["user_id"]})
 
     return {"message": "Organization account deleted successfully"}
+
+@router.get('/auth/me')
+async def get_current_user_details(user: dict = Depends(get_current_user)):
+    if user["role"] == "volunteer":
+        user_data = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    elif user["role"] == "organization":
+        user_data = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
+    
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Return all fields for organizations
+    if user["role"] == "organization":
+        return {
+            "id": str(user_data["_id"]),
+            "name": user_data.get("name"),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+            "logo": user_data.get("logo"),
+            "website_url": user_data.get("website_url"),
+            "about": user_data.get("about"),
+            "organization_type": user_data.get("organization_type"),
+            "causes_supported": user_data.get("causes_supported"),
+            "contact_number": user_data.get("contact_number"),
+            "address": user_data.get("address"),
+        }
+    else:
+        # Return basic fields for volunteers
+        return {
+            "id": str(user_data["_id"]),
+            "name": user_data.get("first_name") or user_data.get("name"),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+        }

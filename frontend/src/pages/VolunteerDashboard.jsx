@@ -9,20 +9,21 @@ const VolunteerDashboard = () => {
 
     const handleLogout = async () => {
         try {
-            const token = localStorage.getItem('token'); // Retrieve the JWT token
+            const token = localStorage.getItem('token');
             await axios.post(
                 'http://127.0.0.1:8000/auth/logout',
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+                        Authorization: `Bearer ${token}`,
                     },
-                    withCredentials: true, // Ensure cookies are sent with the request
+                    withCredentials: true,
                 }
             );
             setUser(null); // Clear user context
-            localStorage.removeItem('token'); // Remove token from localStorage
-            navigate('/login'); // Redirect to login page
+            localStorage.removeItem('token'); // Remove token
+            localStorage.removeItem('userRole'); // Remove user role
+            navigate('/'); // Redirect to login page
         } catch (error) {
             console.error('Logout failed:', error);
         }
@@ -43,7 +44,7 @@ const VolunteerDashboard = () => {
                 );
                 setUser(null);
                 localStorage.removeItem('token');
-                navigate('/login');
+                navigate('/');
             } catch (error) {
                 console.error('Account deletion failed:', error);
             }

@@ -19,22 +19,23 @@ const LoginForm = () => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
-
+    
         try {
             const params = new URLSearchParams();
             params.append('email', formData.email);
             params.append('password', formData.password);
-
+    
             const response = await axios.post("http://127.0.0.1:8000/auth/login", params, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
-
+    
             const { access_token, user } = response.data;
-            localStorage.setItem("token", access_token); // Store token in localStorage
-            setUser(user); // Set user state in context
-
+            localStorage.setItem('token', access_token); // Store token
+            localStorage.setItem('userRole', user.role); // Store user role
+            setUser(user); // Update user context
+    
             setMessage("Login successful!");
-
+    
             // Redirect to dashboard based on role
             setTimeout(() => {
                 if (user.role === "volunteer") {
@@ -43,7 +44,7 @@ const LoginForm = () => {
                     navigate("/orgDash");
                 }
             }, 1500);
-
+    
         } catch (error) {
             setMessage(error.response?.data?.detail || "Login failed. Please try again.");
         } finally {
