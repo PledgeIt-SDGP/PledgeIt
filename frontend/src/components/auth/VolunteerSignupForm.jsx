@@ -17,21 +17,21 @@ const VolunteerSignupForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         // Validate required fields
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError("All fields are required.");
             setShowError(true);
             return;
         }
-
+    
         // Validate password match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             setShowError(true);
             return;
         }
-
+    
         try {
             const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
                 first_name: firstName,
@@ -40,19 +40,23 @@ const VolunteerSignupForm = () => {
                 password: password,
                 password_confirmation: confirmPassword,
             });
-
-            const { user } = response.data;
-            setUser(user); // Set user state in context
-
+    
+            // Store token and role in localStorage
+            localStorage.setItem('token', response.data.access_token);
+            localStorage.setItem('userRole', response.data.user.role);
+    
+            // Update user context
+            setUser(response.data.user);
+    
             setSuccess("Registration successful!");
             setError('');
             setShowError(false);
-
+    
             // Redirect to dashboard after 4 seconds
             setTimeout(() => {
                 navigate("/volDash");
             }, 4000);
-
+    
         } catch (err) {
             setError(err.response?.data?.detail || "An error occurred while submitting the form.");
             setShowError(true);

@@ -69,13 +69,13 @@ const OrgSignupForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
+    
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
             return;
         }
-
+    
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
@@ -83,7 +83,7 @@ const OrgSignupForm = () => {
         } else {
             setPasswordError('');
         }
-
+    
         const formDataToSend = new FormData();
         formDataToSend.append('logo', orgLogo);
         formDataToSend.append('name', orgName);
@@ -93,30 +93,37 @@ const OrgSignupForm = () => {
         formDataToSend.append('email', email);
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-
+    
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
             }
         });
-
+    
         formDataToSend.append('password', password);
         formDataToSend.append('password_confirmation', confirmPassword);
-
+    
         try {
             const response = await axios.post(
                 "http://127.0.0.1:8000/auth/organization/register",
                 formDataToSend,
                 {
-                    headers: { "Content-Type": "multipart/form-data" }
+                    headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-
+    
+            // Store token and role in localStorage
+            localStorage.setItem('token', response.data.access_token);
+            localStorage.setItem('userRole', response.data.user.role);
+    
+            // Update user context
+            setUser(response.data.user);
+    
             setMessage("Registration successful!");
             setTimeout(() => {
                 navigate("/OrgDash");
             }, 1500);
-
+    
         } catch (error) {
             setMessage(error.response?.data?.detail || "An error occurred");
         } finally {

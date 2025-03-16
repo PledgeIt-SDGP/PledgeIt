@@ -130,9 +130,14 @@ async def register_volunteer(volunteer: VolunteerRegister):
 
     result = volunteers_collection.insert_one(volunteer_data)
 
-    # Return user details after registration
+    # Generate access token
+    access_token = create_access_token({"user_id": str(result.inserted_id), "role": "volunteer"})
+
+    # Return user details and access token after registration
     return {
         "message": "Registration successful.",
+        "access_token": access_token,
+        "token_type": "bearer",
         "user": {
             "id": str(result.inserted_id),
             "name": f"{volunteer.first_name} {volunteer.last_name}",
@@ -196,15 +201,26 @@ async def register_organization(
         "password": hashed_password,
         "role": "organization"  # Added role
     })
+
+    # Create access token
+    access_token = create_access_token({"user_id": str(result.inserted_id), "role": "organization"})
+
     return {
         "message": "Organization registered successfully",
-        "organization_id": str(result.inserted_id),
-        "logo_url": logo_url,
+        "access_token": access_token,
+        "token_type": "bearer",
         "user": {
             "id": str(result.inserted_id),
             "name": name,
             "email": email,
-            "role": "organization"
+            "role": "organization",
+            "logo": logo_url,
+            "website_url": website_url,
+            "about": about,
+            "organization_type": organization_type,
+            "causes_supported": causes_supported,
+            "contact_number": contact_number,
+            "address": address,
         }
     }
 

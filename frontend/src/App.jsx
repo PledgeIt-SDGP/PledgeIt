@@ -22,8 +22,8 @@ const AppRoutes = () => {
   const { user, setUser } = useUser();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
 
     if (token && userRole) {
       const fetchUserData = async () => {
@@ -33,18 +33,17 @@ const AppRoutes = () => {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("Fetched user data:", response.data); // Log the fetched data
           setUser(response.data); // Update user context with fetched data
-          if (userRole === "volunteer") {
-            navigate("/volDash");
-          } else if (userRole === "organization") {
-            navigate("/orgDash");
+          if (userRole === 'volunteer') {
+            navigate('/volDash');
+          } else if (userRole === 'organization') {
+            navigate('/orgDash');
           }
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
-          localStorage.removeItem("token");
-          localStorage.removeItem("userRole");
-          navigate("/login");
+          console.error('Failed to fetch user data:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('userRole');
+          navigate('/login');
         }
       };
 
