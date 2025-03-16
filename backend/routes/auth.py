@@ -381,3 +381,10 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "email": user_data.get("email"),
             "role": user_data.get("role"),
         }
+    
+@router.get("/auth/total-users")
+async def get_total_users():
+    total_volunteers = volunteers_collection.count_documents({})
+    total_organizations = organizations_collection.count_documents({})
+    total_users = total_volunteers + total_organizations
+    return {"total_users": total_users}

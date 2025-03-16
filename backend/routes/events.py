@@ -204,6 +204,11 @@ async def get_events():
     events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [Event(**event_serializer(event)) for event in events]
 
+@router.get("/events/total-events")
+async def get_total_events():
+    total_events = events_collection.count_documents({})
+    return {"total_events": total_events}
+
 @router.get("/events/{event_id}", response_model=Event)
 async def get_event(event_id: int):
     """
