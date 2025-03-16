@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useUser } from "../../hooks/UserContext"; // Import useUser hook
+import { useUser } from "../../hooks/UserContext";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
-    const { setUser } = useUser(); // Get setUser from User Context
+    const { setUser } = useUser();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -84,7 +84,6 @@ const LoginForm = () => {
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
                                     required
                                 />
-
                             </div>
                         </div>
 

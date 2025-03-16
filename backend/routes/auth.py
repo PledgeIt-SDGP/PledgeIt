@@ -289,3 +289,45 @@ async def volunteer_dashboard(user: dict = Depends(role_required("volunteer"))):
 @router.get('/OrgDash')
 async def organization_dashboard(user: dict = Depends(role_required("organization"))):
     return {"message": "Welcome to the organization dashboard!"}
+
+@router.post('/auth/logout')
+async def logout(response: Response, user: dict = Depends(get_current_user)):
+    # Optionally, you can invalidate the refresh token in the database
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
+    
+    # Clear the refresh token cookie
+    response.delete_cookie(key="refresh_token")
+    
+    return {"message": "Logged out successfully"}
+
+@router.delete('/auth/volunteer/delete')
+async def delete_volunteer(user: dict = Depends(get_current_user)):
+    # Ensure the user is a volunteer
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can delete their accounts.")
+
+    # Delete the volunteer from the database
+    result = volunteers_collection.delete_one({"_id": ObjectId(user["user_id"])})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Volunteer not found")
+
+    # Optionally, delete the refresh token
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
+
+    return {"message": "Volunteer account deleted successfully"}
+
+@router.delete('/auth/organization/delete')
+async def delete_organization(user: dict = Depends(get_current_user)):
+    # Ensure the user is an organization
+    if user["role"] != "organization":
+        raise HTTPException(status_code=403, detail="Permission denied. Only organizations can delete their accounts.")
+
+    # Delete the organization from the database
+    result = organizations_collection.delete_one({"_id": ObjectId(user["user_id"])})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    # Optionally, delete the refresh token
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
+
+    return {"message": "Organization account deleted successfully"}
