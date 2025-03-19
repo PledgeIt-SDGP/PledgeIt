@@ -1,76 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+// import { useUser } from '../../hooks/UserContext'; // Import useUser hook
 
 
 const VolunteerSignupForm = () => {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [showError, setShowError] = useState(false);
-
-    // Handle Google Login Redirect
-    const handleGoogleLogin = () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google";
-    };
+    const navigate = useNavigate();
+    // const { setUser } = useUser(); // Get setUser from User Context
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         // Validate required fields
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError("All fields are required.");
             setShowError(true);
             return;
         }
-
+    
         // Validate password match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             setShowError(true);
             return;
         }
-
+    
         try {
-            const response = await fetch("http://127.0.0.1:8000/auth/volunteer/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: email,
-                    password: password,
-                    password_confirmation: confirmPassword,
-                }),
+            const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                password: password,
+                password_confirmation: confirmPassword,
             });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.detail || "An error occurred.");
-            }
-
-            // Success message
-            setSuccess("Registration successful !");
-            setError("");
+    
+            // Store token and role in localStorage
+            localStorage.setItem('token', response.data.access_token);
+            localStorage.setItem('userRole', response.data.user.role);
+    
+            // Update user context
+            // setUser(response.data.user);
+    
+            setSuccess("Registration successful!");
+            setError('');
             setShowError(false);
-
-            // Clear success message after 4 seconds
-            setTimeout(() => setSuccess(""), 4000);
+    
+            // Redirect to dashboard after 4 seconds
+            setTimeout(() => {
+                navigate("/volDash");
+            }, 4000);
+    
         } catch (err) {
-            setError(err.message || "An error occurred while submitting the form.");
+            setError(err.response?.data?.detail || "An error occurred while submitting the form.");
             setShowError(true);
         }
     };
-
-    // Hide error message after 4 seconds
-    useEffect(() => {
-        if (showError) {
-            const timer = setTimeout(() => setShowError(false), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [showError]);
 
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
@@ -87,29 +79,6 @@ const VolunteerSignupForm = () => {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-700">Create your personal account</h2>
                 </div>
-
-                {/* Social Login Button */}
-                <div className="flex flex-col items-center justify-center mx-30">
-                    <button
-                        onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
-                    >
-                        <img
-                            src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
-                            alt="Google"
-                            className="h-5 mr-3"
-                        />
-                        Continue with Google
-                    </button>
-                </div>
-
-                {/* Divider */}
-                <div className="my-8 flex items-center justify-center w-full">
-                    <hr className="flex-grow border-t" />
-                    <span className="px-2 text-gray-500">OR</span>
-                    <hr className="flex-grow border-t" />
-                </div>
-
                 {/* Form Fields */}
                 <div className="flex gap-x-4">
                     <div className="flex-1">

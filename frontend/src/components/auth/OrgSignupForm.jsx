@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Uncommented axios import
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
 
 const categories = [
@@ -37,6 +38,7 @@ const OrgSignupForm = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordError, setPasswordError] = useState('');
 
+    const navigate = useNavigate();
 
     const handleLogoChange = (e) => {
         setOrgLogo(e.target.files[0]);
@@ -67,13 +69,13 @@ const OrgSignupForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
+    
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
             return;
         }
-
+    
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
@@ -81,37 +83,47 @@ const OrgSignupForm = () => {
         } else {
             setPasswordError('');
         }
-
+    
         const formDataToSend = new FormData();
-        formDataToSend.append('logo', orgLogo);  // Backend expects 'logo'
-        formDataToSend.append('name', orgName);  // Match FastAPI field names
+        formDataToSend.append('logo', orgLogo);
+        formDataToSend.append('name', orgName);
         formDataToSend.append('website_url', websiteUrl);
         formDataToSend.append('organization_type', orgType);
         formDataToSend.append('about', description);
         formDataToSend.append('email', email);
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-
-        // Convert selected category names to an array (not IDs)
+    
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
             }
         });
-
+    
         formDataToSend.append('password', password);
         formDataToSend.append('password_confirmation', confirmPassword);
-
+    
         try {
             const response = await axios.post(
-                "http://127.0.0.1:8000/auth/organization/register", // Correct API URL
+                "http://127.0.0.1:8000/auth/organization/register",
                 formDataToSend,
                 {
-                    headers: { "Content-Type": "multipart/form-data" }
+                    headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-
-            setMessage(response.data.message);
+    
+            // Store token and role in localStorage
+            localStorage.setItem('token', response.data.access_token);
+            localStorage.setItem('userRole', response.data.user.role);
+    
+            // Update user context
+            setUser(response.data.user);
+    
+            setMessage("Registration successful!");
+            setTimeout(() => {
+                navigate("/OrgDash");
+            }, 1500);
+    
         } catch (error) {
             setMessage(error.response?.data?.detail || "An error occurred");
         } finally {
@@ -122,18 +134,18 @@ const OrgSignupForm = () => {
     return (
         <>
             <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
-
                 <div className="absolute inset-0 bg-[url('orgbackground.jpg')] bg-cover bg-center opacity-20 "></div>
 
                 <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20 ">
                     {/* Header Section */}
                     <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1> {/* Title and Info Section */}
-
+                        <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1>
                         <h2 className="text-2xl font-bold text-gray-700 pb-5 mt-2">Create an Organization account</h2>
                     </div>
-                    <div className="flex items-center space-x-4 my-5">
-                        <div className="relative w-25 h-25 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center bg-gray-200 overflow-hidden cursor-pointer">
+
+                    {/* Logo Upload Section */}
+                    <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 my-5">
+                    <div className="relative w-25 h-25 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center bg-gray-200 overflow-hidden cursor-pointer">
                             {orgLogo ? (
                                 <img
                                     src={URL.createObjectURL(orgLogo)}
@@ -214,10 +226,10 @@ const OrgSignupForm = () => {
                             </div>
 
                             {/* Organization Type Description */}
-                            <div className="organization-description flex-1 bg-red-50 border rounded-lg border-gray-200 p-5">
+                            <div className="organization-description flex-1 bg-red-50 border rounded-lg border-gray-200 lg:p-5 p-0" >
 
                                 {orgType && (
-                                    <p className="text-sm text-gray-800 p-5">
+                                    <p className="text-gray-800 p-5 lg:text-sm text-xs">
                                         <strong>PledgeIT for {orgType}:</strong> {OrganizationType.find(type => type.value === orgType)?.description}
                                     </p>
                                 )}
@@ -274,7 +286,7 @@ const OrgSignupForm = () => {
 
                     <div className="mb-5">
                         <label className="block text-gray-600 mb-5">Causes Supported *</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             {categoriesState.map((category) => (
                                 <div
                                     key={category.id}
