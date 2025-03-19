@@ -33,7 +33,7 @@ const MenuItem = ({ icon, name, path }) => {
 const Sidebar = () => {
   const menuItems = [
     { name: "Home", path: "/orgHome", icon: <Home /> },
-    { name: "Events", path: "/event", icon: <Calendar /> },
+    { name: "Events", path: "/orgevents", icon: <Calendar /> },
     { name: "Map", path: "/map", icon: <MapPin /> },
     { name: "Profile", path: "/profile", icon: <UserRound /> },
     { name: "Settings", path: "/set", icon: <Settings /> },
