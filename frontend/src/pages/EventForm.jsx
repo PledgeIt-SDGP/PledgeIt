@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
+import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users, X } from 'lucide-react';
 
 
 const EventForm = () => {
@@ -31,6 +31,9 @@ const EventForm = () => {
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState(null); // State for image preview
+    const [error, setError] = useState(null); // State for error messages
+
+
     const [categories, setCategories] = useState([
         { id: 1, name: "Environmental", icon: <SproutIcon />, selected: false },
         { id: 2, name: "Community Service", icon: <Users />, selected: false },
@@ -81,6 +84,7 @@ const EventForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError(null); // Clear previous errors
 
         const formDataToSend = new FormData();
         Object.keys(formData).forEach((key) => {
@@ -98,15 +102,33 @@ const EventForm = () => {
             setPreviewImage(null);
 
         } catch (error) {
-            setMessage(error.response?.data?.detail || "An error occurred");
+            const errorMessage = error.response?.data?.detail || error.message || "An error occurred while submitting the form.";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleCloseError = () => {
+        setError(null); // Clear the error message
+    };
+
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-gray-500 p-6">
+
+            {/* Error Pop-up */}
+            {error && (
+                <div className="fixed top-4 right-4 z-50">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
+                        <span>{error}</span>
+                        <button onClick={handleCloseError} className="ml-4">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="absolute inset-0 bg-[url('eventbackground.jpg')] bg-cover bg-center opacity-20"></div>
 
             <div className="relative w-full md:w-[80%] lg:w-[70%] xl:w-[50%] mx-auto p-6 md:p-8 lg:p-10 bg-gray-50 shadow-lg rounded-lg mt-10">
@@ -149,8 +171,10 @@ const EventForm = () => {
                             onChange={handleChange} className="w-full p-2 border rounded" />
                     </div>
                     <div className="mb-5">
-                        <label className="block text-gray-700 mb-1">Category *</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <label className="block text-gray-700 mb-1">Category * </label>
+                        <p className="text-gray-500 mb-1">Only select one</p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             {categories.map((category) => (
                                 <div
                                     key={category.id}

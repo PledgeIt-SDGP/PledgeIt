@@ -12,7 +12,9 @@ const OrganizationDashboard = ({ children }) => {
                     {children}
                 </main>
             </div>
+
         </>
+
     );
 
 }

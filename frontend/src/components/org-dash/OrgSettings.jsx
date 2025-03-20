@@ -1,44 +1,69 @@
 import React, { useState } from "react";
-import { BadgeInfo, Settings2, Building, Image, LogOut, Trash2 } from "lucide-react";
+import { BadgeInfo, Settings2, Building, Image, LogOut, Trash2, X } from "lucide-react";
 import OrganizationDashboard from "../../pages/OrganizationDashboard";
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState("account");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
-
+    const [error, setError] = useState(null); // State for error messages
 
     const handleLogout = () => {
-        // Implement your logout logic here
-        console.log("Logging out...");
-        // Example: clearing local storage and redirecting
-        localStorage.removeItem("authToken");
-        window.location.href = "/login";
+        try {
+            // Implement your logout logic here
+            console.log("Logging out...");
+            localStorage.removeItem("authToken");
+            window.location.href = "/login";
+        } catch (error) {
+            setError("An error occurred during logout. Please try again.");
+        }
     };
 
-    const handleDeleteAccount = () => {
-        // Implement your account deletion logic here
-        console.log("Deleting account...");
-        // This would typically involve an API call to delete the user's account
-        // After deletion, you would log them out and redirect
-        localStorage.removeItem("authToken");
-        window.location.href = "/login";
+    const handleDeleteAccount = async () => {
+        try {
+            // Implement your account deletion logic here
+            console.log("Deleting account...");
+            // Example: API call to delete the account
+            // await axios.delete("/api/account");
+            localStorage.removeItem("authToken");
+            window.location.href = "/login";
+        } catch (error) {
+            setError("An error occurred while deleting your account. Please try again.");
+        }
     };
 
     const handleChange = (e) => {
-        if (e.target.name === "image_url") {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => setPreviewImage(reader.result);
-                reader.readAsDataURL(file);
+        try {
+            if (e.target.name === "image_url") {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => setPreviewImage(reader.result);
+                    reader.readAsDataURL(file);
+                }
             }
+        } catch (error) {
+            setError("An error occurred while uploading the image. Please try again.");
         }
     };
-    
+
+    const handleCloseError = () => {
+        setError(null); // Clear the error message
+    };
 
     return (
         <OrganizationDashboard>
+            {/* Error Pop-up */}
+            {error && (
+                <div className="fixed top-4 right-4 z-50">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
+                        <span>{error}</span>
+                        <button onClick={handleCloseError} className="ml-4">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="flex flex-col p-5 bg-gray-50">
                 <h1 className="text-2xl font-bold m-8">Settings</h1>
 
