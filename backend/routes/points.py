@@ -52,4 +52,21 @@ def calculate_xp_points(social_impact_score: float, duration_hours: float) -> in
     """
     xp_points = int((social_impact_score * 10) * (duration_hours))
     return xp_points
+
+async def calculate_and_assign_xp_points(event_description: str, duration_hours: float) -> int:
+    """
+    Calculate and assign XP points for an event.
+    """
+    try:
+        # Get the social impact score from the event description
+        social_impact_score = await get_social_impact_score(event_description)
+        
+        # Calculate XP points
+        xp_points = calculate_xp_points(social_impact_score, duration_hours)
+        
+        return xp_points
+    
+    except Exception as e:
+        logging.error(f"Error in calculate_and_assign_xp_points: {e}")
+        raise HTTPException(status_code=500, detail="Failed to calculate XP points")
             
