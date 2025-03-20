@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useUser } from "../../hooks/UserContext";
+// import { useUser } from "../../hooks/UserContext";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
-    const { setUser } = useUser();
+    // const { setUser } = useUser();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -32,7 +32,7 @@ const LoginForm = () => {
             const { access_token, user } = response.data;
             localStorage.setItem('token', access_token); // Store token
             localStorage.setItem('userRole', user.role); // Store user role
-            setUser(user); // Update user context
+            // setUser(user); // Update user context
     
             setMessage("Login successful!");
     
@@ -50,11 +50,11 @@ const LoginForm = () => {
         } finally {
             setLoading(false);
         }
-    };      
-    
+    };
+
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">
+        <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-radial from-red-300 from-50% to-pink-700">
             <div className="w-full md:w-2/5 flex flex-col justify-center px-6 md:px-10 py-6 md:py-0">
                 <div className="bg-white p-8 rounded-xl shadow-lg mx-auto w-full max-w-md py-15">
                     <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Welcome Back!</h2>
