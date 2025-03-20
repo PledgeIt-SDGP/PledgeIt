@@ -39,9 +39,9 @@ const LoginForm = () => {
             // Redirect to dashboard based on role
             setTimeout(() => {
                 if (user.role === "volunteer") {
-                    navigate("/volDash");
+                    navigate("/volHome");
                 } else if (user.role === "organization") {
-                    navigate("/orgDash");
+                    navigate("/orgHome");
                 }
             }, 1500);
     

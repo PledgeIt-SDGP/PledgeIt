@@ -121,7 +121,7 @@ const OrgSignupForm = () => {
     
             setMessage("Registration successful!");
             setTimeout(() => {
-                navigate("/OrgDash");
+                navigate("/OrgHome");
             }, 1500);
     
         } catch (error) {

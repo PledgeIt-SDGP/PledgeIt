@@ -41,9 +41,9 @@ const AppRoutes = () => {
           });
           setUser(response.data); // Update user context with fetched data
           if (userRole === 'volunteer') {
-            navigate('/volDash');
+            navigate('/volHome');
           } else if (userRole === 'organization') {
-            navigate('/orgDash');
+            navigate('/orgHome');
           }
         } catch (error) {
           console.error('Failed to fetch user data:', error);
