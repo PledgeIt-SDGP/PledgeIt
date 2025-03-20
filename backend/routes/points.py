@@ -14,3 +14,36 @@ logging.basicConfig(level=logging.INFO)
 #Deepseek API Key
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/analyze" 
+
+async def get_social_impact_score(description: str) -> float:
+    """
+    Get the social impact score from the event description using the DeepSeek API.
+    """
+    try:
+        headers = {
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "text": description,
+            "analysis_type": "social_impact"  # Replace with the actual analysis type
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(DEEPSEEK_API_URL, json=payload, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            
+            # Extract the social impact score from the response
+            social_impact_score = result.get("score", 0.0)
+            return social_impact_score
+    
+    except httpx.HTTPStatusError as e:
+        logging.error(f"DeepSeek API request failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get social impact score from DeepSeek API")
+    except Exception as e:
+        logging.error(f"Unexpected error in get_social_impact_score: {e}")
+        raise HTTPException(status_code=500, detail="Unexpected error occurred while calculating social impact score")
+
+            
+            
