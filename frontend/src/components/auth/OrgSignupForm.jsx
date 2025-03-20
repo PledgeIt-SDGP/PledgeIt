@@ -38,6 +38,7 @@ const OrgSignupForm = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordError, setPasswordError] = useState('');
 
+
     const navigate = useNavigate();
 
     const handleLogoChange = (e) => {
@@ -69,21 +70,23 @@ const OrgSignupForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-    
+        setMessage(''); // Clear previous messages
+        setPasswordError(''); // Clear password error
+
+        // Validate required fields
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
             return;
         }
-    
+
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
             return;
-        } else {
-            setPasswordError('');
         }
-    
+
+        // Prepare form data
         const formDataToSend = new FormData();
         formDataToSend.append('logo', orgLogo);
         formDataToSend.append('name', orgName);
@@ -93,16 +96,16 @@ const OrgSignupForm = () => {
         formDataToSend.append('email', email);
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-    
+
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
             }
         });
-    
+
         formDataToSend.append('password', password);
         formDataToSend.append('password_confirmation', confirmPassword);
-    
+
         try {
             const response = await axios.post(
                 "http://127.0.0.1:8000/auth/organization/register",
@@ -111,21 +114,32 @@ const OrgSignupForm = () => {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-    
+
             // Store token and role in localStorage
             localStorage.setItem('token', response.data.access_token);
             localStorage.setItem('userRole', response.data.user.role);
-    
+
             // Update user context
             setUser(response.data.user);
-    
+
             setMessage("Registration successful!");
             setTimeout(() => {
                 navigate("/OrgDash");
             }, 1500);
-    
+
         } catch (error) {
-            setMessage(error.response?.data?.detail || "An error occurred");
+            // Handle specific errors from the backend
+            if (error.response) {
+                // Backend validation errors (e.g., duplicate email, invalid data)
+                const errorMessage = error.response.data?.detail || error.response.data?.message || "An error occurred during registration.";
+                setMessage(errorMessage);
+            } else if (error.request) {
+                // Network errors (e.g., no response from the server)
+                setMessage("Network error. Please check your connection and try again.");
+            } else {
+                // Other errors (e.g., axios configuration issues)
+                setMessage("An unexpected error occurred. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -145,7 +159,7 @@ const OrgSignupForm = () => {
 
                     {/* Logo Upload Section */}
                     <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 my-5">
-                    <div className="relative w-25 h-25 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center bg-gray-200 overflow-hidden cursor-pointer">
+                        <div className="relative w-25 h-25 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center bg-gray-200 overflow-hidden cursor-pointer">
                             {orgLogo ? (
                                 <img
                                     src={URL.createObjectURL(orgLogo)}
