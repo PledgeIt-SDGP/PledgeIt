@@ -34,7 +34,10 @@ const Home = () => {
         variants={fadeInUp}
         className="relative flex flex-row items-center mt-8 px-5 md:mt-10  md:px-4 lg:px-8 lg:mt-5 w-full"
       >
-        <div id="Home" className="relative flex flex-row items-center mt-8 md:px-4 lg:px-8  md:mt-5 lg:mt-10 w-full">
+        <div
+          id="Home"
+          className="relative flex flex-row items-center mt-8 md:px-4 lg:px-8  md:mt-5 lg:mt-10 w-full"
+        >
           {/* Left Content */}
           <div className="flex flex-col justify-center max-w-2xl space-y-6 ">
             <span className="flex flex-row gap-2 text-lg font-medium text-orange-600">
@@ -147,8 +150,12 @@ const Home = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="my-10"
+        className="relative mt-10 mb-10 bg-cover p-5 bg-center lg:p-15"
+        style={{ backgroundImage: "url('assests/bg3.png')" }}
       >
+        <h2 className="text-3xl font-bold text-white text-center mb-6 lg:text-4xl">
+          Latest Volunteer Events
+        </h2>
         <HomeEvent />
       </motion.div>
 

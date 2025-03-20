@@ -2,80 +2,94 @@ import React from "react";
 import Footer1 from "../Footer1";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import BarChart from "./BarChart";
+import BarChart from "./AreaBaseLine";
 import VolunteerDashboard from "../../pages/VolunteerDashboard";
+import PieAnimation from "./PieAnimation";
+import HomeEvent from "../home/HomeEvent";
+import DailyQuotes from "./DailyQuotes";
 
 function VolunteerHome() {
   const { id } = useParams(); // Get user ID from URL
-  const [volunteer, setVolunteer] = useState(null);
-  const [events, setEvents] = useState([]);
+  const [volunteers, setVolunteers] = useState([]); // Store all volunteers
+  const [volunteer, setVolunteer] = useState(null); // Store single volunteer
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchVolunteer = async () => {
+    const fetchVolunteers = async () => {
       try {
-        const response = await fetch("/volunteer.json");
+        const response = await fetch("/volunteers.json");
         const data = await response.json();
 
-        const volunteer = data.events.find(
-          (e) => e.volunteer_id === parseInt(id)
-        );
-
-        if (volunteer) {
-          setVolunteer(volunteer.name); // Set only the name
-        } else {
-          setVolunteer("Unknown Volunteer");
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format");
         }
-      } catch (error) {
-        setVolunteer("Unknown Volunteer");
-      }
-    };
 
-    fetchVolunteer();
-  }, [id]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await fetch("/events.json"); // Fetch from the JSON file
-        const jsonData = await response.json();
-
-        if (!jsonData.events) return;
-
-        // Calculate Active Volunteers
-        const activeVolunteers = jsonData.events.reduce(
-          (sum, events) => sum + (events.total_registered_volunteers || 0),
-          0
+        // Flatten the volunteers list from all events
+        const allVolunteers = data.flatMap((event) =>
+          event.volunteers.map((v) => ({ ...v, event_id: event.event_id }))
         );
+        setVolunteers(allVolunteers);
 
-        // Calculate Monthly Events
-        const currentMonth = new Date().getMonth() + 1;
-        const monthlyEvents = jsonData.events.filter(
-          (events) => new Date(events.date).getMonth() + 1 === currentMonth
-        ).length;
-
-        setStats({ activeVolunteers, monthlyEvents });
+        // Find specific volunteer by ID
+        const foundVolunteer = allVolunteers.find(
+          (v, index) => index === parseInt(id)
+        );
+        setVolunteer(
+          foundVolunteer || { first_name: "Volunteer", last_name: "Volunteer" }
+        );
       } catch (error) {
-        console.error("Error fetching events data:", error);
+        console.error("Error fetching volunteer data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadData();
-  }, []);
+    fetchVolunteers();
+  }, [id]);
 
   return (
     <>
       <VolunteerDashboard>
-        <div class="grid gap-3 p-4 lg: min-h-screen ">
-          <div className="text-gray-800 mt-10">Welcome to PledgeIt !</div>
-          <div className=" text-3xl font-bold text-gray-800 ">
-            <h1>{volunteer}</h1>
+        <div className="grid gap-3 p-4 lg: min-h-screen ">
+          <div className=" text-3xl font-bold text-gray-800 mb-4 ">
+            {/* Header Section */}
+            <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 sm:p-6 transition-shadow hover:shadow-lg">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center text-center sm:text-left">
+                  <div className="relative mb-3 sm:mb-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-300 rounded-full opacity-20 animate-pulse"></div>
+                    <img
+                      src={
+                        volunteer?.profile_picture ||
+                        "https://img.freepik.com/free-vector/multicultural-concept-illustration_114360-25402.jpg"
+                      }
+                      alt="Volunteer Profile picture"
+                      className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-md relative z-10"
+                    />
+                  </div>
+                  <div className="sm:ml-4">
+                    <div className="flex flex-col sm:flex-row items-center mb-1 justify-center sm:justify-start">
+                      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-1 sm:mb-0 sm:mr-2">
+                        DASHBOARD
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Welcome to PledgeIt
+                      </div>
+                    </div>
+                    <h1 className="text-xl lg:text-2xl font-bold">
+                      Hi there,{" "}
+                      {volunteer ? `${volunteer.first_name}` : "Loading..."}!{" "}
+                    </h1>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="grid lg:grid-cols-3 gap-4  ">
-            <div class="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
+          <div className="grid lg:grid-cols-3 gap-4  ">
+            <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 bg-image: url('assests/bg4.png') ">
               <div className=" text-gray-800 ">
                 <p>Total Events Participated: </p>
-                <p className="font-bold text-4xl">0</p>
+                <p className="font-bold text-4xl">{volunteer?.event_id || 0}</p>
               </div>
 
               <div className="bg-orange-100 text-orange-500 rounded-lg p-3">
@@ -99,7 +113,7 @@ function VolunteerHome() {
                 </svg>
               </div>
             </div>
-            <div class="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
+            <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
               <div className=" text-gray-800 ">
                 <p>Total Hours Volunteered</p>
                 <p className="font-bold text-4xl">0</p>
@@ -122,7 +136,7 @@ function VolunteerHome() {
                 </svg>
               </div>
             </div>
-            <div class="flex items-center justify-between  bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 backdrop-blur-sm rounded-2xl p-10 shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
+            <div className="flex items-center justify-between  bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 backdrop-blur-sm rounded-2xl p-10 shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
               <div className=" text-white ">
                 <p>
                   Register & Join for
@@ -140,31 +154,66 @@ function VolunteerHome() {
               <img
                 src="assests/levelUp.svg"
                 alt="volunteer"
-                className="w-34 h-32"
+                className="w-25 h-25"
               />
             </div>
           </div>
-          <div class="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-2 ">
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100">
-              Volunteer Stats
+          <div className="grid grid-cols-1 gap-4  lg:mt-0 xl:grid-cols-2 ">
+            <DailyQuotes />
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
+              <h3 className="text-lg font-semibold">
+                Categories You Have Contributed
+              </h3>
+              <PieAnimation />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 ">
+              <h3 className="text-lg font-semibold">Volunteer Stats</h3>{" "}
               <BarChart />
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 overflow-y-auto h-96 overflow-x-hidden">
-              <div className="text-gray-800 mt-2">
-                <h3 className="text-lg font-semibold">Upcoming Events</h3>
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-1 mt-4">
-                  {events.map((event) => (
+            <div className="bg-red-100 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
+              <h3 className="text-lg font-semibold">Top Volunteers</h3>
+              <div className="grid grid-cols-1 gap-4 mt-4">
+                {volunteers.length > 0 ? (
+                  volunteers.map((volunteer, index) => (
                     <div
-                      key={event.id}
-                      className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-gray-100"
+                      key={index}
+                      className="bg-white rounded-2xl p-2 shadow-md border border-gray-100 flex items-center justify-between"
                     >
-                      <h4 className="text-md font-medium">{event.name}</h4>
-                      <p className="text-gray-600 text-sm">{event.date}</p>
+                      <div className="flex items-center justify-between">
+                        {volunteers.profile_picture ? (
+                          <img
+                            src={volunteers.profile_picture}
+                            alt="volunteer"
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <img
+                            src="assests/volunteer.png"
+                            alt="volunteer"
+                            className="w-8 h-8 rounded-full bg-gray-200 text-red-500"
+                          />
+                        )}
+                        <h4 className="text-md font-medium">
+                          {volunteer.first_name} {volunteer.last_name}
+                        </h4>
+                      </div>
+                      <p>12+</p>
                     </div>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <p className="text-gray-600">No volunteers available</p>
+                )}
               </div>
             </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:mt-0 ">
+            <h2 className="pt-10 text-xl font-bold text-gray-800 text-center ">
+              Latest Volunteer Events
+            </h2>
+            <HomeEvent />
           </div>
         </div>
         <Footer1 />

@@ -36,7 +36,7 @@ const Sidebar = () => {
     { name: "Events", path: "/event", icon: <Calendar /> },
     { name: "Map", path: "/map", icon: <MapPin /> },
     { name: "Profile", path: "/profile", icon: <UserRound /> },
-    { name: "Settings", path: "/set", icon: <Settings /> },
+    { name: "Settings", path: "/volunteerSettings", icon: <Settings /> },
   ];
 
   const [user] = useState({

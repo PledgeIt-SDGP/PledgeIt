@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+
 const HomeEvent = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,22 +24,17 @@ const HomeEvent = () => {
   }
 
   return (
-    <div
-      className="relative mt-10 mb-10 bg-cover p-5 bg-center lg:p-15"
-      style={{ backgroundImage: "url('assests/bg3.png')" }}
-    >
+<>
       {" "}
       <div className="my-10">
-        <h2 className="text-3xl font-bold text-white text-center mb-6 lg:text-4xl">
-          Latest Volunteer Events
-        </h2>
+
 
         {/* Scrollable container */}
         <div className="flex gap-7 overflow-x-auto  scrollbar-hide whitespace-nowrap px-3 py-4">
           {events.map((event) => (
             <div
               key={event.event_id}
-              className="bg-white shadow-lg rounded-xl  flex-shrink-0 w-80 lg:w-90"
+              className="bg-white shadow-lg rounded-xl  flex-shrink-0 w-80"
             >
               <img
                 src={event.image_url}
@@ -70,7 +66,7 @@ const HomeEvent = () => {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

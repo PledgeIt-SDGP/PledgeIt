@@ -6,6 +6,7 @@ import EventDetails from "./components/eventDetails/EventDetails";
 import HomeEvent from "./components/home/HomeEvent";
 import VolunteerHome from "./components/volunteerDashboard/VolunteerHome";
 import VolunteerDashboard from "./pages/VolunteerDashboard";
+import VolunteerSettings from "./pages/VolunteerSettings";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/details/:id" element={<EventDetails />} />
         <Route path="/volunteerHome" element={<VolunteerHome />} />
         <Route path="/dashboard" element={<VolunteerDashboard />} />
-
+        <Route path="/volunteerSettings" element={<VolunteerSettings />} />
       </Routes>
     </Router>
   );

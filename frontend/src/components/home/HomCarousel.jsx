@@ -28,11 +28,11 @@ export function HomeCarousel() {
 
       <div className="relative h-full w-full">
         <img
-          src="https://img.freepik.com/free-photo/close-up-veterinarian-taking-care-dog_23-2149100187.jpg?t=st=1740834973~exp=1740838573~hmac=20da7feb0b8cc4cc491ece2868d66ef4adaa8aafa69d613b498032c76b6d14ce&w=2000"
+          src="assests/carouesel1.jpg"
           alt="image 2"
           className="h-[700px] w-full object-cover"
         />
-        <div className="absolute inset-0 grid h-[700px] w-full items-center bg-black/35">
+        <div className="absolute inset-0 grid h-[700px] w-full items-end bg-black/35">
           <div className="w-3/4 pl-12 md:w-2/4 md:pl-20 lg:pl-32">
             <Typography
               variant="h1"

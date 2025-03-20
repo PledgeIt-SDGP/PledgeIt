@@ -19,7 +19,7 @@ function EventCards(props) {
   }
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-7 mt-6 ">
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-7 mt-6 ">
         {slice.map((event) => {
           const eventDate = new Date(event.date);
           const month = eventDate.toLocaleString("default", { month: "short" });
@@ -40,7 +40,7 @@ function EventCards(props) {
               <img
                 src={event.image_url}
                 alt={event.event_name}
-                className="w-full h-40 object-cover"
+                className="w-full h-40 object-cover rounded-t-lg"
               />
               <div className="p-4 flex flex-col space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800">

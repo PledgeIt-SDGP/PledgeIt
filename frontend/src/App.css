@@ -3,3 +3,17 @@
 body {
   background-color: #fbf8f8f0;
 }
+
+@theme {
+  --color-blaze-orange-50: #fff8ec;
+  --color-blaze-orange-100: #fff0d3;
+  --color-blaze-orange-200: #ffdca5;
+  --color-blaze-orange-300: #ffc26d;
+  --color-blaze-orange-400: #ff9d32;
+  --color-blaze-orange-500: #ff7f0a;
+  --color-blaze-orange-600: #ff6600;
+  --color-blaze-orange-700: #cc4902;
+  --color-blaze-orange-800: #a1390b;
+  --color-blaze-orange-900: #82310c;
+  --color-blaze-orange-950: #461604;
+}
