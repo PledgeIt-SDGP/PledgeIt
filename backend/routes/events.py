@@ -487,6 +487,9 @@ async def update_event(event_id: int, updated_event: Event, current_org: dict = 
         update_data["date"] = datetime.datetime.combine(update_data["date"], datetime.time())
     if "registration_deadline" in update_data and isinstance(update_data["registration_deadline"], datetime.date) and not isinstance(update_data["registration_deadline"], datetime.datetime):
         update_data["registration_deadline"] = datetime.datetime.combine(update_data["registration_deadline"], datetime.time())
+    # Fix: Convert the 'time' field from datetime.time to a string if necessary.
+    if "time" in update_data and isinstance(update_data["time"], datetime.time):
+        update_data["time"] = update_data["time"].strftime("%H:%M:%S")
     
     result = events_collection.update_one(
         {"$or": [{"event_id": event_id}, {"event_id": str(event_id)}]},

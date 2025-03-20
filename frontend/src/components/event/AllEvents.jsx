@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import OrganizationDashboard from "../../pages/OrganizationDashboard";
+import axios from "axios";
 
 const AllEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/events.json") // Adjust path if fetching from an API
-      .then((response) => response.json())
-      .then((data) => {
-        setEvents(data.events); // Assuming the JSON has an "events" key
+    axios
+      .get("http://127.0.0.1:8000/events")
+      .then((response) => {
+        setEvents(response.data); // Backend returns a list of events
         setLoading(false);
       })
       .catch((error) => {
@@ -39,8 +40,8 @@ const AllEvents = () => {
               const day = eventDate.getDate();
               return (
                 <div
-                  key={event.id}
-                  className=" rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white  flex flex-col w-82 h-110 mx-auto"
+                  key={event.event_id}
+                  className="rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white flex flex-col w-82 h-110 mx-auto"
                 >
                   {/* Date Box */}
                   <div className="relative">
