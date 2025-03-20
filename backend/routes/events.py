@@ -9,6 +9,7 @@ import os
 import uuid as uuid_lib  
 import cloudinary
 import cloudinary.uploader
+from services.points import calculate_and_assign_xp_points  # Import the XP points calculation function
 
 router = APIRouter()
 
@@ -253,6 +254,20 @@ async def create_event(
 
     # Override organization with authenticated organization's name
     organization = current_org["name"]
+
+     # Calculate XP points based on the event description and duration
+    try:
+        duration_hours = float(duration)  # Convert duration to float
+        xp_points = await calculate_and_assign_xp_points(description, duration_hours)
+    except Exception as e:
+        logging.error(f"Failed to calculate XP points: {e}")
+        xp_points = 0  # Default to 0 if calculation fails
+
+    # Add XP points to the event data
+    event_data["xp_points"] = xp_points
+
+    # Insert the new event into the MongoDB collection
+    events_collection.insert_one(event_data)
 
     # ------------------------------
     # Additional Validations Start
