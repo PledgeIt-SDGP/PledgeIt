@@ -4,7 +4,7 @@ import Category from "../components/search/Category";
 import EventCards from "../components/search/EventCards";
 import { Filter, Search } from "lucide-react";
 import Footer1 from "../components/Footer1";
-import VolunteerDashboard from "./VolunteerDashboard";
+import VolunteerDashboard from "./vol/VolunteerDashboard";
 
 const SearchFilters = () => {
   const [filters, setFilters] = useState({
@@ -91,6 +91,7 @@ const SearchFilters = () => {
   }
 
   return (
+    <>
     <VolunteerDashboard>
       <div className="flex flex-col lg:flex-row gap-6 min-h-screen">
         <div className="max-w-7xl mx-auto p-4">
@@ -191,7 +192,8 @@ const SearchFilters = () => {
         </div>
       </div>
       <Footer1 />
-    </VolunteerDashboard>
+      </VolunteerDashboard>
+      </>
   );
 };
 

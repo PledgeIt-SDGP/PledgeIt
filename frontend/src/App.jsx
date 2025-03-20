@@ -4,15 +4,21 @@ import HomePage from "./pages/Home";
 import SearchFilters from "./pages/SearchFilter";
 import EventDetails from "./components/eventDetails/EventDetails";
 import HomeEvent from "./components/home/HomeEvent";
-import VolunteerDashboard from "./pages/VolunteerDashboard";
 import OrgSignUp from "./components/auth/OrgSignupForm";
 import VolSignUp from "./components/auth/VolunteerSignupForm";
 import UserPage from "./pages/UserPage";
 import Login from "./components/auth/LoginForm";
-import OrganizationDashboard from "./pages/OrganizationDashboard";
+import OrganizationHome from "./pages/org/OrgHome";
+import OrganizationSettings from "./pages/org/OrgSettings";
+import OrganizationProfile from "./pages/org/OrgProfile";
+import OrganizationMap from "./pages/org/OrgMap";
+import OrganizationEvents from "./pages/org/OrgEvents";
 import { UserProvider } from "./hooks/UserContext";
 import { useEffect } from "react";
 import { useUser } from "./hooks/UserContext";
+import VolunteerHome from "./pages/vol/VolunteerHome";
+import VolunteerMap from "./pages/vol/VolunteerMap";
+import VolunteerSettings from "./pages/vol/VolunteerSettings";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -54,16 +60,28 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+
       <Route path="/UserPage" element={<UserPage />} />
+
       <Route path="/Login" element={<Login />} />
+
       <Route path="/VolSignUp" element={<VolSignUp />} />
       <Route path="/OrgSignUp" element={<OrgSignUp />} />
-      <Route path="/event" element={<SearchFilters />} />
+
+      <Route path="/VolHome" element={<VolunteerHome />} />
+      <Route path="/VolEvents" element={<SearchFilters />} />
       <Route path="/latestEvents" element={<HomeEvent />} />
       <Route path="/details" element={<EventDetails />} />
       <Route path="/details/:id" element={<EventDetails />} />
-      <Route path="/VolDash" element={<VolunteerDashboard />} />
-      <Route path="/OrgDash" element={<OrganizationDashboard />} />
+      <Route path="/VolMap" element={<VolunteerMap />} />
+      <Route path="/VolSettings" element={<VolunteerSettings />} /> 
+
+      <Route path="/OrgHome" element={<OrganizationHome />} />
+      <Route path="/OrgEvents" element={<OrganizationEvents />} />
+      <Route path="/OrgMap" element={<OrganizationMap />} />
+      <Route path="/OrgProfile" element={<OrganizationProfile />} />
+      <Route path="/OrgSettings" element={<OrganizationSettings />} /> 
+
     </Routes>
   );
 };

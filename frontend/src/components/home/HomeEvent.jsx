@@ -59,7 +59,7 @@ const HomeEvent = () => {
                 <div className="text-md font-semibold text-orange-600">
                   {/*Add signup page */}
                   <Link
-                    to={`/signup`}
+                    to={`/userpage`}
                     className="view-more-link"
                   >
                     View More →
