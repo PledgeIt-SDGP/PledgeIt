@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { BadgeInfo } from "lucide-react";
+import { BadgeInfo } from 'lucide-react';
 import { useParams, useNavigate } from "react-router-dom";
 
 const UpdateEvent = () => {
@@ -36,19 +36,20 @@ const UpdateEvent = () => {
         const eventData = response.data;
         setOriginalData(eventData);
 
-        // Format date for input fields if needed
-        const formattedDate = eventData.date
-          ? new Date(eventData.date).toISOString().split("T")[0]
-          : "";
+        // Format dates for input fields
+        const formattedDate = eventData.date ? new Date(eventData.date).toISOString().split('T')[0] : '';
         const formattedDeadline = eventData.registration_deadline
-          ? new Date(eventData.registration_deadline).toISOString().split("T")[0]
-          : "";
+          ? new Date(eventData.registration_deadline).toISOString().split('T')[0]
+          : '';
+
+        // If skills_required is an array, join it into a string
+        const formattedSkills = Array.isArray(eventData.skills_required)
+          ? eventData.skills_required.join(", ")
+          : eventData.skills_required || "";
 
         setFormData({
           description: eventData.description || "",
-          skills_required: Array.isArray(eventData.skills_required)
-            ? eventData.skills_required.join(", ")
-            : eventData.skills_required || "",
+          skills_required: formattedSkills,
           date: formattedDate,
           time: eventData.time || "",
           venue: eventData.venue || "",
@@ -83,33 +84,54 @@ const UpdateEvent = () => {
     e.preventDefault();
     setSubmitting(true);
 
-    // Merge originalData with updated formData and update contact_person accordingly.
-    const updatedPayload = {
-      ...originalData,
-      ...formData,
-      // If skills_required was originally an array, convert the comma-separated string back into an array.
-      skills_required: formData.skills_required.split(",").map((skill) => skill.trim()),
-      contact_person: {
+    // Only include fields that have changed.
+    const changedFields = {};
+    for (const key in formData) {
+      if (key !== "contact_person_name" && key !== "contact_person_number") {
+        if (formData[key] !== originalData[key]) {
+          changedFields[key] = formData[key];
+        }
+      }
+    }
+
+    // Handle contact_person separately.
+    if (
+      formData.contact_person_name !== (originalData.contact_person?.name || "") ||
+      formData.contact_person_number !== (originalData.contact_person?.contact_number || "")
+    ) {
+      changedFields["contact_person"] = {
         name: formData.contact_person_name,
         contact_number: formData.contact_person_number
-      }
-    };
+      };
+    }
+
+    // Convert skills_required to an array if it has changed.
+    if (changedFields.skills_required) {
+      changedFields.skills_required = changedFields.skills_required
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(skill => skill);
+    }
+
+    // Include authentication header. (Retrieve your organization email from localStorage or use a fallback.)
+    const orgEmail = localStorage.getItem("x_org_email") || "demo@example.com";
 
     try {
-      // Use PUT instead of PATCH since the backend update endpoint is defined as PUT.
-      const response = await axios.put(`http://127.0.0.1:8000/events/${eventId}`, updatedPayload, {
-        headers: {
-          // Add any required headers here (e.g., authentication)
+      const response = await axios.patch(
+        `http://127.0.0.1:8000/events/${eventId}`,
+        changedFields,
+        {
+          headers: {
+            "x_org_email": orgEmail
+          }
         }
-      });
+      );
       setMessage(response.data.message || "Event updated successfully");
       setTimeout(() => {
         navigate("/orgevents"); // Redirect back to events list
       }, 1000);
     } catch (error) {
-      setMessage(
-        error.response?.data?.detail || "An error occurred while updating the event"
-      );
+      setMessage(error.response?.data?.detail || "An error occurred while updating the event");
     } finally {
       setSubmitting(false);
     }
@@ -218,7 +240,7 @@ const UpdateEvent = () => {
               type="text"
               name="address"
               value={formData.address}
-              placeholder="e.g., 57, Ramakrishna Road, Colombo 06, Sri Lanka"
+              placeholder="e.g.,57, Ramakrishna Road, Colombo 06, Sri Lanka"
               onChange={handleChange}
               className="w-full p-2 border rounded"
             />
