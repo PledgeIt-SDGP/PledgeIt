@@ -388,3 +388,89 @@ async def get_total_users():
     total_organizations = organizations_collection.count_documents({})
     total_users = total_volunteers + total_organizations
     return {"total_users": total_users}
+
+@router.put('/auth/volunteer/update')
+async def update_volunteer_details(
+    user: dict = Depends(get_current_user),
+    first_name: str = Form(None),
+    last_name: str = Form(None),
+    password: str = Form(None),
+    password_confirmation: str = Form(None),
+):
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can update their details.")
+
+    update_data = {}
+    if first_name:
+        update_data["first_name"] = first_name
+    if last_name:
+        update_data["last_name"] = last_name
+
+    # Handle password update
+    if password and password_confirmation:
+        verify_passwords(password, password_confirmation)
+        update_data["password"] = hash_password(password)
+    elif password or password_confirmation:
+        raise HTTPException(status_code=400, detail="Both password and password confirmation are required.")
+
+    # Update the volunteer's details in the database
+    result = volunteers_collection.update_one(
+        {"_id": ObjectId(user["user_id"])},
+        {"$set": update_data}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="No changes were made.")
+
+    return {"message": "Volunteer details updated successfully"}
+
+@router.put('/auth/organization/update')
+async def update_organization_details(
+    user: dict = Depends(get_current_user),
+    name: str = Form(None),
+    website_url: str = Form(None),
+    organization_type: str = Form(None),
+    about: str = Form(None),
+    contact_number: str = Form(None),
+    address: str = Form(None),
+    causes_supported: list[str] = Form(None),
+    password: str = Form(None),
+    password_confirmation: str = Form(None),
+    logo: UploadFile = File(None),
+):
+    if user["role"] != "organization":
+        raise HTTPException(status_code=403, detail="Permission denied. Only organizations can update their details.")
+
+    if password and password_confirmation:
+        verify_passwords(password, password_confirmation)
+        hashed_password = hash_password(password)
+    else:
+        hashed_password = None
+
+    update_data = {}
+    if name:
+        update_data["name"] = name
+    if website_url:
+        update_data["website_url"] = website_url
+    if organization_type:
+        update_data["organization_type"] = organization_type
+    if about:
+        update_data["about"] = about
+    if contact_number:
+        update_data["contact_number"] = contact_number
+    if address:
+        update_data["address"] = address
+    if causes_supported:
+        update_data["causes_supported"] = causes_supported
+    if logo:
+        if not allowed_file(logo.filename):
+            raise HTTPException(status_code=400, detail="Invalid file type. Only PNG, JPG, JPEG files are allowed.")
+        logo_bytes = await logo.read()
+        cloudinary_upload = cloudinary.uploader.upload(logo_bytes, folder="organization_logos")
+        update_data["logo"] = cloudinary_upload["secure_url"]
+    if hashed_password:
+        update_data["password"] = hashed_password
+
+    organizations_collection.update_one({"_id": ObjectId(user["user_id"])}, {"$set": update_data})
+
+    return {"message": "Organization details updated successfully"}

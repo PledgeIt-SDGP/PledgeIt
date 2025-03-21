@@ -1,49 +1,126 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useUser } from "../../hooks/UserContext";
 import { BadgeInfo, Settings2, Building, Image, LogOut, Trash2, X } from "lucide-react";
 import OrganizationDashboard from "./OrganizationDashboard";
 
 const Settings = () => {
+    const { user, setUser } = useUser(); // Access user context
     const [activeTab, setActiveTab] = useState("account");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
-    const [error, setError] = useState(null); // State for error messages
+    const [error, setError] = useState(null);
+    const [formData, setFormData] = useState({
+        name: user?.name || "",
+        website_url: user?.website_url || "",
+        organization_type: user?.organization_type || "",
+        about: user?.about || "",
+        contact_number: user?.contact_number || "",
+        address: user?.address || "",
+        causes_supported: user?.causes_supported || [],
+        password: "",
+        password_confirmation: "",
+    });
 
-    const handleLogout = () => {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => setPreviewImage(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUpdateOrganizationDetails = async (e) => {
+        e.preventDefault();
+        const formDataToSend = new FormData();
+        formDataToSend.append("name", formData.name);
+        formDataToSend.append("website_url", formData.website_url);
+        formDataToSend.append("organization_type", formData.organization_type);
+        formDataToSend.append("about", formData.about);
+        formDataToSend.append("contact_number", formData.contact_number);
+        formDataToSend.append("address", formData.address);
+        formDataToSend.append("causes_supported", JSON.stringify(formData.causes_supported));
+        if (formData.password) {
+            formDataToSend.append("password", formData.password);
+            formDataToSend.append("password_confirmation", formData.password_confirmation);
+        }
+        if (e.target.image_url.files[0]) {
+            formDataToSend.append("logo", e.target.image_url.files[0]);
+        }
+
         try {
-            // Implement your logout logic here
-            console.log("Logging out...");
-            localStorage.removeItem("authToken");
-            window.location.href = "/login";
+            const response = await axios.put(
+                "http://127.0.0.1:8000/auth/organization/update",
+                formDataToSend,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            console.log("Organization details updated:", response.data);
+
+            // Update the user context with the new details
+            setUser((prevUser) => ({
+                ...prevUser,
+                ...formData,
+                logo: previewImage || prevUser.logo, // Update logo if a new one was uploaded
+            }));
+
+            alert("Organization details updated successfully!");
         } catch (error) {
-            setError("An error occurred during logout. Please try again.");
+            console.error("Failed to update organization details:", error);
+            alert("Failed to update details. Please try again.");
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await axios.post(
+                "http://127.0.0.1:8000/auth/logout",
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+            localStorage.removeItem("token");
+            localStorage.removeItem("userRole");
+            setUser(null); // Clear user context
+            window.location.href = "/"; // Redirect to login page
+        } catch (error) {
+            console.error("Failed to logout:", error);
+            alert("Failed to logout. Please try again.");
         }
     };
 
     const handleDeleteAccount = async () => {
-        try {
-            // Implement your account deletion logic here
-            console.log("Deleting account...");
-            // Example: API call to delete the account
-            // await axios.delete("/api/account");
-            localStorage.removeItem("authToken");
-            window.location.href = "/login";
-        } catch (error) {
-            setError("An error occurred while deleting your account. Please try again.");
-        }
-    };
-
-    const handleChange = (e) => {
-        try {
-            if (e.target.name === "image_url") {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = () => setPreviewImage(reader.result);
-                    reader.readAsDataURL(file);
-                }
+        if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            try {
+                await axios.delete(
+                    "http://127.0.0.1:8000/auth/organization/delete",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        },
+                    }
+                );
+                localStorage.removeItem("token");
+                localStorage.removeItem("userRole");
+                setUser(null); // Clear user context
+                window.location.href = "/"; // Redirect to login page
+            } catch (error) {
+                console.error("Failed to delete account:", error);
+                alert("Failed to delete account. Please try again.");
             }
-        } catch (error) {
-            setError("An error occurred while uploading the image. Please try again.");
         }
     };
 
@@ -96,13 +173,29 @@ const Settings = () => {
                         <form>
                             <div className="mb-5">
                                 <label className="block text-gray-700 mb-1">Password</label>
-                                <input type="password" placeholder="New Password" className="w-full p-2 border rounded" />
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="New Password"
+                                    className="w-full p-2 border rounded"
+                                />
                             </div>
                             <div className="mb-5">
                                 <label className="block text-gray-700 mb-1">Confirm Password</label>
-                                <input type="password" placeholder="Confirm Password" className="w-full p-2 border rounded" />
+                                <input
+                                    type="password"
+                                    name="password_confirmation"
+                                    value={formData.password_confirmation}
+                                    onChange={handleChange}
+                                    placeholder="Confirm Password"
+                                    className="w-full p-2 border rounded"
+                                />
                             </div>
-                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">Update Password</button>
+                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">
+                                Update Password
+                            </button>
                         </form>
 
                         {/* Logout Button */}
@@ -157,24 +250,24 @@ const Settings = () => {
                             <p className="text-sm text-gray-500">Manage your organization details and information.</p>
                         </div>
 
-                        <form>
+                        <form onSubmit={handleUpdateOrganizationDetails}>
                             {/* Organization Logo */}
                             <div className="mb-5">
                                 <label className="block text-gray-700 mb-1">ORGANIZATION LOGO</label>
                                 <div className="border-2 border-dashed border-gray-300 p-4 rounded-lg text-center lg:w-[50%]">
                                     <p className="text-sm text-gray-500 mb-2">Upload here*</p>
-
-                                    <input type="file" name="image_url" onChange={handleChange} className="file-input w-full" />
-
-
+                                    <input
+                                        type="file"
+                                        name="image_url"
+                                        onChange={handleFileChange}
+                                        className="file-input w-full"
+                                    />
                                     {/* Image Preview */}
                                     {previewImage && (
                                         <div className="flex justify-center mt-4">
                                             <img src={previewImage} alt="Preview" className="w-45 h-45 object-cover rounded-full shadow-md border" />
                                         </div>
                                     )}
-
-
                                 </div>
                             </div>
 
@@ -183,43 +276,84 @@ const Settings = () => {
                                 <h3 className="font-semibold text-gray-700 mb-3">ORGANIZATION DETAILS</h3>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Organization Name *</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded"
+                                    />
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Website Url *</label>
-                                    <input type="text" className="w-full p-2 border rounded" placeholder="https://" />
+                                    <input
+                                        type="text"
+                                        name="website_url"
+                                        value={formData.website_url}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded"
+                                        placeholder="https://"
+                                    />
                                 </div>
-
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">About Your Organization *</label>
                                     <textarea
+                                        name="about"
+                                        value={formData.about}
+                                        onChange={handleChange}
                                         className="w-full p-2 border rounded"
                                         rows="4"
                                         placeholder="Write 1-2 paragraphs to share your mission, describe the work you do, and highlight the impact you make"
-                                    ></textarea>
+                                    />
                                 </div>
-
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Email Address *</label>
-                                    <input type="email" className="w-full p-2 border rounded" />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={user?.email || ""}
+                                        disabled
+                                        className="w-full p-2 border rounded"
+                                    />
                                 </div>
-
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Contact Number *</label>
-                                    <input type="tel" className="w-full p-2 border rounded" />
+                                    <input
+                                        type="tel"
+                                        name="contact_number"
+                                        value={formData.contact_number}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded"
+                                    />
                                 </div>
-
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Address *</label>
-                                    <textarea className="w-full p-2 border rounded" rows="2"></textarea>
+                                    <textarea
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border rounded"
+                                        rows="2"
+                                    />
                                 </div>
-
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Causes Supported *</label>
                                     <div className="grid grid-cols-2 gap-2">
                                         {["Environmental", "Community Service", "Education", "Healthcare", "Animal Welfare", "Disaster Relief", "Lifestyle & Culture", "Fundraising & Charity"].map((cause) => (
                                             <div key={cause} className="flex items-center">
-                                                <input type="checkbox" id={cause} className="mr-2" />
+                                                <input
+                                                    type="checkbox"
+                                                    id={cause}
+                                                    name="causes_supported"
+                                                    checked={formData.causes_supported.includes(cause)}
+                                                    onChange={(e) => {
+                                                        const updatedCauses = e.target.checked
+                                                            ? [...formData.causes_supported, cause]
+                                                            : formData.causes_supported.filter((c) => c !== cause);
+                                                        setFormData({ ...formData, causes_supported: updatedCauses });
+                                                    }}
+                                                    className="mr-2"
+                                                />
                                                 <label htmlFor={cause}>{cause}</label>
                                             </div>
                                         ))}
@@ -227,7 +361,9 @@ const Settings = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">Save Organization Changes</button>
+                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">
+                                Save Organization Changes
+                            </button>
                         </form>
                     </div>
                 )}

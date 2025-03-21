@@ -1,9 +1,108 @@
+import React, { useState } from "react";
+import axios from "axios";
+import { useUser } from "../../hooks/UserContext";
 import { motion } from "framer-motion";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
 import VolunteerDashboard from "./VolunteerDashboard";
 import Footer1 from "../../components/Footer1";
 
 const ProfileSettings = () => {
+  const { user, setUser } = useUser();
+  const [formData, setFormData] = useState({
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    password: "",
+    password_confirmation: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleUpdateDetails = async (e) => {
+    e.preventDefault();
+    try {
+      // Create a new object to send only non-empty fields
+      const dataToSend = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+      };
+
+      // Add password fields only if they are filled
+      if (formData.password && formData.password_confirmation) {
+        dataToSend.password = formData.password;
+        dataToSend.password_confirmation = formData.password_confirmation;
+      }
+
+      const response = await axios.put(
+        "http://127.0.0.1:8000/auth/volunteer/update",
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Volunteer details updated:", response.data);
+
+      // Update the user context with the new details
+      setUser((prevUser) => ({
+        ...prevUser,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+      }));
+
+      alert("Details updated successfully!");
+    } catch (error) {
+      console.error("Failed to update volunteer details:", error);
+      alert("Failed to update details. Please try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://127.0.0.1:8000/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      localStorage.removeItem("token");
+      localStorage.removeItem("userRole");
+      setUser(null);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Failed to logout:", error);
+      alert("Failed to logout. Please try again.");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      try {
+        await axios.delete(
+          "http://127.0.0.1:8000/auth/volunteer/delete",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        setUser(null);
+        window.location.href = "/";
+      } catch (error) {
+        console.error("Failed to delete account:", error);
+        alert("Failed to delete account. Please try again.");
+      }
+    }
+  };
+
   return (
     <>
       <VolunteerDashboard>
@@ -30,91 +129,93 @@ const ProfileSettings = () => {
             <div className="flex items-center gap-4 my-6">
               <FaUserCircle className="text-gray-500 text-5xl" />
               <div>
-                <h3 className="text-lg font-medium">John Doe</h3>
-                <p className="text-gray-500">john.doe@example.com</p>
+                <h3 className="text-lg font-medium">{user?.name || "John Doe"}</h3>
+                <p className="text-gray-500">{user?.email || "john.doe@example.com"}</p>
               </div>
             </div>
 
             {/* Form Fields */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="First Name"
-                  type="text"
-                  value="John"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
-              </div>
+            <form onSubmit={handleUpdateDetails}>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="relative">
+                  <input
+                    className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
+                    placeholder="First Name"
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                  />
+                  <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
+                </div>
 
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="Last Name"
-                  type="text"
-                  value="Doe"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
-              </div>
+                <div className="relative">
+                  <input
+                    className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
+                    placeholder="Last Name"
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                  />
+                  <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
+                </div>
 
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="Password"
-                  type="password"
-                  value="password123"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
-              </div>
+                <div className="relative">
+                  <input
+                    className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
+                    placeholder="Password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
+                </div>
 
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="Confirm Password"
-                  type="password"
-                  value="password123"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
-              </div>
-
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="Email"
-                  type="email"
-                  value="john.doe@example.com"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
-              </div>
-
-              <div className="relative">
-                <input
-                  className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
-                  placeholder="Contact Number"
-                  type="contact"
-                  value="+1234567890"
-                />
-                <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
+                <div className="relative">
+                  <input
+                    className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
+                    placeholder="Confirm Password"
+                    type="password"
+                    name="password_confirmation"
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                  />
+                  <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
+                </div>
               </div>
 
               {/* Save Changes Button */}
-              <div className="flex justify-end mt-6 space-x-4">
-                <button className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
-                  Logout
-                </button>
-
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-400 transition duration-200">
-                  Save Changes
-                </button>
-
-                <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-200">
-                  Delete Account
-                </button>
+              <div className="flex justify-between mt-6">
+                <div>
+                  <button
+                    type="submit"
+                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-400 transition duration-200"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200"
+                  >
+                    Logout
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-200"
+                  >
+                    Delete Account
+                  </button>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </motion.div>
-
         <Footer1 />
       </VolunteerDashboard>
     </>
