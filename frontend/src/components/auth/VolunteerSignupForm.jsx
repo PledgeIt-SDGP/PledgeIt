@@ -54,7 +54,7 @@ const VolunteerSignupForm = () => {
     
             // Redirect to dashboard after 4 seconds
             setTimeout(() => {
-                navigate("/volDash");
+                navigate("/volhome");
             }, 4000);
     
         } catch (err) {
