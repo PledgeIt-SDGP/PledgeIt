@@ -173,38 +173,41 @@ function VolunteerHome() {
               <h3 className="text-lg font-semibold">Volunteer Stats</h3>{" "}
               <BarChart />
             </div>
-            <div className="bg-red-100 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
-              <h3 className="text-lg font-semibold">Top Volunteers</h3>
+            <div className="bg-red-50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
+              <h3 className="text-lg font-semibold text-gray-800 mb-6">Top Volunteers</h3>
               <div className="grid grid-cols-1 gap-4 mt-4">
                 {volunteers.length > 0 ? (
                   volunteers.map((volunteer, index) => (
                     <div
                       key={index}
-                      className="bg-white rounded-2xl p-2 shadow-md border border-gray-100 flex items-center justify-between"
+                      className="bg-white rounded-2xl p-4 shadow-md transition-shadow duration-300 border border-gray-100 flex items-center justify-between"
                     >
                       <div className="flex items-center justify-between">
                         {volunteers.profile_picture ? (
                           <img
                             src={volunteers.profile_picture}
                             alt="volunteer"
-                            className="w-8 h-8 rounded-full"
+                            className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <img
                             src="assests/volunteer.png"
                             alt="volunteer"
-                            className="w-8 h-8 rounded-full bg-gray-200 text-red-500"
+                            className="w-6 h-6 text-red-500"
                           />
+                          </div>
                         )}
-                        <h4 className="text-md font-medium">
+                        <h4 className="text-md font-medium text-gray-700">
                           {volunteer.first_name} {volunteer.last_name}
                         </h4>
                       </div>
-                      <p>12+</p>
+                      <p className="text-sm font-medium bg-red-100 text-red-600 px-3 py-1 rounded-full">
+                        12+</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-600">No volunteers available</p>
+                  <p className="text-gray-500 text-center py-6">No volunteers available</p>
                 )}
               </div>
             </div>

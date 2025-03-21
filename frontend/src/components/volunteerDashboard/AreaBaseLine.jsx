@@ -9,11 +9,13 @@ export default function AreaBaseline() {
       series={[
         {
           data: [2, -5.5, 2, -7.5, 1.5, 6],
-          area: true,
-          baseline: "min",
-          color: "#ffabb6", // Main line color 
+          scaleType: "linear",
+          label: "Time (Days)",
+          tickLabelStyle: { fill: "#6B7280", fontSize: "12px" }, // Axis tick styling
+          axisLine: { stroke: "#D1D5DB", strokeWidth: 1 }, // Axis line styling
         },
       ]}
+      
       width={500}
       height={300}
       sx={{

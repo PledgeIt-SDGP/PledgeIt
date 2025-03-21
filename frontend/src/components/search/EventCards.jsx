@@ -27,7 +27,7 @@ function EventCards(props) {
           return (
             <div
               key={event.id}
-              className=" rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white  flex flex-col w-82 h-110 mx-auto"
+              className=" rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white  flex flex-col max-w-md h-110 mx-auto"
             >
               {/* Date Box */}
               <div className="relative">

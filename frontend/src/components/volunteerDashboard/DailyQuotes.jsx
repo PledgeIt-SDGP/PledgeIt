@@ -15,21 +15,26 @@ function DailyQuotes() {
   const quote = quotes[day % quotes.length]; // Rotate daily based on date
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center bg-orange-100 p-6 rounded-xl shadow-lg">
+    <div className="relative flex flex-col lg:flex-row items-center justify-center ">
+              <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBH5dsb42Mbpld6h5Iblp_-jFOAEhVvfKQZQ&s"
+          alt="image 3"
+          className="h-80 w-full object-cover rounded-xl shadow-lg"
+        />
       {/* Left: Quote Section */}
-      <div className="lg:w-1/2 text-center lg:text-left px-4">
+      <div className="absolute lg:w-3/4 text-center">
         <h3 className="text-lg font-semibold text-orange-600">✨ Daily Inspiration ✨</h3>
         <p className="text-gray-700 italic text-xl mt-2">"{quote || 'Loading...'}"</p>
       </div>
 
       {/* Right: Image Section */}
-      <div className="lg:w-1/2 flex justify-center">
+      {/* <div className="lg:w-1/2 flex justify-center">
         <img
           src="assests/bulb.png"
           alt="Volunteering"
           className="w-60 h-60 rounded-xl object-cover shadow-md"
         />
-      </div>
+      </div> */}
     </div>
   );
 }
