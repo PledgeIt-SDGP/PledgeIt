@@ -1,51 +1,13 @@
 import React from "react";
 import Footer1 from "../../components/Footer1";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import BarChart from "../../components/vol-dash/AreaBaseLine";
 import VolunteerDashboard from "./VolunteerDashboard";
 import PieAnimation from "../../components/vol-dash/PieAnimation";
 import HomeEvent from "../../components/home/HomeEvent";
 import DailyQuotes from "../../components/vol-dash/DailyQuotes";
+import { useUser } from "../../hooks/UserContext";
 
 function VolunteerHome() {
-  const { id } = useParams(); // Get user ID from URL
-  const [volunteers, setVolunteers] = useState([]); // Store all volunteers
-  const [volunteer, setVolunteer] = useState(null); // Store single volunteer
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchVolunteers = async () => {
-      try {
-        const response = await fetch("/volunteers.json");
-        const data = await response.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid data format");
-        }
-
-        // Flatten the volunteers list from all events
-        const allVolunteers = data.flatMap((event) =>
-          event.volunteers.map((v) => ({ ...v, event_id: event.event_id }))
-        );
-        setVolunteers(allVolunteers);
-
-        // Find specific volunteer by ID
-        const foundVolunteer = allVolunteers.find(
-          (v, index) => index === parseInt(id)
-        );
-        setVolunteer(
-          foundVolunteer || { first_name: "Volunteer", last_name: "Volunteer" }
-        );
-      } catch (error) {
-        console.error("Error fetching volunteer data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVolunteers();
-  }, [id]);
+  const { user, setUser } = useUser();
 
   return (
     <>
@@ -60,7 +22,6 @@ function VolunteerHome() {
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-300 rounded-full opacity-20 animate-pulse"></div>
                     <img
                       src={
-                        volunteer?.profile_picture ||
                         "https://img.freepik.com/free-vector/multicultural-concept-illustration_114360-25402.jpg"
                       }
                       alt="Volunteer Profile picture"
@@ -77,8 +38,7 @@ function VolunteerHome() {
                       </div>
                     </div>
                     <h1 className="text-xl lg:text-2xl font-bold">
-                      Hi there,{" "}
-                      {volunteer ? `${volunteer.first_name}` : "Loading..."}!{" "}
+                      {user && ( <h1>Hi there, {user.name}</h1> )}
                     </h1>
                   </div>
                 </div>
@@ -89,7 +49,7 @@ function VolunteerHome() {
             <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 bg-image: url('assests/bg4.png') ">
               <div className=" text-gray-800 ">
                 <p>Total Events Participated: </p>
-                <p className="font-bold text-4xl">{volunteer?.event_id || 0}</p>
+                <p className="font-bold text-4xl">0</p>
               </div>
 
               <div className="bg-orange-100 text-orange-500 rounded-lg p-3">
@@ -167,52 +127,7 @@ function VolunteerHome() {
               <PieAnimation />
             </div>
           </div>
-
-          <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 ">
-              <h3 className="text-lg font-semibold">Volunteer Stats</h3>{" "}
-              <BarChart />
-            </div>
-            <div className="bg-red-100 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
-              <h3 className="text-lg font-semibold">Top Volunteers</h3>
-              <div className="grid grid-cols-1 gap-4 mt-4">
-                {volunteers.length > 0 ? (
-                  volunteers.map((volunteer, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl p-2 shadow-md border border-gray-100 flex items-center justify-between"
-                    >
-                      <div className="flex items-center justify-between">
-                        {volunteers.profile_picture ? (
-                          <img
-                            src={volunteers.profile_picture}
-                            alt="volunteer"
-                            className="w-8 h-8 rounded-full"
-                          />
-                        ) : (
-                          <img
-                            src="assests/volunteer.png"
-                            alt="volunteer"
-                            className="w-8 h-8 rounded-full bg-gray-200 text-red-500"
-                          />
-                        )}
-                        <h4 className="text-md font-medium">
-                          {volunteer.first_name} {volunteer.last_name}
-                        </h4>
-                      </div>
-                      <p>12+</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-600">No volunteers available</p>
-                )}
-              </div>
-            </div>
-          </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0 ">
-            <h2 className="pt-10 text-xl font-bold text-gray-800 text-center ">
-              Latest Volunteer Events
-            </h2>
             <HomeEvent />
           </div>
         </div>

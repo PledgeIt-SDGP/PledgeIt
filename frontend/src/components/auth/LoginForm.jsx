@@ -52,7 +52,6 @@ const LoginForm = () => {
         }
     };
 
-
     return (
         <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-radial from-red-300 from-50% to-pink-700">
             <div className="w-full md:w-2/5 flex flex-col justify-center px-6 md:px-10 py-6 md:py-0">

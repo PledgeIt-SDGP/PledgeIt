@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Calendar,
   Clock,
@@ -8,137 +8,28 @@ import {
   PieChart,
   BarChart3,
   ChevronRight,
-  Menu,
-  X,
-  Smile
 } from "lucide-react";
 import OrganizationDashboard from "./OrganizationDashboard";
 import CausesChart from "../../components/org-dash/CausesChart";
 import TopVolunteers from "../../components/org-dash/TopVolunteers";
+import { useUser } from "../../hooks/UserContext";
 
 const OrgHome = () => {
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const { user } = useUser(); // Access the user object from UserContext
 
-  const [loading, setLoading] = useState(true);
-  const [organization, setOrganization] = useState({
-    name: "Volunteer Sri Lanka",
-    logo: "logo.png"
-  });
-
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    totVolunteerHours: 0,
-    peopleImpacted: 0
-  });
-
-  const [causesSupportData, setCausesSupportData] = useState([]);
-
-  const [upcomingEvents, setUpcomingEvents] = useState([
-    {
-      id: 1,
-      title: "Beach Cleanup Drive",
-      date: "March 15, 2025",
-      registeredVolunteers: 24,
-      expectedVolunteers: 30,
-      venue: "Sunset Beach",
-      city: "Colombo"
-    },
-    {
-      id: 2,
-      title: "Park Restoration",
-      date: "March 18, 2025",
-      registeredVolunteers: 22,
-      expectedVolunteers: 40,
-      venue: "Central Park",
-      city: "Kandy"
-    },
-    {
-      id: 3,
-      title: "Food Drive",
-      date: "March 20, 2025",
-      registeredVolunteers: 14,
-      expectedVolunteers: 34,
-      venue: "Community Hall",
-      city: "Galle"
-    },
-    {
-      id: 4,
-      title: "Tech Skills Workshop",
-      date: "March 22, 2025",
-      registeredVolunteers: 18,
-      expectedVolunteers: 34,
-      venue: "Community Center",
-      city: "Colombo"
-    }
-  ]);
-
-  // Mock data for causes
-  const mockCausesData = [
-    { name: 'Environmental', value: 4 },
-    { name: 'Community Service', value: 3 },
-    { name: 'Education', value: 2 },
-    { name: 'Healthcare', value: 0 },
-    { name: 'Animal Welfare', value: 3 },
-    { name: 'Disaster Relief', value: 2 },
-    { name: 'Lifestyle & Culture', value: 1 },
-    { name: 'Fundraising & Charity', value: 0 }
-  ];
-
-  useEffect(() => {
-    // Simulate fetching stats (mock data)
-    const fetchStats = () => {
-      setTimeout(() => {
-        setStats({
-          totalEvents: 15,
-          totVolunteerHours: 120,
-          peopleImpacted: 1240
-        });
-        setLoading(false);
-      }, 1000);
-    };
-
-    // Simulate fetching causes data (mock data)
-    const fetchCausesStats = () => {
-      setTimeout(() => {
-        setCausesSupportData(mockCausesData);
-      }, 500);
-    };
-
-    const fetchUpcomingEvents = async () => {
-      try {
-        const response = await fetch("/api/events/upcoming");
-        const data = await response.json();
-        setUpcomingEvents(data);
-      } catch (error) {
-        console.error("Error fetching upcoming events:", error);
-        // Keep using mock data on error
-      }
-    };
-
-    fetchStats();
-    fetchCausesStats();
-    fetchUpcomingEvents();
-  }, []);
-
-  const getProgressColor = (registered, expected) => {
-    const percentage = (registered / expected) * 100;
-    if (percentage >= 75) return "bg-green-500";
-    if (percentage >= 50) return "bg-yellow-500";
-    return "bg-red-500";
+  // Use the user object to populate the organization details
+  const organization = {
+    name: user?.name || "Organization Name",
+    logo: user?.logo || "default-logo.png", // Default logo if none is provided
+    eventsCompleted: user?.events_completed || 0,
+    volunteerHours: user?.volunteer_hours || 0,
+    communityImpact: user?.community_impact || 0,
+    causesSupported: user?.causes_supported || ["Default Cause 1", "Default Cause 2"],
   };
-
-
 
   return (
     <OrganizationDashboard>
       <div className="bg-gradient-to-br from-blue-50 to-orange-50 min-h-screen">
-
-
         <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 sm:p-6 transition-shadow hover:shadow-lg">
@@ -147,7 +38,7 @@ const OrgHome = () => {
                 <div className="relative mb-3 sm:mb-0">
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-300 rounded-full opacity-20 animate-pulse"></div>
                   <img
-                    src={organization.logo || "https://img.freepik.com/free-vector/multicultural-concept-illustration_114360-25402.jpg"}
+                    src={organization.logo}
                     alt="Organization Logo"
                     className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-md relative z-10"
                   />
@@ -160,14 +51,14 @@ const OrgHome = () => {
                     <div className="text-sm text-gray-500">Welcome to PledgeIt</div>
                   </div>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
-                    Hi, {organization.name}!
+                    Hi, {organization.name}
                   </h1>
                 </div>
               </div>
               <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
                 <div className="bg-rose-50 p-2 sm:p-3 rounded-xl flex items-center justify-center shadow-sm w-full">
                   <Calendar className="mr-2 text-red-600" size={16} />
-                  <span className="font-medium text-gray-700 text-sm">{currentDate}</span>
+                  <span className="font-medium text-gray-700 text-sm">Current Date</span>
                 </div>
                 <a
                   href="/eventForm"
@@ -190,11 +81,9 @@ const OrgHome = () => {
                 <p className="text-gray-500 text-xs sm:text-sm font-medium">
                   Events Completed
                 </p>
-                <div className="flex items-baseline">
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ">
-                    {loading ? "..." : stats.totalEvents}
-                  </p>
-                </div>
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+                  {organization.eventsCompleted}
+                </p>
               </div>
             </div>
 
@@ -207,11 +96,9 @@ const OrgHome = () => {
                 <p className="text-gray-500 text-xs sm:text-sm font-medium">
                   Volunteer Hours
                 </p>
-                <div className="flex items-baseline">
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ">
-                    {loading ? "..." : stats.totVolunteerHours}
-                  </p>
-                </div>
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+                  {organization.volunteerHours}
+                </p>
               </div>
             </div>
 
@@ -224,11 +111,9 @@ const OrgHome = () => {
                 <p className="text-gray-500 text-xs sm:text-sm font-medium">
                   Community Impact
                 </p>
-                <div className="flex items-baseline">
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ">
-                    {loading ? "..." : stats.peopleImpacted}
-                  </p>
-                </div>
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+                  {organization.communityImpact}
+                </p>
               </div>
             </div>
           </div>
@@ -245,7 +130,7 @@ const OrgHome = () => {
               </div>
               <div className="mt-2 overflow-hidden">
                 <div className="h-48 sm:h-64 md:h-72">
-                  <CausesChart causesData={causesSupportData} />
+                  <CausesChart causesData={organization.causesSupported} />
                 </div>
               </div>
             </div>
@@ -260,7 +145,6 @@ const OrgHome = () => {
               </div>
               <div className="mt-2">
                 <TopVolunteers />
-
               </div>
             </div>
           </div>
@@ -278,7 +162,7 @@ const OrgHome = () => {
             </div>
 
             <div className="space-y-3 sm:space-y-4 overflow-y-auto max-h-64 sm:max-h-80 md:max-h-96 pr-1">
-              {upcomingEvents.map((event) => (
+              {user?.events?.map((event) => (
                 <div
                   key={event.id}
                   className="p-3 sm:p-4 border border-gray-100 rounded-lg sm:rounded-xl hover:border-red-200 hover:bg-red-50 transition-all transform hover:-translate-y-1 hover:shadow-sm"
@@ -300,8 +184,8 @@ const OrgHome = () => {
                   </div>
                   <div className="mt-2 sm:mt-3 w-full bg-gray-100 rounded-full h-1.5">
                     <div
-                      className={`h-1.5 rounded-full ${getProgressColor(event.registeredVolunteers, event.expectedVolunteers)}`}
-                      style={{ width: `${(event.registeredVolunteers / event.expectedVolunteers) * 100}%` }}
+                      className={`h-1.5 rounded-full bg-green-500`}
+                      style={{ width: `50%` }}
                     ></div>
                   </div>
                 </div>
