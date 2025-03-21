@@ -204,6 +204,16 @@ async def get_events():
     events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [Event(**event_serializer(event)) for event in events]
 
+@router.get("/events/autocomplete", response_model=List[str])
+async def autocomplete_events(search: str = Query(...)):
+    """
+    Returns a list of distinct event names that start with the provided search term (case-insensitive).
+    This endpoint is useful for implementing autocomplete features on the frontend.
+    """
+    query = {"event_name": {"$regex": f"^{search}", "$options": "i"}}
+    suggestions = events_collection.distinct("event_name", query)
+    return suggestions
+
 @router.get("/events/{event_id}", response_model=Event)
 async def get_event(event_id: int):
     """
@@ -429,16 +439,6 @@ async def create_event(
 
     return {"message": "Event created successfully", "event_id": event_id}
 
-@router.get("/events/autocomplete", response_model=List[str])
-async def autocomplete_events(search: str = Query(...)):
-    """
-    Returns a list of distinct event names that start with the provided search term (case-insensitive).
-    This endpoint is useful for implementing autocomplete features on the frontend.
-    """
-    query = {"event_name": {"$regex": f"^{search}", "$options": "i"}}
-    suggestions = events_collection.distinct("event_name", query)
-    return suggestions
-
 @router.delete("/events/{event_id}")
 async def delete_event(event_id: int, current_org: dict = Depends(get_current_organization)):
     """
@@ -464,7 +464,7 @@ async def delete_event(event_id: int, current_org: dict = Depends(get_current_or
     renumber_events()
     return {"message": "Event deleted successfully"}
 
-@router.put("/events/{event_id}")
+@router.patch("/events/{event_id}")
 async def update_event(event_id: int, updated_event: Event, current_org: dict = Depends(get_current_organization)):
     """
     Updates an existing event using the provided event data.
