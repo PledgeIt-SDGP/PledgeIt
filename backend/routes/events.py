@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile, Dep
 from typing import List, Optional
 from database.database import events_collection
 from models.models import Event
+from models.update_models import EventUpdate  # Importing the partial update model
 from services.geocoding import get_coordinates
 import datetime
 import os
@@ -267,8 +268,6 @@ async def create_event(
     # ------------------------------
     # Additional Validations Start
     # ------------------------------
-
-    # Validate that required text fields are not empty or whitespace only.
     if not event_name.strip():
         raise HTTPException(status_code=400, detail="Event name cannot be empty.")
     if not description.strip():
@@ -298,19 +297,14 @@ async def create_event(
     if not registration_deadline.strip():
         raise HTTPException(status_code=400, detail="Registration deadline cannot be empty.")
 
-    # Validate email format for contact_email using a simple regex.
     import re
     email_regex = r"[^@]+@[^@]+\.[^@]+"
     if not re.match(email_regex, contact_email):
         raise HTTPException(status_code=400, detail="Invalid contact email format.")
-
-    # Validate date format for 'date' field.
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Expected YYYY-MM-DD.")
-
-    # Validate time format for 'time' field (supporting HH:MM:SS or HH:MM).
     try:
         if len(time.strip()) == 5:
             datetime.datetime.strptime(time + ":00", "%H:%M:%S")
@@ -318,18 +312,12 @@ async def create_event(
             datetime.datetime.strptime(time, "%H:%M:%S")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid time format. Expected HH:MM:SS or HH:MM.")
-
-    # Validate date format for 'registration_deadline' field.
     try:
         datetime.datetime.strptime(registration_deadline, "%Y-%m-%d")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid registration deadline format. Expected YYYY-MM-DD.")
-
-    # Validate that an image file has been uploaded and has a filename.
     if not image_url.filename:
          raise HTTPException(status_code=400, detail="Uploaded image must have a filename.")
-
-    # Validate uploaded image file type via content_type and file extension.
     allowed_types = ["image/jpeg", "image/png", "image/jpg"]
     if image_url.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid image format. Only JPG, JPEG, PNG allowed.")
@@ -337,18 +325,12 @@ async def create_event(
     ext = os.path.splitext(image_url.filename)[1].lower()
     if ext not in allowed_extensions:
          raise HTTPException(status_code=400, detail="Invalid image file extension.")
-
-    # Convert volunteer_requirements from string to integer representing maximum capacity.
     try:
          max_capacity = int(volunteer_requirements) if volunteer_requirements else 0
     except ValueError:
          raise HTTPException(status_code=400, detail="Invalid volunteer_requirements format. Expected an integer representing maximum capacity.")
-
-    # Generate the next sequential event ID
     event_id = get_next_event_id()
     skills_list = [skill.strip() for skill in skills_required.split(",") if skill.strip()]
-
-    # Map category id to category name if needed
     category_mapping = {
         "1": "Environmental",
         "2": "Community Service",
@@ -361,43 +343,27 @@ async def create_event(
     }
     if category in category_mapping:
         category = category_mapping[category]
-
-    # Convert address to coordinates (latitude and longitude)
     latitude, longitude = get_coordinates(address)
     if latitude is None or longitude is None:
         raise HTTPException(status_code=400, detail="Unable to convert address to coordinates.")
-    
-    # ------------------------------
-    # Upload the image to Cloudinary instead of local file system
-    # ------------------------------
     try:
-        # Configure Cloudinary with credentials from environment variables
         cloudinary.config(
             cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
             api_key=os.getenv("CLOUDINARY_API_KEY"),
             api_secret=os.getenv("CLOUDINARY_API_SECRET")
         )
-        # Upload the image file; using public_id based on event_id and original filename (without extension)
         public_id = f"{event_id}_{os.path.splitext(image_url.filename)[0]}"
         upload_result = cloudinary.uploader.upload(await image_url.read(), public_id=public_id, resource_type="image")
         image_url_path = upload_result.get("secure_url")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image upload failed: {e}")
-
-    # Compute event status based on registration deadline
     from datetime import datetime as dt, timedelta, timezone
     deadline_date = dt.strptime(registration_deadline, "%Y-%m-%d").date()
     current_date = dt.now(timezone.utc).date()  
     status = "Open" if deadline_date >= current_date else "Closed"
-    
-    # Initialize total registered volunteers to 0
     total_registered_volunteers = 0
-
-    # Calculate event's expireAt field (for automatic deletion one day after event start)
     event_datetime = dt.strptime(f"{date} {time if len(time.strip()) > 5 else time + ':00'}", "%Y-%m-%d %H:%M:%S")
     expireAt = event_datetime + timedelta(days=1)
-    
-    # Construct the event data dictionary to be inserted into the database
     event_data = {
         "event_id": event_id,
         "event_name": event_name,
@@ -427,45 +393,31 @@ async def create_event(
         "created_at": dt.now(timezone.utc).isoformat(),  
         "expireAt": expireAt  
     }
-
-    # Insert the new event into the MongoDB collection
     events_collection.insert_one(event_data)
-
     try:
         from services.qr_email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
     except Exception as e:
         logging.error(f"Failed to send QR code email to organization: {e}")
-
     return {"message": "Event created successfully", "event_id": event_id}
 
 @router.delete("/events/{event_id}")
 async def delete_event(event_id: int, current_org: dict = Depends(get_current_organization)):
-    """
-    Deletes an event by its event_id.
-    The query matches documents where event_id is stored as an integer or as a string.
-    After deletion, it calls renumber_events() to maintain sequential event_ids.
-    Raises a 404 error if no matching event is found.
-    """
     event = events_collection.find_one({"event_id": event_id})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    
-    # Ensure the authenticated organization is the owner of the event
     if event["organization"] != current_org["name"]:
         raise HTTPException(status_code=403, detail="Permission denied. You cannot delete this event.")
-    
     result = events_collection.delete_one({
         "$or": [{"event_id": event_id}, {"event_id": str(event_id)}]
     })
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
-    # Renumber remaining events to maintain sequential IDs
     renumber_events()
     return {"message": "Event deleted successfully"}
 
 @router.patch("/events/{event_id}")
-async def update_event(event_id: int, updated_event: Event, current_org: dict = Depends(get_current_organization)):
+async def update_event(event_id: int, updated_event: EventUpdate, current_org: dict = Depends(get_current_organization)):
     """
     Updates an existing event using the provided event data.
     Matches documents where event_id is stored as an integer or as a string.
@@ -475,19 +427,16 @@ async def update_event(event_id: int, updated_event: Event, current_org: dict = 
     event = events_collection.find_one({"event_id": event_id})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    
-    # Ensure only the event owner can update it
     if event["organization"] != current_org["name"]:
         raise HTTPException(status_code=403, detail="Permission denied. You cannot update this event.")
     
-    update_data = updated_event.dict()
-
-    # Convert date fields (if any) to datetime.datetime objects since BSON cannot encode datetime.date
+    # Use only provided fields for update
+    update_data = updated_event.dict(exclude_unset=True)
+    
     if "date" in update_data and isinstance(update_data["date"], datetime.date) and not isinstance(update_data["date"], datetime.datetime):
         update_data["date"] = datetime.datetime.combine(update_data["date"], datetime.time())
     if "registration_deadline" in update_data and isinstance(update_data["registration_deadline"], datetime.date) and not isinstance(update_data["registration_deadline"], datetime.datetime):
         update_data["registration_deadline"] = datetime.datetime.combine(update_data["registration_deadline"], datetime.time())
-    # Fix: Convert the 'time' field from datetime.time to a string if necessary.
     if "time" in update_data and isinstance(update_data["time"], datetime.time):
         update_data["time"] = update_data["time"].strftime("%H:%M:%S")
     
