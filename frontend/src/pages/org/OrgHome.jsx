@@ -23,7 +23,7 @@ const OrgHome = () => {
     logo: user?.logo || "default-logo.png", // Default logo if none is provided
     eventsCompleted: user?.events_completed || 0,
     volunteerHours: user?.volunteer_hours || 0,
-    communityImpact: user?.community_impact || 0,
+    communityImpact: user?.community_impact || 5,
     causesSupported: user?.causes_supported || ["Default Cause 1", "Default Cause 2"],
   };
 
