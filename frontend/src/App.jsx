@@ -19,6 +19,7 @@ import { useUser } from "./hooks/UserContext";
 import VolunteerHome from "./pages/vol/VolunteerHome";
 import VolunteerMap from "./pages/vol/EventMap";
 import VolunteerSettings from "./pages/vol/VolunteerSettings";
+import EventForm from "./pages/org/EventForm";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -77,6 +78,7 @@ const AppRoutes = () => {
       <Route path="/VolSettings" element={<VolunteerSettings />} /> 
 
       <Route path="/OrgHome" element={<OrganizationHome />} />
+      <Route path="/eventform" element={<EventForm />} />
       <Route path="/OrgEvents" element={<OrganizationEvents />} />
       <Route path="/OrgMap" element={<OrganizationMap />} />
       <Route path="/OrgProfile" element={<OrganizationProfile />} />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import axios from "axios";
-import MarkerClusterGroup from "react-leaflet-markercluster";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
 
 import { Icon } from "leaflet";
@@ -10,7 +10,6 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 import { CircularProgress } from "@mui/material";
-import { motion } from "framer-motion";
 
 import EventMarker from "../../components/map/EventMarker";
 import MapControls from "../../components/map/MapControls";

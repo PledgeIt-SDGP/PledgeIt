@@ -168,10 +168,45 @@ function VolunteerHome() {
             </div>
           </div>
 
-          <div className="">
+          <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 ">
               <h3 className="text-lg font-semibold">Volunteer Stats</h3>{" "}
               <BarChart />
+            </div>
+            <div className="bg-red-100 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
+              <h3 className="text-lg font-semibold">Top Volunteers</h3>
+              <div className="grid grid-cols-1 gap-4 mt-4">
+                {volunteers.length > 0 ? (
+                  volunteers.map((volunteer, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-2xl p-2 shadow-md border border-gray-100 flex items-center justify-between"
+                    >
+                      <div className="flex items-center justify-between">
+                        {volunteers.profile_picture ? (
+                          <img
+                            src={volunteers.profile_picture}
+                            alt="volunteer"
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <img
+                            src="assests/volunteer.png"
+                            alt="volunteer"
+                            className="w-8 h-8 rounded-full bg-gray-200 text-red-500"
+                          />
+                        )}
+                        <h4 className="text-md font-medium">
+                          {volunteer.first_name} {volunteer.last_name}
+                        </h4>
+                      </div>
+                      <p>12+</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-600">No volunteers available</p>
+                )}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0 ">
