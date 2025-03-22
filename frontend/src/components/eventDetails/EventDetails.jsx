@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Footer1 from "../Footer1";
-import VolunteerDashboard from "../../pages/VolunteerDashboard";
+import VolunteerDashboard from "../../pages/vol/VolunteerDashboard";
 
 const EventDetails = () => {
   const { id } = useParams(); // Get event ID from URL
@@ -144,7 +144,7 @@ const EventDetails = () => {
               <div className="mt-6">
                 <div className="bg-orange-500 p-4 rounded-lg text-white">
                   <h1 className="text-2xl font-bold">{event.event_name}</h1>
-                  <p className="text-lg">Organized by: {event.organizer}</p>
+                  <p className="text-lg">Organized by: {event.organization}</p>
                 </div>
 
                 <p className="text-gray-600 pt-5">{event.description}</p>

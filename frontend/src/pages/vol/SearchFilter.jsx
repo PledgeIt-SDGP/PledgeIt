@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { TextField, MenuItem, Typography } from "@mui/material";
-import Category from "../components/search/Category";
-import EventCards from "../components/search/EventCards";
+import Category from "../../components/search/Category";
+import EventCards from "../../components/search/EventCards";
 import { Filter, Search } from "lucide-react";
-import Footer1 from "../components/Footer1";
+import Footer1 from "../../components/Footer1";
 import VolunteerDashboard from "./VolunteerDashboard";
 
 const SearchFilters = () => {

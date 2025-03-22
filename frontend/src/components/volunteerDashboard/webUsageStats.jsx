@@ -24,11 +24,11 @@ export const categories = [
       value: 4.65,
     },
     {
-      label: 'LifeCycle',
+      label: 'Culture',
       value: 4.65,
     },
     {
-      label: 'Charity',
+      label: 'Fundraising',
       value: 4.65,
     },
 

@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import VolunteerDashboard from "./VolunteerDashboard";
-import Footer1 from "../components/Footer1";
+import Footer1 from "../../components/Footer1";
 import { useNavigate } from "react-router-dom";
+import { LogOut, Save, Trash2 } from "lucide-react";
 
 const ProfileSettings = () => {
   const [volunteer, setVolunteer] = useState(null); // Volunteer data will be fetched from API
@@ -104,16 +105,16 @@ const ProfileSettings = () => {
     <>
       <VolunteerDashboard>
         <motion.div
-          className="flex justify-center items-center min-h-screen p-6 "
+          className="flex justify-center items-center min-h-screen px-6 pt-17 pb-6 xl: py-0 "
           style={{
-            backgroundImage: "url('/assests/background1.png')",
+            backgroundImage: "url('assests/bg1.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <div className="bg-white/95 shadow-lg rounded-2xl w-full p-6 mt-12 ">
+          <div className="bg-white/75 shadow-lg rounded-2xl w-full p-6 ">
             {/* Header */}
             <div className="flex justify-between">
               <h2 className="text-2xl font-semibold text-gray-800">
@@ -149,7 +150,8 @@ const ProfileSettings = () => {
                 <input
                   className="border border-gray-400 p-3 rounded-lg w-full text-gray-700"
                   placeholder="Last Name"
-                  type="text"                  value={volunteer.last_name}
+                  type="text"
+                  value={volunteer.last_name}
                   onChange={handleChange}
                 />
                 <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
@@ -198,29 +200,29 @@ const ProfileSettings = () => {
                 />
                 <FaEdit className="absolute top-3 right-3 text-gray-500 cursor-pointer" />
               </div>
-              {/* Save Changes Button */}
-              <div className="flex justify-end mt-6 space-x-4">
-                <button
-                  onClick={handleLogout}
-                  className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200"
-                >
-                  Logout
-                </button>
+            </div>
+            {/* Save Changes Button */}
+            <div className="flex flex-col mt-6 gap-3  md:flex-row md:gap-4 xl:justify-start">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-gray-700 text-white text-sm px-3 py-2 rounded-lg hover:bg-gray-600 transition duration-200 md:px-9 md:py-2"
+              >
+                < LogOut size={16}/>Logout
+              </button>
 
-                <button
-                  onClick={handleSaveChanges}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-400 transition duration-200"
-                >
-                  Save Changes
-                </button>
+              <button
+                onClick={handleSaveChanges}
+                className="flex items-center gap-2 bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-400 transition duration-200"
+              >
+                 < Save size={16}/>Save Changes               
+              </button>
 
-                <button
-                  onClick={handleDeleteAccount}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-200"
-                >
-                  Delete Account
-                </button>
-              </div>
+              <button
+                onClick={handleDeleteAccount}
+                className="flex items-center gap-2 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-400 transition duration-200"
+              >
+                < Trash2 size={16}/>Delete Account
+              </button>
             </div>
           </div>
         </motion.div>

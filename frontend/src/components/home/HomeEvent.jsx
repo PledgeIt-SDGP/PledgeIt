@@ -27,8 +27,6 @@ const HomeEvent = () => {
 <>
       {" "}
       <div className="my-10">
-
-
         {/* Scrollable container */}
         <div className="flex gap-7 overflow-x-auto  scrollbar-hide whitespace-nowrap px-3 py-4">
           {events.map((event) => (

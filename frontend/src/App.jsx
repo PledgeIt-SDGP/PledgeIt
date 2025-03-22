@@ -1,12 +1,12 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/Home";
-import SearchFilters from "./pages/SearchFilter";
+import SearchFilters from "./pages/vol/SearchFilter";
 import EventDetails from "./components/eventDetails/EventDetails";
 import HomeEvent from "./components/home/HomeEvent";
-import VolunteerHome from "./components/volunteerDashboard/VolunteerHome";
-import VolunteerDashboard from "./pages/VolunteerDashboard";
-import VolunteerSettings from "./pages/VolunteerSettings";
+import VolunteerHome from "./pages/vol/VolunteerHome";
+import VolunteerDashboard from "./pages/vol/VolunteerDashboard";
+import VolunteerSettings from "./pages/vol/VolunteerSettings";
 
 function App() {
   return (

@@ -1,12 +1,13 @@
 import React from "react";
-import Footer1 from "../Footer1";
+import Footer1 from "../../components/Footer1";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import BarChart from "./AreaBaseLine";
-import VolunteerDashboard from "../../pages/VolunteerDashboard";
-import PieAnimation from "./PieAnimation";
-import HomeEvent from "../home/HomeEvent";
-import DailyQuotes from "./DailyQuotes";
+import BarChart from "../../components/volunteerDashboard/AreaBaseLine";
+import VolunteerDashboard from "./VolunteerDashboard";
+import PieAnimation from "../../components/volunteerDashboard/PieAnimation";
+import HomeEvent from "../../components/home/HomeEvent";
+import DailyQuotes from "../../components/volunteerDashboard/DailyQuotes";
+import { LineChart, PieChart, Users } from "lucide-react";
 
 function VolunteerHome() {
   const { id } = useParams(); // Get user ID from URL
@@ -53,9 +54,9 @@ function VolunteerHome() {
         <div className="grid gap-3 p-4 lg: min-h-screen ">
           <div className=" text-3xl font-bold text-gray-800 mb-4 ">
             {/* Header Section */}
-            <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 sm:p-6 transition-shadow hover:shadow-lg">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col sm:flex-row items-center text-center sm:text-left">
+            <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 sm:p-6 transition-shadow hover:shadow-lg mt-15 lg:mt-2">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 ">
+                <div className="flex flex-col sm:flex-row items-center text-center sm:text-left ">
                   <div className="relative mb-3 sm:mb-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-300 rounded-full opacity-20 animate-pulse"></div>
                     <img
@@ -77,7 +78,7 @@ function VolunteerHome() {
                       </div>
                     </div>
                     <h1 className="text-xl lg:text-2xl font-bold">
-                      Hi there,{" "}
+                      Hi there,{" "} !
                       {volunteer ? `${volunteer.first_name}` : "Loading..."}!{" "}
                     </h1>
                   </div>
@@ -100,10 +101,10 @@ function VolunteerHome() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-calendar-check"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-calendar-check"
                 >
                   <path d="M8 2v4" />
                   <path d="M16 2v4" />
@@ -126,10 +127,10 @@ function VolunteerHome() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-clock"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-clock"
                 >
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
@@ -160,8 +161,9 @@ function VolunteerHome() {
           </div>
           <div className="grid grid-cols-1 gap-4  lg:mt-0 xl:grid-cols-2 ">
             <DailyQuotes />
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
-              <h3 className="text-lg font-semibold">
+            <div className=" bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-y-auto md:h-100 ">
+              <h3 className="flex gap-2 items-center text-lg font-semibold p-6 pt-8">
+                <PieChart size={20} color="black" className="text-blue-500" />
                 Categories You Have Contributed
               </h3>
               <PieAnimation />
@@ -170,50 +172,57 @@ function VolunteerHome() {
 
           <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 ">
-              <h3 className="text-lg font-semibold">Volunteer Stats</h3>{" "}
+              <h3 className="flex items-center gap-2 text-lg font-semibold">
+                <LineChart size={20} color="black" className="text-green-500" />
+                Volunteer Stats
+              </h3>{" "}
               <BarChart />
             </div>
-            <div className="bg-red-50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-y-auto h-96">
-              <h3 className="text-lg font-semibold text-gray-800 mb-6">Top Volunteers</h3>
-              <div className="grid grid-cols-1 gap-4 mt-4">
+            <div className="bg-red-50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-x-auto h-96">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-6">
+                <Users size={20} color="black" className="text-blue-500" />
+                Top Volunteers
+              </h3>
+              <div className="grid grid-cols-3 gap-4 mt-4 ">
                 {volunteers.length > 0 ? (
                   volunteers.map((volunteer, index) => (
                     <div
                       key={index}
-                      className="bg-white rounded-2xl p-4 shadow-md transition-shadow duration-300 border border-gray-100 flex items-center justify-between"
+                      className="bg-white/90 rounded-2xl p-4 shadow-md transition-shadow duration-300 border border-gray-100 "
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex justify-center items-center">
                         {volunteers.profile_picture ? (
                           <img
                             src={volunteers.profile_picture}
                             alt="volunteer"
-                            className="w-8 h-8 rounded-full object-cover"
+                            className="w-15 h-15 rounded-full object-cover"
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <img
-                            src="assests/volunteer.png"
-                            alt="volunteer"
-                            className="w-6 h-6 text-red-500"
-                          />
+                            <img
+                              src="assests/volunteer.png"
+                              alt="volunteer"
+                              className="w-11 h-11 text-red-500"
+                            />
                           </div>
                         )}
-                        <h4 className="text-md font-medium text-gray-700">
-                          {volunteer.first_name} {volunteer.last_name}
-                        </h4>
                       </div>
-                      <p className="text-sm font-medium bg-red-100 text-red-600 px-3 py-1 rounded-full">
-                        12+</p>
+                      <h4 className="text-md font-medium text-gray-700 text-center">
+                        {volunteer.first_name} {volunteer.last_name}
+                      </h4>
+                      <p className="text-sm font-medium bg-red-100 text-red-600 px-3 py-1 rounded-full text-center">
+                        12+
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-6">No volunteers available</p>
+                  <p className="text-gray-600">No volunteers available</p>
                 )}
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 lg:mt-0 ">
-            <h2 className="pt-10 text-xl font-bold text-gray-800 text-center ">
+          <div className="grid grid-cols-1 gap-4 lg:mt-0  ">
+            <h2 className="flex justify-center pt-10 text-xl font-bold text-gray-800">
               Latest Volunteer Events
             </h2>
             <HomeEvent />

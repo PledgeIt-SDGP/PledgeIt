@@ -1,0 +1,16 @@
+fastapi
+geopy
+pydantic
+pymongo
+python-dotenv
+requests
+uvicorn
+authlib
+httpx
+python-multipart
+itsdangerous
+pydantic[email]
+cloudinary
+passlib[bcrypt]
+python-jose[cryptography]
+argon2-cffi
