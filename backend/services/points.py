@@ -48,7 +48,7 @@ async def get_social_impact_score(description: str) -> float:
 def calculate_xp_points(social_impact_score: float, duration_hours: float) -> int:
     """
     Calculate XP points based on the social impact score and event duration.
-    XP Points = (Social Impact Score * 10) + (Duration in Hours * 2)
+    XP Points = (Social Impact Score * 10) * (Duration in Hours )
     """
     xp_points = int((social_impact_score * 10) * (duration_hours))
     return xp_points
