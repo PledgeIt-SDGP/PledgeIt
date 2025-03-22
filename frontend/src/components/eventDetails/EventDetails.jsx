@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Footer1 from "../Footer1";
-import VolunteerDashboard from "../../pages/vol/VolunteerDashboard";
+import { useUser } from "../../hooks/UserContext"; // Import the user context
 
 const EventDetails = () => {
-  const { id } = useParams(); // Get event ID from URL
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(false);
+  const [registerError, setRegisterError] = useState("");
+  const [registerSuccess, setRegisterSuccess] = useState("");
+  const { user } = useUser(); // Get the current user from context
 
   useEffect(() => {
     fetch("/events.json")
@@ -21,6 +25,43 @@ const EventDetails = () => {
         setLoading(false);
       });
   }, [id]);
+
+  const handleRegister = async () => {
+    // Check if user is logged in
+    if (!user) {
+      // Redirect to login page with return URL
+      window.location.href = `/login?redirect=/details/${id}`;
+      return;
+    }
+
+    setRegistering(true);
+    setRegisterError("");
+    setRegisterSuccess("");
+
+    try {
+      const response = await fetch(`/api/events/${id}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Include auth token if you have one
+          "Authorization": `Bearer ${user.token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setRegisterError(data.detail || "Failed to register for the event");
+      } else {
+        setRegisterSuccess("Successfully registered for the event!");
+      }
+    } catch (error) {
+      setRegisterError("An error occurred while registering");
+      console.error("Registration error:", error);
+    } finally {
+      setRegistering(false);
+    }
+  };
 
   if (loading) return <p className="text-center">Loading...</p>;
   if (!event)
@@ -236,13 +277,14 @@ const EventDetails = () => {
                 </p>
               </div>
               <div className="mt-4">
+                {registerError && <p className="text-red-500 mb-2">{registerError}</p>}
+                {registerSuccess && <p className="text-green-500 mb-2">{registerSuccess}</p>}
                 <button
-                  onClick={() =>
-                    (window.location.href = "/details/" + event.event_id)
-                  }
-                  className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white px-4 py-2 rounded-lg "
+                  onClick={handleRegister}
+                  disabled={registering}
+                  className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
                 >
-                  Register for the event
+                  {registering ? "Registering..." : "Register for the event"}
                 </button>
               </div>
             </div>

@@ -10,6 +10,7 @@ import os
 import uuid as uuid_lib  
 import cloudinary
 import cloudinary.uploader
+from routes.auth import get_current_user
 
 router = APIRouter()
 
@@ -92,6 +93,7 @@ def event_serializer(event) -> dict:
         "event_id": eid,
         "event_name": event["event_name"],
         "organization": event["organization"],
+        "organization_id": event.get("organization_id"),
         "description": event["description"],
         "category": event["category"],
         "date": event_date,
@@ -115,6 +117,7 @@ def event_serializer(event) -> dict:
         "status": event["status"],
         "total_registered_volunteers": event["total_registered_volunteers"],
         "created_at": event.get("created_at"),
+        "volunteers": event.get("volunteers", []), 
     }
 
 def get_next_event_id() -> int:
@@ -124,18 +127,6 @@ def get_next_event_id() -> int:
     """
     count = events_collection.count_documents({"event_id": {"$type": "int"}})
     return count + 1
-
-def renumber_events():
-    """
-    Renumbers all events in the database to maintain sequential event_ids.
-    This function is called after an event is deleted.
-    Only events with numeric event_id are considered.
-    """
-    events = list(events_collection.find({"event_id": {"$type": "int"}}).sort("created_at", 1))
-    new_id = 1
-    for event in events:
-        events_collection.update_one({"_id": event["_id"]}, {"$set": {"event_id": new_id}})
-        new_id += 1
 
 # ------------------------------
 # Endpoints
@@ -251,6 +242,10 @@ async def create_event(
     image_url: UploadFile = File(...),
     current_org: dict = Depends(get_current_organization)
 ):
+    # Override organization with authenticated organization's name
+    organization = current_org["name"]
+    organization_id = current_org["_id"]  # Get the organization ID
+
     """
     Creates a new event with the provided form data.
     - Generates a sequential event_id.
@@ -368,6 +363,7 @@ async def create_event(
         "event_id": event_id,
         "event_name": event_name,
         "organization": organization,
+        "organization_id": organization_id,  # Store the organization ID
         "description": description,
         "category": category,
         "date": date,
@@ -393,7 +389,9 @@ async def create_event(
         "created_at": dt.now(timezone.utc).isoformat(),  
         "expireAt": expireAt  
     }
+
     events_collection.insert_one(event_data)
+
     try:
         from services.qr_email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
@@ -413,7 +411,6 @@ async def delete_event(event_id: int, current_org: dict = Depends(get_current_or
     })
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
-    renumber_events()
     return {"message": "Event deleted successfully"}
 
 @router.patch("/events/{event_id}")
@@ -447,3 +444,30 @@ async def update_event(event_id: int, updated_event: EventUpdate, current_org: d
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
     return {"message": "Event updated successfully"}
+
+@router.post("/events/{event_id}/join")
+async def join_event(
+    event_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Only volunteers can join events.")
+
+    volunteer_id = current_user["user_id"]
+
+    # Find the event
+    event = events_collection.find_one({"event_id": event_id})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Check if the volunteer is already registered
+    if "volunteers" in event and volunteer_id in event["volunteers"]:
+        raise HTTPException(status_code=400, detail="Volunteer already registered for this event")
+
+    # Add the volunteer to the event
+    events_collection.update_one(
+        {"event_id": event_id},
+        {"$push": {"volunteers": volunteer_id}}
+    )
+
+    return {"message": "Volunteer joined event successfully"}
