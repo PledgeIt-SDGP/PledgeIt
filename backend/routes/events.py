@@ -125,18 +125,6 @@ def get_next_event_id() -> int:
     count = events_collection.count_documents({"event_id": {"$type": "int"}})
     return count + 1
 
-def renumber_events():
-    """
-    Renumbers all events in the database to maintain sequential event_ids.
-    This function is called after an event is deleted.
-    Only events with numeric event_id are considered.
-    """
-    events = list(events_collection.find({"event_id": {"$type": "int"}}).sort("created_at", 1))
-    new_id = 1
-    for event in events:
-        events_collection.update_one({"_id": event["_id"]}, {"$set": {"event_id": new_id}})
-        new_id += 1
-
 # ------------------------------
 # Endpoints
 # ------------------------------
@@ -413,7 +401,6 @@ async def delete_event(event_id: int, current_org: dict = Depends(get_current_or
     })
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
-    renumber_events()
     return {"message": "Event deleted successfully"}
 
 @router.patch("/events/{event_id}")
