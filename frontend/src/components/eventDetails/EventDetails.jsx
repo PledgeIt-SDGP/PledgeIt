@@ -35,8 +35,8 @@ const EventDetails = () => {
 
   const handleRegister = async () => {
     if (!user) {
-      window.location.href = `/login?redirect=/details/${id}`;
-      return;
+        window.location.href = `/login?redirect=/details/${id}`;
+        return;
     }
 
     setRegistering(true);
@@ -44,28 +44,30 @@ const EventDetails = () => {
     setRegisterSuccess("");
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/events/${id}/join`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+        const token = localStorage.getItem("token"); // Retrieve token from localStorage
+        const response = await fetch(`http://127.0.0.1:8000/events/${id}/join`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Include token in the request
+            },
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        setRegisterError(data.detail || "Failed to register for the event");
-      } else {
-        setRegisterSuccess("Successfully registered for the event!");
-      }
+        if (!response.ok) {
+            setRegisterError(data.detail || "Failed to register for the event");
+        } else {
+            setRegisterSuccess("Successfully registered for the event!");
+            alert("You have successfully registered for the event!");
+        }
     } catch (error) {
-      setRegisterError("An error occurred while registering");
-      console.error("Registration error:", error);
+        setRegisterError("An error occurred while registering");
+        console.error("Registration error:", error);
     } finally {
-      setRegistering(false);
+        setRegistering(false);
     }
-  };
+};
 
   if (!event) return <p className="text-center text-red-500">Event not found!</p>;
 

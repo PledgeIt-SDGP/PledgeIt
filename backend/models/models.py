@@ -31,3 +31,4 @@ class Event(BaseModel):
     total_registered_volunteers: int
     created_at: str  # ISO format
     expireAt: str  # ISO format
+    registered_volunteers: Optional[List[str]] = []

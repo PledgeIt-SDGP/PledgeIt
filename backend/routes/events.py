@@ -10,6 +10,7 @@ import os
 import uuid as uuid_lib  
 import cloudinary
 import cloudinary.uploader
+from routes.auth import get_current_user
 
 router = APIRouter()
 
@@ -415,3 +416,28 @@ async def get_events():
     """
     events = list(events_collection.find({"event_id": {"$type": "int"}}))
     return [Event(**event_serializer(event)) for event in events]
+
+@router.post("/events/{event_id}/join")
+async def join_event(
+    event_id: int,
+    user: dict = Depends(get_current_user),
+):
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Only volunteers can join events.")
+
+    event = events_collection.find_one({"event_id": event_id})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Check if the volunteer is already registered
+    if "registered_volunteers" in event and str(user["user_id"]) in event["registered_volunteers"]:
+        raise HTTPException(status_code=400, detail="You are already registered for this event.")
+
+    # Add the volunteer to the event
+    events_collection.update_one(
+        {"event_id": event_id},
+        {"$push": {"registered_volunteers": str(user["user_id"])},
+        "$inc": {"total_registered_volunteers": 1}}
+    )
+
+    return {"message": "Successfully registered for the event!"}

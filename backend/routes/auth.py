@@ -58,6 +58,25 @@ VALID_CAUSES = {"Environmental", "Community Service", "Education", "Healthcare",
 # Refresh token storage (use DB in production)
 refresh_tokens_store = {}
 
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("user_id")
+        role = payload.get("role")
+
+        if user_id is None or role is None:
+            raise HTTPException(status_code=403, detail="Invalid credentials")
+
+        user = volunteers_collection.find_one({"_id": ObjectId(user_id)}) or \
+            organizations_collection.find_one({"_id": ObjectId(user_id)})
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return {"user_id": str(user["_id"]), "role": role}
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Could not validate credentials")
+
 ### 🔹 Utility Functions
 def hash_password(password: str):
     return pwd_context.hash(password)
@@ -234,26 +253,6 @@ def role_required(required_role: str):
             )
         return user
     return role_checker
-
-# Get Current User from Token
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = payload.get("user_id")
-        role = payload.get("role")
-
-        if user_id is None or role is None:
-            raise HTTPException(status_code=403, detail="Invalid credentials")
-
-        user = volunteers_collection.find_one({"_id": ObjectId(user_id)}) or \
-            organizations_collection.find_one({"_id": ObjectId(user_id)})
-
-        if user is None:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        return {"user_id": str(user["_id"]), "role": role}
-    except JWTError:
-        raise HTTPException(status_code=403, detail="Could not validate credentials")
 
 # Login
 @router.post('/auth/login')
