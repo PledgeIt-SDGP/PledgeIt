@@ -10,7 +10,6 @@ import os
 import uuid as uuid_lib  
 import cloudinary
 import cloudinary.uploader
-from routes.auth import get_current_user
 
 router = APIRouter()
 
@@ -44,80 +43,42 @@ def get_current_organization(x_org_email: str = Header(None)):
     return org
 
 def event_serializer(event) -> dict:
-    """
-    Converts a MongoDB event document into a dictionary for API responses.
-    - Ensures that event_id is returned as an integer (converting if needed).
-    - Parses date/time strings into proper Python date/time objects.
-    Raises a 500 error if event_id format or date/time fields are invalid.
-    """
     from datetime import datetime
 
-    eid = event.get("event_id")
-    if not isinstance(eid, int):
-        try:
-            eid = int(eid)
-        except (ValueError, TypeError):
-            try:
-                eid = int(uuid_lib.UUID(eid))
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Invalid event_id format: {eid}")
-    
     try:
-        event_date = (
-            datetime.strptime(event["date"], "%Y-%m-%d").date()
-            if isinstance(event.get("date"), str)
-            else event.get("date")
-        )
-        # Handle time string that may be in HH:MM format (append seconds if necessary)
-        time_str = event["time"]
-        if isinstance(time_str, str):
-            if len(time_str.strip()) == 5:
-                time_str += ":00"
-            event_time = datetime.strptime(time_str, "%H:%M:%S").time()
-        else:
-            event_time = event.get("time")
-        reg_deadline = (
-            datetime.strptime(event["registration_deadline"], "%Y-%m-%d").date()
-            if isinstance(event.get("registration_deadline"), str)
-            else event.get("registration_deadline")
-        )
-        created_at_val = (
-            datetime.fromisoformat(event["created_at"])
-            if isinstance(event.get("created_at"), str)
-            else event.get("created_at")
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error parsing date/time fields: {e}")
+        volunteer_requirements = str(event.get("volunteer_requirements", ""))
+        expire_at = event.get("expireAt")
+        if isinstance(expire_at, datetime):
+            expire_at = expire_at.isoformat()  # Convert datetime to ISO string
+    except Exception:
+        volunteer_requirements = ""
+        expire_at = ""
 
     return {
-        "event_id": eid,
-        "event_name": event["event_name"],
-        "organization": event["organization"],
-        "organization_id": event.get("organization_id"),
-        "description": event["description"],
-        "category": event["category"],
-        "date": event_date,
-        "time": event_time,
-        "venue": event["venue"],
-        "city": event["city"],
-        "address": event["address"],
-        "latitude": event.get("latitude", None),
-        "longitude": event.get("longitude", None),
-        "duration": event["duration"],
-        "volunteer_requirements": event.get("volunteer_requirements", ""),
+        "event_id": event.get("event_id"),
+        "event_name": event.get("event_name"),
+        "organization": event.get("organization"),
+        "description": event.get("description"),
+        "category": event.get("category"),
+        "date": event.get("date"),
+        "time": event.get("time"),
+        "venue": event.get("venue"),
+        "city": event.get("city"),
+        "address": event.get("address"),
+        "latitude": event.get("latitude"),
+        "longitude": event.get("longitude"),
+        "duration": event.get("duration"),
+        "volunteer_requirements": volunteer_requirements,
         "skills_required": event.get("skills_required", []),
-        "contact_email": event["contact_email"],
-        "contact_person": {
-            "name": event["contact_person"]["name"],
-            "contact_number": event["contact_person"]["contact_number"],
-        },
-        "image_url": f"http://127.0.0.1:8000{event.get('image_url', '')}",
-        "registration_deadline": reg_deadline,
+        "contact_email": event.get("contact_email"),
+        "contact_person": event.get("contact_person"),
+        "image_url": event.get("image_url"),
+        "registration_deadline": event.get("registration_deadline"),
         "additional_notes": event.get("additional_notes", ""),
-        "status": event["status"],
-        "total_registered_volunteers": event["total_registered_volunteers"],
+        "status": event.get("status"),
+        "total_registered_volunteers": event.get("total_registered_volunteers", 0),
         "created_at": event.get("created_at"),
-        "volunteers": event.get("volunteers", []), 
+        "expireAt": expire_at
     }
 
 def get_next_event_id() -> int:
@@ -242,10 +203,6 @@ async def create_event(
     image_url: UploadFile = File(...),
     current_org: dict = Depends(get_current_organization)
 ):
-    # Override organization with authenticated organization's name
-    organization = current_org["name"]
-    organization_id = current_org["_id"]  # Get the organization ID
-
     """
     Creates a new event with the provided form data.
     - Generates a sequential event_id.
@@ -363,7 +320,6 @@ async def create_event(
         "event_id": event_id,
         "event_name": event_name,
         "organization": organization,
-        "organization_id": organization_id,  # Store the organization ID
         "description": description,
         "category": category,
         "date": date,
@@ -389,9 +345,7 @@ async def create_event(
         "created_at": dt.now(timezone.utc).isoformat(),  
         "expireAt": expireAt  
     }
-
     events_collection.insert_one(event_data)
-
     try:
         from services.qr_email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
@@ -445,29 +399,11 @@ async def update_event(event_id: int, updated_event: EventUpdate, current_org: d
         raise HTTPException(status_code=404, detail="Event not found")
     return {"message": "Event updated successfully"}
 
-@router.post("/events/{event_id}/join")
-async def join_event(
-    event_id: int,
-    current_user: dict = Depends(get_current_user)
-):
-    if current_user["role"] != "volunteer":
-        raise HTTPException(status_code=403, detail="Only volunteers can join events.")
-
-    volunteer_id = current_user["user_id"]
-
-    # Find the event
-    event = events_collection.find_one({"event_id": event_id})
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-
-    # Check if the volunteer is already registered
-    if "volunteers" in event and volunteer_id in event["volunteers"]:
-        raise HTTPException(status_code=400, detail="Volunteer already registered for this event")
-
-    # Add the volunteer to the event
-    events_collection.update_one(
-        {"event_id": event_id},
-        {"$push": {"volunteers": volunteer_id}}
-    )
-
-    return {"message": "Volunteer joined event successfully"}
+@router.get("/events", response_model=List[Event])
+async def get_events():
+    """
+    Fetches all events from the database with a numeric event_id.
+    Returns events serialized according to the Event model.
+    """
+    events = list(events_collection.find({"event_id": {"$type": "int"}}))
+    return [Event(**event_serializer(event)) for event in events]

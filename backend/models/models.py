@@ -10,26 +10,24 @@ class Event(BaseModel):
     event_id: int
     event_name: str
     organization: str
-    organization_id: str  # Add this field
     description: str
     category: str
-    date: str
-    time: str
+    date: str  # YYYY-MM-DD
+    time: str  # HH:MM:SS
     venue: str
     city: str
     address: str
     latitude: Optional[float]
     longitude: Optional[float]
     duration: str
-    volunteer_requirements: Optional[int]
+    volunteer_requirements: str
     skills_required: List[str]
     contact_email: str
     contact_person: dict
-    image_url: Optional[str]
-    registration_deadline: str
-    additional_notes: Optional[str]
+    image_url: str
+    registration_deadline: str  # YYYY-MM-DD
+    additional_notes: str
     status: str
     total_registered_volunteers: int
-    created_at: str
-    expireAt: str
-    volunteers: List[str] = []  # Add this field
+    created_at: str  # ISO format
+    expireAt: str  # ISO format
