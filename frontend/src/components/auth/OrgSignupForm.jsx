@@ -70,23 +70,21 @@ const OrgSignupForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage(''); // Clear previous messages
-        setPasswordError(''); // Clear password error
-
-        // Validate required fields
+        setMessage('');
+        setPasswordError('');
+    
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
             return;
         }
-
+    
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
             return;
         }
-
-        // Prepare form data
+    
         const formDataToSend = new FormData();
         formDataToSend.append('logo', orgLogo);
         formDataToSend.append('name', orgName);
@@ -96,16 +94,21 @@ const OrgSignupForm = () => {
         formDataToSend.append('email', email);
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-
+    
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
             }
         });
-
+    
         formDataToSend.append('password', password);
         formDataToSend.append('password_confirmation', confirmPassword);
-
+    
+        // Log the FormData before sending
+        for (let [key, value] of formDataToSend.entries()) {
+            console.log(key, value);
+        }
+    
         try {
             const response = await axios.post(
                 "http://127.0.0.1:8000/auth/organization/register",
@@ -114,30 +117,23 @@ const OrgSignupForm = () => {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-
-            // Store token and role in localStorage
+    
             localStorage.setItem('token', response.data.access_token);
             localStorage.setItem('userRole', response.data.user.role);
-
-            // Update user context
-            setUser(response.data.user);
-
+    
             setMessage("Registration successful!");
             setTimeout(() => {
                 navigate("/OrgHome");
             }, 1500);
-
+    
         } catch (error) {
-            // Handle specific errors from the backend
+            console.error("Error during registration:", error.response ? error.response.data : error.message);
             if (error.response) {
-                // Backend validation errors (e.g., duplicate email, invalid data)
                 const errorMessage = error.response.data?.detail || error.response.data?.message || "An error occurred during registration.";
                 setMessage(errorMessage);
             } else if (error.request) {
-                // Network errors (e.g., no response from the server)
                 setMessage("Network error. Please check your connection and try again.");
             } else {
-                // Other errors (e.g., axios configuration issues)
                 setMessage("An unexpected error occurred. Please try again.");
             }
         } finally {
