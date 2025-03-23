@@ -1,73 +1,56 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Calendar, MapPin } from "lucide-react";
-import { animate, useMotionValue, useTransform } from "motion/react";
-import { useEffect, useState } from "react";
+import { animate, useMotionValue, useTransform } from "framer-motion";
+import useUsers from "../../hooks/useUsers";
+import useEvents from "../../hooks/useEvents";
 
 const Counter = ({ target }) => {
   const count = useMotionValue(0);
   const rounded = useTransform(count, (latest) => Math.round(latest));
 
   useEffect(() => {
-    const controls = animate(count, target, { duration: 3 });
-    return () => controls.stop();
+    if (typeof target === 'number' && !isNaN(target)) {
+      const controls = animate(count, target, { duration: 3 });
+      return () => controls.stop();
+    }
   }, [target]);
 
   return <motion.span>{rounded}</motion.span>;
 };
 
 const HomeCards = () => {
-  const [stats, setStats] = useState({
-    activeVolunteers: 0,
-    monthlyEvents: 0,
-    citiesCovered: 0,
-  });
+  const { totalUsers, loading: usersLoading, error: usersError } = useUsers();
+  const { totalEvents, loading: eventsLoading, error: eventsError } = useEvents();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await fetch("/events.json"); // Fetch from the JSON file
-        const jsonData = await response.json();
+  if (usersLoading || eventsLoading) {
+    return <div>Loading...</div>;
+  }
 
-        if (!jsonData.events) return;
-
-        // Calculate Active Volunteers
-        const activeVolunteers = jsonData.events.reduce(
-          (sum, events) => sum + (events.total_registered_volunteers || 0),
-          0
-        );
-
-        // Calculate Monthly Events
-        const currentMonth = new Date().getMonth() + 1;
-        const monthlyEvents = jsonData.events.filter(
-          (events) => new Date(events.date).getMonth() + 1 === currentMonth
-        ).length;
-
-        setStats({ activeVolunteers, monthlyEvents });
-      } catch (error) {
-        console.error("Error fetching events data:", error);
-      }
-    };
-
-    loadData();
-  }, []);
+  if (usersError || eventsError) {
+    return (
+      <div className="text-red-500 text-center">
+        Error fetching data: {usersError?.message || eventsError?.message}
+      </div>
+    );
+  }
 
   const cards = [
     {
       icon: Users,
-      numbers: stats.activeVolunteers,
-      title: "Active Volunteers",
+      numbers: totalUsers,
+      title: "Active Users",
       description: "and growing daily",
     },
     {
       icon: Calendar,
-      numbers: stats.monthlyEvents,
-      title: "Monthly Events",
-      description: "across Sri lanka",
+      numbers: totalEvents,
+      title: "Total Events",
+      description: "across Sri Lanka",
     },
     {
       icon: MapPin,
-      numbers: "2",
+      numbers: 3, // Static value for cities covered
       title: "Cities Covered",
       description: "nationwide impact",
     },
@@ -78,7 +61,7 @@ const HomeCards = () => {
       {cards.map((feature, index) => (
         <motion.div
           key={index}
-          className=" bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100 "
+          className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg cursor-pointer border border-gray-100"
           whileHover={{ scale: 1.05 }}
         >
           <feature.icon className="w-8 h-10 text-orange-600" />
@@ -96,4 +79,5 @@ const HomeCards = () => {
     </div>
   );
 };
+
 export default HomeCards;

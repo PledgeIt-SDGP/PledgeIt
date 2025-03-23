@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import cloudinary
 import cloudinary.uploader
 from fastapi.security import OAuth2PasswordBearer
+from bson import ObjectId
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,9 +52,6 @@ cloudinary.config(
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
-
-ORG_LOGO_UPLOAD_DIR = "organization_logos"
-os.makedirs(ORG_LOGO_UPLOAD_DIR, exist_ok=True)
 
 VALID_CAUSES = {"Environmental", "Community Service", "Education", "Healthcare", "Animal Welfare", "Disaster Relief", "Lifestyle & Culture", "Fundraising & Charity"}
 
@@ -108,20 +106,6 @@ class OrganizationRegister(BaseModel):
             raise ValueError("Invalid cause selected.")
         return values
 
-# Google OAuth
-oauth = OAuth()
-oauth.register(
-    name='google',
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    access_token_url='https://oauth2.googleapis.com/token',
-    client_kwargs={"scope": "email profile"},
-    redirect_uri='http://127.0.0.1:8000/auth/callback'
-)
-
-### 🔹 Authentication Routes
-
 # Register Volunteer
 @router.post('/auth/volunteer/register')
 async def register_volunteer(volunteer: VolunteerRegister):
@@ -134,17 +118,33 @@ async def register_volunteer(volunteer: VolunteerRegister):
     hashed_password = hash_password(volunteer.password)
     confirmation_token = secrets.token_urlsafe(32)
 
-    volunteers_collection.insert_one({
+    volunteer_data = {
         "first_name": volunteer.first_name,
         "last_name": volunteer.last_name,
         "email": volunteer.email,
         "password": hashed_password,
         "is_verified": False,
         "confirmation_token": confirmation_token,
-        "role": "volunteer"  # Added role
-    })
+        "role": "volunteer"
+    }
 
-    return {"message": "Registration successful."}
+    result = volunteers_collection.insert_one(volunteer_data)
+
+    # Generate access token
+    access_token = create_access_token({"user_id": str(result.inserted_id), "role": "volunteer"})
+
+    # Return user details and access token after registration
+    return {
+        "message": "Registration successful.",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": str(result.inserted_id),
+            "name": f"{volunteer.first_name} {volunteer.last_name}",
+            "email": volunteer.email,
+            "role": "volunteer"
+        }
+    }
 
 # File upload validation (only allow image files)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -201,7 +201,28 @@ async def register_organization(
         "password": hashed_password,
         "role": "organization"  # Added role
     })
-    return {"message": "Organization registered successfully", "organization_id": str(result.inserted_id), "logo_url": logo_url}
+
+    # Create access token
+    access_token = create_access_token({"user_id": str(result.inserted_id), "role": "organization"})
+
+    return {
+        "message": "Organization registered successfully",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": str(result.inserted_id),
+            "name": name,
+            "email": email,
+            "role": "organization",
+            "logo": logo_url,
+            "website_url": website_url,
+            "about": about,
+            "organization_type": organization_type,
+            "causes_supported": causes_supported,
+            "contact_number": contact_number,
+            "address": address,
+        }
+    }
 
 # Role-based access control (RBAC) utility
 def role_required(required_role: str):
@@ -220,12 +241,17 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
         role = payload.get("role")
+
         if user_id is None or role is None:
             raise HTTPException(status_code=403, detail="Invalid credentials")
-        user = volunteers_collection.find_one({"_id": user_id}) or organizations_collection.find_one({"_id": user_id})
+
+        user = volunteers_collection.find_one({"_id": ObjectId(user_id)}) or \
+            organizations_collection.find_one({"_id": ObjectId(user_id)})
+
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return {"user_id": user_id, "role": role}
+
+        return {"user_id": str(user["_id"]), "role": role}
     except JWTError:
         raise HTTPException(status_code=403, detail="Could not validate credentials")
 
@@ -248,7 +274,18 @@ async def login(email: str = Form(...), password: str = Form(...), response: Res
     )
 
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    # Return user details along with the token
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "id": str(user["_id"]),
+            "name": user.get("first_name") or user.get("name"),  # Volunteer has first_name, Organization has name
+            "email": user.get("email"),
+            "role": user.get("role")
+        }
+    }
 
 # Refresh Token Route
 @router.post('/auth/refresh_token')
@@ -261,44 +298,179 @@ async def refresh_token(refresh_token: str = Depends(oauth2_scheme)):
     return {"access_token": new_access_token, "token_type": "bearer"}
 
 # Protect routes with role-based access control
-@router.get('/volunteer/dashboard')
+@router.get('/VolDash')
 async def volunteer_dashboard(user: dict = Depends(role_required("volunteer"))):
     return {"message": "Welcome to the volunteer dashboard!"}
 
-@router.get('/organization/dashboard')
+@router.get('/OrgDash')
 async def organization_dashboard(user: dict = Depends(role_required("organization"))):
     return {"message": "Welcome to the organization dashboard!"}
 
-# Google OAuth Login
-@router.get('/auth/google')
-async def login_via_google(request: Request):
-    redirect_uri = 'http://127.0.0.1:8000/auth/callback'
-    return await oauth.google.authorize_redirect(request, redirect_uri)
-
-# Google OAuth Callback
-@router.get('/auth/callback')
-async def auth_callback(request: Request):
-    google_token = await oauth.google.authorize_access_token(request)
-    user_info = await httpx.AsyncClient().get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        headers={"Authorization": f"Bearer {google_token['access_token']}"}
-    )
-    user = user_info.json()
-    existing_user = get_user_by_email(user.get('email'))
-
-    if existing_user:
-        role = "volunteer" if existing_user in volunteers_collection.find() else "organization"
-        redirect_url = "/volunteer/dashboard" if role == "volunteer" else "/organization/dashboard"
-        return {"message": "User already exists", "id": str(existing_user['_id']), "redirect_url": redirect_url}
-
-    # Register as volunteer if new user
-    result = volunteers_collection.insert_one({
-        "first_name": user.get("given_name"),
-        "last_name": user.get("family_name"),
-        "email": user.get("email"),
-        "password": None,
-        "profile_image": user.get("picture")
-    })
+@router.post('/auth/logout')
+async def logout(response: Response, user: dict = Depends(get_current_user)):
+    # Optionally, you can invalidate the refresh token in the database
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
     
-    # Redirect to volunteer dashboard
-    return {"message": "Volunteer registered via Google", "volunteer_id": str(result.inserted_id), "redirect_url": "/volunteer/dashboard"}
+    # Clear the refresh token cookie
+    response.delete_cookie(key="refresh_token")
+    
+    return {"message": "Logged out successfully"}
+
+@router.delete('/auth/volunteer/delete')
+async def delete_volunteer(user: dict = Depends(get_current_user)):
+    # Ensure the user is a volunteer
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can delete their accounts.")
+
+    # Delete the volunteer from the database
+    result = volunteers_collection.delete_one({"_id": ObjectId(user["user_id"])})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Volunteer not found")
+
+    # Optionally, delete the refresh token
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
+
+    return {"message": "Volunteer account deleted successfully"}
+
+@router.delete('/auth/organization/delete')
+async def delete_organization(user: dict = Depends(get_current_user)):
+    # Ensure the user is an organization
+    if user["role"] != "organization":
+        raise HTTPException(status_code=403, detail="Permission denied. Only organizations can delete their accounts.")
+
+    # Delete the organization from the database
+    result = organizations_collection.delete_one({"_id": ObjectId(user["user_id"])})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    # Optionally, delete the refresh token
+    db.refresh_tokens.delete_one({"user_id": user["user_id"]})
+
+    return {"message": "Organization account deleted successfully"}
+
+@router.get('/auth/me')
+async def get_current_user_details(user: dict = Depends(get_current_user)):
+    if user["role"] == "volunteer":
+        user_data = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    elif user["role"] == "organization":
+        user_data = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
+    
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Return all fields for organizations
+    if user["role"] == "organization":
+        return {
+            "id": str(user_data["_id"]),
+            "name": user_data.get("name"),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+            "logo": user_data.get("logo"),
+            "website_url": user_data.get("website_url"),
+            "about": user_data.get("about"),
+            "organization_type": user_data.get("organization_type"),
+            "causes_supported": user_data.get("causes_supported"),
+            "contact_number": user_data.get("contact_number"),
+            "address": user_data.get("address"),
+        }
+    else:
+        # Return basic fields for volunteers
+        return {
+            "id": str(user_data["_id"]),
+            "name": user_data.get("first_name") or user_data.get("name"),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+        }
+    
+@router.get("/auth/total-users")
+async def get_total_users():
+    total_volunteers = volunteers_collection.count_documents({})
+    total_organizations = organizations_collection.count_documents({})
+    total_users = total_volunteers + total_organizations
+    return {"total_users": total_users}
+
+@router.put('/auth/volunteer/update')
+async def update_volunteer_details(
+    user: dict = Depends(get_current_user),
+    first_name: str = Form(None),
+    last_name: str = Form(None),
+    password: str = Form(None),
+    password_confirmation: str = Form(None),
+):
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can update their details.")
+
+    update_data = {}
+    if first_name:
+        update_data["first_name"] = first_name
+    if last_name:
+        update_data["last_name"] = last_name
+
+    # Handle password update
+    if password and password_confirmation:
+        verify_passwords(password, password_confirmation)
+        update_data["password"] = hash_password(password)
+    elif password or password_confirmation:
+        raise HTTPException(status_code=400, detail="Both password and password confirmation are required.")
+
+    # Update the volunteer's details in the database
+    result = volunteers_collection.update_one(
+        {"_id": ObjectId(user["user_id"])},
+        {"$set": update_data}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="No changes were made.")
+
+    return {"message": "Volunteer details updated successfully"}
+
+@router.put('/auth/organization/update')
+async def update_organization_details(
+    user: dict = Depends(get_current_user),
+    name: str = Form(None),
+    website_url: str = Form(None),
+    organization_type: str = Form(None),
+    about: str = Form(None),
+    contact_number: str = Form(None),
+    address: str = Form(None),
+    causes_supported: list[str] = Form(None),
+    password: str = Form(None),
+    password_confirmation: str = Form(None),
+    logo: UploadFile = File(None),
+):
+    if user["role"] != "organization":
+        raise HTTPException(status_code=403, detail="Permission denied. Only organizations can update their details.")
+
+    if password and password_confirmation:
+        verify_passwords(password, password_confirmation)
+        hashed_password = hash_password(password)
+    else:
+        hashed_password = None
+
+    update_data = {}
+    if name:
+        update_data["name"] = name
+    if website_url:
+        update_data["website_url"] = website_url
+    if organization_type:
+        update_data["organization_type"] = organization_type
+    if about:
+        update_data["about"] = about
+    if contact_number:
+        update_data["contact_number"] = contact_number
+    if address:
+        update_data["address"] = address
+    if causes_supported:
+        update_data["causes_supported"] = causes_supported
+    if logo:
+        if not allowed_file(logo.filename):
+            raise HTTPException(status_code=400, detail="Invalid file type. Only PNG, JPG, JPEG files are allowed.")
+        logo_bytes = await logo.read()
+        cloudinary_upload = cloudinary.uploader.upload(logo_bytes, folder="organization_logos")
+        update_data["logo"] = cloudinary_upload["secure_url"]
+    if hashed_password:
+        update_data["password"] = hashed_password
+
+    organizations_collection.update_one({"_id": ObjectId(user["user_id"])}, {"$set": update_data})
+
+    return {"message": "Organization details updated successfully"}

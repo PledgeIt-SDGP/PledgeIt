@@ -1,51 +1,48 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+// import { useUser } from "../../hooks/UserContext";
 
-const LoginPage = () => {
+const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
-
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
+    // const { setUser } = useUser();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleGoogleLogin = () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google";
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
-
+    
         try {
-            // Format the formData as URLSearchParams for x-www-form-urlencoded
             const params = new URLSearchParams();
             params.append('email', formData.email);
             params.append('password', formData.password);
     
             const response = await axios.post("http://127.0.0.1:8000/auth/login", params, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
     
-            const { access_token, role } = response.data;
-            localStorage.setItem("token", access_token);
-            localStorage.setItem("role", role);
-    
-            console.log("Logged in successfully with role:", role); // Debugging log
+            const { access_token, user } = response.data;
+            localStorage.setItem('token', access_token); // Store token
+            localStorage.setItem('userRole', user.role); // Store user role
+            // setUser(user); // Update user context
     
             setMessage("Login successful!");
     
+            // Redirect to dashboard based on role
             setTimeout(() => {
-                if (role === "volunteer") {
-                    window.location.href = "/Vol-Dashboard"; 
-                } else if (role === "organization") {
-                    window.location.href = "/Org-Dashboard"; 
-                }                
+                if (user.role === "volunteer") {
+                    navigate("/volHome");
+                } else if (user.role === "organization") {
+                    navigate("/orgHome");
+                }
             }, 1500);
     
         } catch (error) {
@@ -53,27 +50,14 @@ const LoginPage = () => {
         } finally {
             setLoading(false);
         }
-    };      
-    
+    };
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-red-200">
+        <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-radial from-red-300 from-50% to-pink-700">
             <div className="w-full md:w-2/5 flex flex-col justify-center px-6 md:px-10 py-6 md:py-0">
                 <div className="bg-white p-8 rounded-xl shadow-lg mx-auto w-full max-w-md py-15">
                     <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Welcome Back!</h2>
                     <p className="text-center text-gray-500 mb-6">Enter your credentials to log in</p>
-
-                    <button
-                        onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center py-2 border rounded-lg text-gray-600 hover:bg-gray-100 mb-4"
-                    >
-                        <img
-                            src="https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000"
-                            alt="Google"
-                            className="h-5 mr-3"
-                        />
-                        Continue with Google
-                    </button>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
@@ -101,7 +85,6 @@ const LoginPage = () => {
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
                                     required
                                 />
-
                             </div>
                         </div>
 
@@ -133,4 +116,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default LoginForm;

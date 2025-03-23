@@ -8,25 +8,28 @@ class ContactPerson(BaseModel):
 
 class Event(BaseModel):
     event_id: int
-    event_name: str = Field(..., min_length=1)
-    organization: str = Field(..., min_length=1)
+    event_name: str
+    organization: str
+    organization_id: str  # Add this field
     description: str
-    category: str = Field(..., min_length=1)
-    date: datetime.date
-    time: datetime.time
-    venue: str = Field(..., min_length=1)
-    city: str = Field(..., min_length=1)
+    category: str
+    date: str
+    time: str
+    venue: str
+    city: str
     address: str
     latitude: Optional[float]
     longitude: Optional[float]
     duration: str
-    volunteer_requirements: Optional[str]
+    volunteer_requirements: Optional[int]
     skills_required: List[str]
-    contact_email: EmailStr
-    contact_person: ContactPerson
+    contact_email: str
+    contact_person: dict
     image_url: Optional[str]
-    registration_deadline: datetime.date
+    registration_deadline: str
     additional_notes: Optional[str]
-    status: str = Field(..., min_length=1)
+    status: str
     total_registered_volunteers: int
-    created_at: datetime.datetime
+    created_at: str
+    expireAt: str
+    volunteers: List[str] = []  # Add this field

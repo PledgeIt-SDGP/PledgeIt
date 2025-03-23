@@ -1,6 +1,6 @@
 
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../../components/vol-dash/VolSidebar";
 
 const VolunteerDashboard = ({ children }) => {
 
