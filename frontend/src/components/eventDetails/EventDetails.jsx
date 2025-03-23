@@ -11,17 +11,23 @@ const EventDetails = () => {
   const [registerError, setRegisterError] = useState("");
   const [registerSuccess, setRegisterSuccess] = useState("");
   const { user } = useUser(); // Get the current user from context
+  const [isRegistered, setIsRegistered] = useState(false);
 
   // Fetch event data from the backend
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/events/${id}`); // Replace with your backend API endpoint
+        const response = await fetch(`http://127.0.0.1:8000/events/${id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
         setEvent(data);
+
+        // Check if the user is already registered
+        if (user && data.registered_volunteers && data.registered_volunteers.includes(user.id)) {
+          setIsRegistered(true);
+        }
       } catch (error) {
         console.error("Error fetching event data:", error);
         setEvent(null);
@@ -31,12 +37,12 @@ const EventDetails = () => {
     };
 
     fetchEvent();
-  }, [id]);
+  }, [id, user]);
 
   const handleRegister = async () => {
     if (!user) {
-        window.location.href = `/login?redirect=/details/${id}`;
-        return;
+      window.location.href = `/login?redirect=/details/${id}`;
+      return;
     }
 
     setRegistering(true);
@@ -44,30 +50,31 @@ const EventDetails = () => {
     setRegisterSuccess("");
 
     try {
-        const token = localStorage.getItem("token"); // Retrieve token from localStorage
-        const response = await fetch(`http://127.0.0.1:8000/events/${id}/join`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // Include token in the request
-            },
-        });
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://127.0.0.1:8000/events/${id}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-            setRegisterError(data.detail || "Failed to register for the event");
-        } else {
-            setRegisterSuccess("Successfully registered for the event!");
-            alert("You have successfully registered for the event!");
-        }
+      if (!response.ok) {
+        setRegisterError(data.detail || "Failed to register for the event");
+      } else {
+        setRegisterSuccess("Successfully registered for the event!");
+        setIsRegistered(true); // Update registration status
+        alert("You have successfully registered for the event!");
+      }
     } catch (error) {
-        setRegisterError("An error occurred while registering");
-        console.error("Registration error:", error);
+      setRegisterError("An error occurred while registering");
+      console.error("Registration error:", error);
     } finally {
-        setRegistering(false);
+      setRegistering(false);
     }
-};
+  };
 
   if (!event) return <p className="text-center text-red-500">Event not found!</p>;
 
@@ -270,10 +277,10 @@ const EventDetails = () => {
                 {registerSuccess && <p className="text-green-500 mb-2">{registerSuccess}</p>}
                 <button
                   onClick={handleRegister}
-                  disabled={registering}
+                  disabled={registering || isRegistered}
                   className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
                 >
-                  {registering ? "Registering..." : "Register for the event"}
+                  {registering ? "Registering..." : isRegistered ? "Registration Done" : "Register for the event"}
                 </button>
               </div>
             </div>
