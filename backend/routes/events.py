@@ -167,6 +167,14 @@ async def autocomplete_events(search: str = Query(...)):
     suggestions = events_collection.distinct("event_name", query)
     return suggestions
 
+@router.get("/events/total-events")
+async def get_total_events():
+    """
+    Fetches the total number of events stored in the database.
+    """
+    total_events = events_collection.count_documents({})
+    return {"total_events": total_events}
+
 @router.get("/events/{event_id}", response_model=Event)
 async def get_event(event_id: int):
     """
