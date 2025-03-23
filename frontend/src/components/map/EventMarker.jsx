@@ -56,7 +56,7 @@ const EventMarker = ({ event }) => {
 
           {/* "View More" Link */}
           <Link
-            to={`/events/${event.event_id}`}
+            to={`/details/${event.event_id}`}
             className="flex items-center justify-center bg-gradient-to-r from-red-500 to-red-700 font-semibold text-sm transition-all group px-2 py-1 rounded"
           >
             <span className="text-white group-hover:text-white transition-colors">
