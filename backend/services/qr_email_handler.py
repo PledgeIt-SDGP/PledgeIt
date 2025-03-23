@@ -5,6 +5,7 @@ import smtplib
 from email.message import EmailMessage
 import logging
 import json
+from datetime import datetime, timedelta
 
 # Import the events_collection so we can fetch event details if needed
 from database.database import events_collection
@@ -62,15 +63,16 @@ def generate_qr_code(data: str) -> BytesIO:
         logger.error("Error generating QR code for data %s: %s", data, str(e))
         raise
 
-def send_email_with_qr(recipient: str, subject: str, html_content: str, qr_buffer: BytesIO):
+def send_email(recipient: str, subject: str, html_content: str, attachment: BytesIO = None, attachment_name: str = None):
     """
-    Sends an email with the QR code attached as a file named 'qr_code.png'.
+    Sends an email with optional attachment.
     
     Args:
         recipient (str): The recipient's email address.
         subject (str): The subject line of the email.
         html_content (str): The HTML body of the email.
-        qr_buffer (BytesIO): The QR code image in a BytesIO stream.
+        attachment (BytesIO, optional): The attachment as a BytesIO stream.
+        attachment_name (str, optional): The name of the attachment file.
     """
     try:
         msg = EmailMessage()
@@ -79,63 +81,48 @@ def send_email_with_qr(recipient: str, subject: str, html_content: str, qr_buffe
         msg["To"] = recipient
 
         # Provide a fallback text-only content
-        msg.set_content("This email contains a QR code attachment. Please view it using an HTML compatible email client.")
+        msg.set_content("This email contains an HTML version. Please view it using an HTML compatible email client.")
         # Add the HTML part
         msg.add_alternative(html_content, subtype="html")
 
-        # Attach the QR code image
-        qr_data = qr_buffer.read()
-        msg.add_attachment(qr_data, maintype="image", subtype="png", filename="qr_code.png")
-        logger.info("Attached QR code as 'qr_code.png' for recipient: %s", recipient)
+        # Attach the file if provided
+        if attachment:
+            attachment_data = attachment.read()
+            msg.add_attachment(attachment_data, maintype="image", subtype="png", filename=attachment_name)
+            logger.info(f"Attached {attachment_name} for recipient: {recipient}")
 
         # Send the email over a secure connection
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-        logger.info("Email sent successfully to: %s", recipient)
+        logger.info(f"Email sent successfully to: {recipient}")
     except Exception as e:
-        logger.error("Error sending email to %s: %s", recipient, str(e))
+        logger.error(f"Error sending email to {recipient}: {str(e)}")
         raise
 
-def send_event_qr_to_organization(event_id: int, organization_email: str, event_details: dict = None):
+def send_event_qr_to_organization(event_id: int, organization_email: str, event_details: dict):
     """
-    Fetches or uses provided event details, generates a JSON payload (including a redirect_url),
-    creates a QR code from it, and sends it as an attached PNG file 
-    to the organization's email.
+    Sends an email to the organization with event details and a QR code.
     
     Args:
         event_id (int): Unique identifier for the event.
         organization_email (str): Email address of the organization.
-        event_details (dict, optional): Event details, if already available.
-            If None, function fetches the event details from MongoDB.
+        event_details (dict): Event details.
     """
     try:
-        # If no event_details are provided, fetch from the database
-        if event_details is None:
-            event_details = events_collection.find_one({"event_id": event_id})
-            if event_details is None:
-                # If not found, store minimal data
-                event_details = {"event_id": event_id}
-
         # Add a redirect_url field so scanning the QR can open the detail page
         redirect_url = f"https://pledgeit.com/events/{event_id}"
         event_details["redirect_url"] = redirect_url
 
-        # --- NEW FEATURE: Add QR code expiration date (one day after the event) ---
+        # Add QR code expiration date (one day after the event)
         if "date" in event_details and "time" in event_details:
             try:
-                from datetime import datetime, timedelta
-                # Try parsing assuming time is stored as HH:MM:SS; if not, try appending seconds
-                try:
-                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}", "%Y-%m-%d %H:%M:%S")
-                except Exception:
-                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}:00", "%Y-%m-%d %H:%M:%S")
+                event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}", "%Y-%m-%d %H:%M:%S")
                 expiration_dt = event_dt + timedelta(days=1)
                 event_details["qr_expiration"] = expiration_dt.isoformat()
             except Exception as exp:
-                logger.warning("Could not compute QR expiration for event_id %s: %s", event_id, str(exp))
-        # --- End new feature ---
+                logger.warning(f"Could not compute QR expiration for event_id {event_id}: {str(exp)}")
 
         # Convert event_details to JSON string
         qr_data = json.dumps(event_details, default=str)
@@ -195,55 +182,35 @@ def send_event_qr_to_organization(event_id: int, organization_email: str, event_
           </body>
         </html>
         """
-        # Attach and send the QR
-        send_email_with_qr(organization_email, subject, html_content, qr_buffer)
+        # Send the email with the QR code
+        send_email(organization_email, subject, html_content, qr_buffer, "event_qr_code.png")
     except Exception as e:
-        logger.error("Failed to send event QR code to organization: %s", str(e))
+        logger.error(f"Failed to send event QR code to organization: {str(e)}")
         raise
 
-def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_details: dict = None):
+def mark_volunteer_participation(event_id: int, volunteer_email: str):
     """
-    Fetches or uses provided event details, generates a JSON payload (including a redirect_url),
-    creates a QR code from it, and sends it as an attached PNG file 
-    to the volunteer's email.
+    Marks a volunteer's participation for an event and sends a confirmation email.
     
     Args:
-        event_id (int): Unique identifier for the event.
-        volunteer_email (str): Email address of the volunteer.
-        event_details (dict, optional): Event details, if already available.
-            If None, function fetches the event details from MongoDB.
+        event_id (int): The event ID.
+        volunteer_email (str): The volunteer's email.
     """
     try:
-        # If no event_details are provided, fetch from the database
-        if event_details is None:
-            event_details = events_collection.find_one({"event_id": event_id})
-            if event_details is None:
-                # If not found, store minimal data
-                event_details = {"event_id": event_id}
+        # Update the participation status in the database
+        events_collection.update_one(
+            {"event_id": event_id, "volunteers.email": volunteer_email},
+            {"$set": {"volunteers.$.participation_status": "Attended"}}
+        )
+        logger.info(f"Volunteer {volunteer_email} marked as attended for event {event_id}.")
 
-        # Add a redirect_url field so scanning the QR can open the detail page
-        redirect_url = f"https://pledgeit.com/events/{event_id}"
-        event_details["redirect_url"] = redirect_url
+        # Fetch event details
+        event_details = events_collection.find_one({"event_id": event_id})
+        if not event_details:
+            raise ValueError(f"Event {event_id} not found.")
 
-        # --- NEW FEATURE: Add QR code expiration date (one day after the event) ---
-        if "date" in event_details and "time" in event_details:
-            try:
-                from datetime import datetime, timedelta
-                try:
-                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}", "%Y-%m-%d %H:%M:%S")
-                except Exception:
-                    event_dt = datetime.strptime(f"{event_details['date']} {event_details['time']}:00", "%Y-%m-%d %H:%M:%S")
-                expiration_dt = event_dt + timedelta(days=1)
-                event_details["qr_expiration"] = expiration_dt.isoformat()
-            except Exception as exp:
-                logger.warning("Could not compute QR expiration for event_id %s: %s", event_id, str(exp))
-        # --- End new feature ---
-
-        # Convert event_details to JSON string
-        qr_data = json.dumps(event_details, default=str)
-        qr_buffer = generate_qr_code(qr_data)
-
-        subject = f"Your PledgeIt Attendance QR Code (Event ID {event_id})"
+        # Send confirmation email to the volunteer
+        subject = f"Participation Confirmation for Event ID {event_id}"
         html_content = f"""
         <html>
           <body style="margin:0; padding:0; background-color:#F7F7F7;">
@@ -255,17 +222,12 @@ def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_detail
               </tr>
               <tr>
                 <td style="padding:30px;">
-                  <h2 style="color:#D32F2F; text-align:center;">Attendance QR Code</h2>
+                  <h2 style="color:#D32F2F; text-align:center;">Participation Confirmed</h2>
                   <p style="color:#333333; font-size:16px;">
                     Dear Volunteer,<br><br>
-                    You have successfully registered for the event (ID: <strong>{event_id}</strong>) on <span style="color:#D32F2F;">PledgeIt</span>.
-                    Please find attached your unique QR code for attendance verification.
+                    Your participation for the event (ID: <strong>{event_id}</strong>) has been successfully recorded.
                   </p>
                   <table style="width:100%; margin:20px 0; font-size:14px;">
-                    <tr>
-                      <td style="padding:8px; border:1px solid #dddddd;"><strong>Event ID:</strong></td>
-                      <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_id", event_id)}</td>
-                    </tr>
                     <tr>
                       <td style="padding:8px; border:1px solid #dddddd;"><strong>Event Name:</strong></td>
                       <td style="padding:8px; border:1px solid #dddddd;">{event_details.get("event_name", "N/A")}</td>
@@ -284,7 +246,7 @@ def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_detail
                     </tr>
                   </table>
                   <p style="color:#333333; font-size:16px; text-align:center;">
-                    Please present this QR code upon arrival for attendance verification.
+                    Thank you for participating!
                   </p>
                 </td>
               </tr>
@@ -297,8 +259,7 @@ def send_event_qr_to_volunteer(event_id: int, volunteer_email: str, event_detail
           </body>
         </html>
         """
-        # Attach and send the QR
-        send_email_with_qr(volunteer_email, subject, html_content, qr_buffer)
+        send_email(volunteer_email, subject, html_content)
     except Exception as e:
-        logger.error("Failed to send event QR code to volunteer: %s", str(e))
+        logger.error(f"Failed to mark participation for volunteer {volunteer_email}: {str(e)}")
         raise

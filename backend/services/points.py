@@ -1,19 +1,31 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import logging
 import httpx
-from fastapi import HTTPException
 from datetime import datetime
 from dotenv import load_dotenv
 
-#Load environment variables
+# Load environment variables
 load_dotenv()
 
-# Connfigure logging
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
-#Deepseek API Key
+# Deepseek API Key
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/analyze" 
+DEEPSEEK_API_URL = "https://api.deepseek.com/v1/analyze"
+
+app = FastAPI()
+
+# Enable CORS for frontend-backend communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (replace with your frontend URL in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 async def get_social_impact_score(description: str) -> float:
     """
@@ -69,4 +81,19 @@ async def calculate_and_assign_xp_points(event_description: str, duration_hours:
     except Exception as e:
         logging.error(f"Error in calculate_and_assign_xp_points: {e}")
         raise HTTPException(status_code=500, detail="Failed to calculate XP points")
-            
+
+@app.post("/api/xp-data")
+async def get_xp_data(event_description: str, duration_hours: float):
+    """
+    Endpoint to calculate and return XP points based on event description and duration.
+    """
+    try:
+        xp_points = await calculate_and_assign_xp_points(event_description, duration_hours)
+        return {"xp_points": xp_points}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Start the server
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
