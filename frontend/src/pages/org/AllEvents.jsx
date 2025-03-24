@@ -7,16 +7,32 @@ const AllEvents = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/events.json") // Adjust path if fetching from an API
-      .then((response) => response.json())
-      .then((data) => {
-        setEvents(data.events); // Assuming the JSON has an "events" key
+    // Fetch events created by the current organization
+    const fetchOrganizationEvents = async () => {
+      try {
+        const response = await fetch("/organization/events", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Include the organization's authentication token
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data = await response.json();
+        setEvents(data); // Assuming the API returns an array of events
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching events:", error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchOrganizationEvents();
   }, []);
 
   if (loading) {
@@ -32,15 +48,15 @@ const AllEvents = () => {
           </h1>
 
           {/* Event Grid Container */}
-          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-7 ">
+          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-7">
             {events.map((event) => {
               const eventDate = new Date(event.date);
               const month = eventDate.toLocaleString("default", { month: "short" });
               const day = eventDate.getDate();
               return (
                 <div
-                  key={event.id}
-                  className=" rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white  flex flex-col w-82 h-110 mx-auto"
+                  key={event.event_id} // Use event_id instead of id
+                  className="rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white flex flex-col w-82 h-110 mx-auto"
                 >
                   {/* Date Box */}
                   <div className="relative">

@@ -98,13 +98,7 @@ def get_user_by_email(email: str):
     return volunteers_collection.find_one({"email": email}) or organizations_collection.find_one({"email": email})
 
 ### 🔹 Pydantic Models
-class VolunteerRegister(BaseModel):
-    first_name: str
-    last_name: str
-    email: str
-    password: str
-    password_confirmation: str
-
+# In the OrganizationRegister class, add a field for event IDs
 class OrganizationRegister(BaseModel):
     name: str
     website_url: str
@@ -116,6 +110,7 @@ class OrganizationRegister(BaseModel):
     causes_supported: list[str] = Field(..., min_items=1, max_items=8)
     password: str
     password_confirmation: str
+    created_events: list[str] = Field(default_factory=list)  # New field for event IDs
 
     @validator("causes_supported")
     def validate_causes(cls, values):
@@ -124,6 +119,15 @@ class OrganizationRegister(BaseModel):
         if not set(values).issubset(VALID_CAUSES):
             raise ValueError("Invalid cause selected.")
         return values
+
+# In the VolunteerRegister class, add a field for event IDs
+class VolunteerRegister(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    password_confirmation: str
+    registered_events: list[str] = Field(default_factory=list)  # New field for event IDs
 
 # Register Volunteer
 @router.post('/auth/volunteer/register')

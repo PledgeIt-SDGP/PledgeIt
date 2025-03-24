@@ -11,6 +11,8 @@ import uuid as uuid_lib
 import cloudinary
 import cloudinary.uploader
 from routes.auth import get_current_user
+from routes.auth import organizations_collection, volunteers_collection
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -354,6 +356,12 @@ async def create_event(
         "created_at": dt.now(timezone.utc).isoformat(),  
         "expireAt": expireAt  
     }
+
+    organizations_collection.update_one(
+        {"_id": ObjectId(current_org["_id"])},
+        {"$push": {"created_events": str(event_id)}}
+    )
+    
     events_collection.insert_one(event_data)
     try:
         from services.qr_email_handler import send_event_qr_to_organization
@@ -440,4 +448,36 @@ async def join_event(
         "$inc": {"total_registered_volunteers": 1}}
     )
 
+    # Update the volunteer's registered_events list
+    volunteers_collection.update_one(
+        {"_id": ObjectId(user["user_id"])},
+        {"$push": {"registered_events": str(event_id)}}
+    )
+
     return {"message": "Successfully registered for the event!"}
+
+@router.get("/organization/events")
+async def get_organization_events(user: dict = Depends(get_current_user)):
+    if user["role"] != "organization":
+        raise HTTPException(status_code=403, detail="Only organizations can access this endpoint.")
+
+    organization = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    event_ids = organization.get("created_events", [])
+    events = list(events_collection.find({"event_id": {"$in": event_ids}}))
+    return [Event(**event_serializer(event)) for event in events]
+
+@router.get("/volunteer/events")
+async def get_volunteer_events(user: dict = Depends(get_current_user)):
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Only volunteers can access this endpoint.")
+
+    volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    if not volunteer:
+        raise HTTPException(status_code=404, detail="Volunteer not found")
+
+    event_ids = volunteer.get("registered_events", [])
+    events = list(events_collection.find({"event_id": {"$in": event_ids}}))
+    return [Event(**event_serializer(event)) for event in events]
