@@ -93,7 +93,3 @@ async def get_xp_data(event_description: str, duration_hours: float):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Start the server
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
