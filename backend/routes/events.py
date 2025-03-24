@@ -308,7 +308,7 @@ async def create_event(
         category = category_mapping[category]
     latitude, longitude = get_coordinates(address)
     if latitude is None or longitude is None:
-        raise HTTPException(status_code=400, detail="Please give a valid address.")
+        raise HTTPException(status_code=400, detail="Invalid address. Please add a valid address.")
     try:
         cloudinary.config(
             cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
