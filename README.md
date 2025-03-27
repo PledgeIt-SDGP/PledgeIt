@@ -1,4 +1,5 @@
 #Copy this as a .env file
+
 ''
 MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority&appName=pledgeit
 DB_NAME=pledgeit_database
@@ -12,4 +13,5 @@ CLIENT_SECRET=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
 CLOUDINARY_CLOUD_NAME=dwh8vc3ua
 CLOUDINARY_API_KEY=478486378297543
 CLOUDINARY_API_SECRET=DQgfCn_xqVCcIcwqlkKGumSHQfc
+
 ''
