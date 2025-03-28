@@ -36,7 +36,7 @@ const ProfileSettings = () => {
       }
 
       const response = await axios.put(
-        "http://127.0.0.1:8000/auth/volunteer/update",
+        "https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/update",
         dataToSend,
         {
           headers: {
@@ -63,7 +63,7 @@ const ProfileSettings = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://127.0.0.1:8000/auth/logout",
+        "https://pledgeit-backend-production-production.up.railway.app/auth/logout",
         {},
         {
           headers: {
@@ -82,16 +82,17 @@ const ProfileSettings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
       try {
-        await axios.delete(
-          "http://127.0.0.1:8000/auth/volunteer/delete",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        await axios.delete("https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/delete", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         localStorage.removeItem("token");
         localStorage.removeItem("userRole");
         setUser(null);
@@ -109,7 +110,9 @@ const ProfileSettings = () => {
         <motion.div
           className="flex justify-center items-center min-h-screen p-6"
           style={{
-            backgroundImage: "url('/assests/background1.png')",
+            backgroundImage:
+              "url('https://res.cloudinary.com/dwh8vc3ua/image/upload/v1742658578/bg1_o0bjsb.jpg')",
+
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -123,14 +126,26 @@ const ProfileSettings = () => {
                 Profile Settings
               </h2>
             </div>
-            <p className="text-sm text-gray-500">Mon, October 30, 2023</p>
-
+            <p className="text-sm text-gray-500">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
             {/* Profile Info */}
             <div className="flex items-center gap-4 my-6">
-              <FaUserCircle className="text-gray-500 text-5xl" />
-              <div>
-                <h3 className="text-lg font-medium">{user?.name || "John Doe"}</h3>
-                <p className="text-gray-500">{user?.email || "john.doe@example.com"}</p>
+            <img
+                src="https://res.cloudinary.com/dwh8vc3ua/image/upload/v1742658607/volunteer_m1ywl0.png"
+                className="text-gray-500 text-5xl rounded-full border border-gray-300"
+              />            <div>
+                <h3 className="text-lg font-medium">
+                  {user?.name || ""}
+                </h3>
+                <p className="text-gray-500">
+                  {user?.email || ""}
+                </p>
               </div>
             </div>
 

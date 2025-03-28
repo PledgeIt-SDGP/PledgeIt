@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Uncommented axios import
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users } from 'lucide-react';
+import orgBackground from '../../assets/orgbackground.webp';
 
 const categories = [
     { id: 1, name: "Environmental", icon: <SproutIcon />, selected: false },
@@ -72,19 +73,19 @@ const OrgSignupForm = () => {
         setLoading(true);
         setMessage('');
         setPasswordError('');
-    
+
         if (!orgLogo) {
             setMessage("Please upload an organization logo.");
             setLoading(false);
             return;
         }
-    
+
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
             return;
         }
-    
+
         const formDataToSend = new FormData();
         formDataToSend.append('logo', orgLogo);
         formDataToSend.append('name', orgName);
@@ -94,38 +95,38 @@ const OrgSignupForm = () => {
         formDataToSend.append('email', email);
         formDataToSend.append('contact_number', contactNumber);
         formDataToSend.append('address', address);
-    
+
         categoriesState.forEach(category => {
             if (category.selected) {
                 formDataToSend.append('causes_supported', category.name);
             }
         });
-    
+
         formDataToSend.append('password', password);
         formDataToSend.append('password_confirmation', confirmPassword);
-    
+
         // Log the FormData before sending
         for (let [key, value] of formDataToSend.entries()) {
             console.log(key, value);
         }
-    
+
         try {
             const response = await axios.post(
-                "http://127.0.0.1:8000/auth/organization/register",
+                "https://pledgeit-backend-production-production.up.railway.app/auth/organization/register",
                 formDataToSend,
                 {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-    
+
             localStorage.setItem('token', response.data.access_token);
             localStorage.setItem('userRole', response.data.user.role);
-    
+
             setMessage("Registration successful!");
             setTimeout(() => {
                 navigate("/OrgHome");
             }, 1500);
-    
+
         } catch (error) {
             console.error("Error during registration:", error.response ? error.response.data : error.message);
             if (error.response) {
@@ -144,7 +145,10 @@ const OrgSignupForm = () => {
     return (
         <>
             <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
-                <div className="absolute inset-0 bg-[url('orgbackground.jpg')] bg-cover bg-center opacity-20 "></div>
+                <div
+                    className="absolute inset-0 bg-cover bg-center opacity-20"
+                    style={{ backgroundImage: `url(${orgBackground})` }}
+                ></div>
 
                 <form onSubmit={handleSubmit} className="relative space-y-4 w-[90%] sm:w-180 bg-gray-50 rounded-lg px-5 sm:px-10 py-8 border border-gray-300 border-opacity-50 my-20 ">
                     {/* Header Section */}

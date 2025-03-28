@@ -8,7 +8,7 @@ const useEvents = () => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/events/total-events');
+                const response = await fetch('https://pledgeit-backend-production-production.up.railway.app/events/total-events');
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }

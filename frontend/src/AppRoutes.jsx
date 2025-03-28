@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
 import axios from "axios";
@@ -18,6 +19,7 @@ import VolunteerHome from "./pages/vol/VolunteerHome";
 import VolunteerMap from "./pages/vol/EventMap";
 import VolunteerSettings from "./pages/vol/VolunteerSettings";
 import EventForm from "./pages/org/EventForm";
+import SplashScreen from "./components/loading/SplashScreen";
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ const AppRoutes = () => {
     if (token && userRole) {
       const fetchUserData = async () => {
         try {
-          const response = await axios.get("http://127.0.0.1:8000/auth/me", {
+          const response = await axios.get("https://pledgeit-backend-production-production.up.railway.app/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -69,7 +71,7 @@ const AppRoutes = () => {
   }, [navigate]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // Show a loading spinner or message
+    return <div><SplashScreen /></div>; // Show a loading spinner or message
   }
 
   return (

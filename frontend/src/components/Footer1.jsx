@@ -21,13 +21,6 @@ function Footer1() {
             href="#"
             className="opacity-80 transition-opacity hover:opacity-100"
           >
-            <Facebook className="h-5 w-5" />
-          </Typography>
-          <Typography
-            as="a"
-            href="#"
-            className="opacity-80 transition-opacity hover:opacity-100"
-          >
             <Instagram className="h-5 w-5" />
           </Typography>
           <Typography
@@ -39,7 +32,7 @@ function Footer1() {
           </Typography>
           <Typography
             as="a"
-            href="#"
+            href="pledgeit6@gmail.com"
             className="opacity-80 transition-opacity hover:opacity-100"
           >
             <Mail className="h-5 w-5" />

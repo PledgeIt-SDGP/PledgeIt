@@ -57,8 +57,14 @@ const OrgHome = () => {
               </div>
               <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
                 <div className="bg-rose-50 p-2 sm:p-3 rounded-xl flex items-center justify-center shadow-sm w-full">
-                  <Calendar className="mr-2 text-red-600" size={16} />
-                  <span className="font-medium text-gray-700 text-sm">Current Date</span>
+                  <Calendar className="mr-2 text-red-600" size={16} />                  <span className="font-medium text-gray-700 text-sm">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
                 </div>
                 <a
                   href="/eventForm"

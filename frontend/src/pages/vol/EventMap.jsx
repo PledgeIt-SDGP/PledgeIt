@@ -1,10 +1,13 @@
-import React, { useEffect, useState, Suspense, useCallback, useRef } from "react";
+import React from 'react';
+import { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import axios from "axios";
-import MarkerClusterGroup from "react-leaflet-cluster";
+import MarkerClusterGroup from "@changey/react-leaflet-markercluster";
 import "leaflet/dist/leaflet.css";
+import "@changey/react-leaflet-markercluster/dist/styles.min.css";
 
 import { Icon } from "leaflet";
+import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
@@ -28,7 +31,7 @@ Icon.Default.mergeOptions({
 });
 
 // API + Default position
-const API_URL = "http://127.0.0.1:8000/events";
+const API_URL = "https://pledgeit-backend-production-production.up.railway.app/events";
 const CENTER_POSITION = [7.8731, 80.7718]; // Example: Sri Lanka
 
 const EventMap = () => {

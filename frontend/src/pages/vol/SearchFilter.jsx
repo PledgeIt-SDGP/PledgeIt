@@ -5,6 +5,7 @@ import EventCards from "../../components/search/EventCards";
 import { Filter, Search } from "lucide-react";
 import Footer1 from "../../components/Footer1";
 import VolunteerDashboard from "./VolunteerDashboard";
+import SplashScreen from "../../components/loading/SplashScreen";
 
 const SearchFilters = () => {
   const [filters, setFilters] = useState({
@@ -24,7 +25,7 @@ const SearchFilters = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/events");
+        const response = await fetch("https://pledgeit-backend-production-production.up.railway.app/events");
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
@@ -76,7 +77,7 @@ const SearchFilters = () => {
 
   if (loading) {
     return (
-      <Typography className="text-center text-xl">Loading events...</Typography>
+      <Typography className="text-center text-xl"><SplashScreen /></Typography>
     );
   }
 

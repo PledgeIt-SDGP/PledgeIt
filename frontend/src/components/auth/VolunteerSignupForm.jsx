@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import volBackground from '../../assets/volbackground.webp';
 // import { useUser } from '../../hooks/UserContext'; // Import useUser hook
 
 const VolunteerSignupForm = () => {
@@ -17,46 +18,46 @@ const VolunteerSignupForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         // Validate required fields
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError("All fields are required.");
             setShowError(true);
             return;
         }
-    
+
         // Validate password match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             setShowError(true);
             return;
         }
-    
+
         try {
-            const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
+            const response = await axios.post("https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/register", {
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
                 password: password,
                 password_confirmation: confirmPassword,
             });
-    
+
             // Store token and role in localStorage
             localStorage.setItem('token', response.data.access_token);
             localStorage.setItem('userRole', response.data.user.role);
-    
+
             // Update user context
             // setUser(response.data.user);
-    
+
             setSuccess("Registration successful!");
             setError('');
             setShowError(false);
-    
+
             // Redirect to dashboard after 4 seconds
             setTimeout(() => {
                 navigate("/volhome");
             }, 4000);
-    
+
         } catch (err) {
             setError(err.response?.data?.detail || "An error occurred while submitting the form.");
             setShowError(true);
@@ -65,7 +66,10 @@ const VolunteerSignupForm = () => {
 
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen pb-10 bg-gray-800">
-            <div className="absolute inset-0 bg-[url('volbackground.jpg')] bg-cover bg-center opacity-20"></div>
+            <div
+                className="absolute inset-0 bg-cover bg-center opacity-20"
+                style={{ backgroundImage: `url(${volBackground})` }}
+            ></div>
 
             <form
                 onSubmit={handleSubmit}

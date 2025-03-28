@@ -8,7 +8,7 @@ const useUsers = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/auth/total-users');
+                const response = await fetch('https://pledgeit-backend-production-production.up.railway.app/auth/total-users');
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }

@@ -32,7 +32,7 @@ const UpdateEvent = () => {
     useEffect(() => {
         const fetchEventDetails = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/events/${eventId}`);
+                const response = await axios.get(`https://pledgeit-backend-production-production.up.railway.app/events/${eventId}`);
                 const eventData = response.data;
                 setOriginalData(eventData);
 
@@ -84,7 +84,7 @@ const UpdateEvent = () => {
         }
 
         try {
-            const response = await axios.patch(`http://127.0.0.1:8000/events/${eventId}`, changedFields);
+            const response = await axios.patch(`https://pledgeit-backend-production-production.up.railway.app/events/${eventId}`, changedFields);
             setMessage(response.data.message || "Event updated successfully");
             setTimeout(() => {
                 navigate("/orgevents"); // Redirect back to events list

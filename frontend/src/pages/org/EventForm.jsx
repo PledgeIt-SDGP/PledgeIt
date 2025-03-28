@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import eventBg from '../../assets/eventbackground.webp';
 import axios from "axios";
 import { useUser } from "../../hooks/UserContext"; // Import the user context
 import { BadgeInfo, Brush, CloudRainWind, HeartPulse, PawPrint, Ribbon, School, SproutIcon, Users, X } from 'lucide-react';
@@ -98,22 +99,22 @@ const EventForm = () => {
 
         try {
             // Include the organization email in the header for authentication
-            const headers = { 
+            const headers = {
                 "Content-Type": "multipart/form-data",
             };
-            
+
             // If user exists and has an email, include it in the header
             if (user && user.email) {
                 headers["X-Org-Email"] = user.email;
             }
 
-            const response = await axios.post("http://127.0.0.1:8000/events", formDataToSend, {
+            const response = await axios.post("https://pledgeit-backend-production-production.up.railway.app/events", formDataToSend, {
                 headers: headers
             });
-            
+
             setMessage(response.data.message);
             setPreviewImage(null);
-            
+
             // Reset form after successful submission
             setFormData({
                 event_name: "",
@@ -136,10 +137,10 @@ const EventForm = () => {
                 status: "",
                 total_registered_volunteers: "",
             });
-            
+
             // Reset categories
-            setCategories(prevCategories => 
-                prevCategories.map(category => ({...category, selected: false}))
+            setCategories(prevCategories =>
+                prevCategories.map(category => ({ ...category, selected: false }))
             );
 
         } catch (error) {
@@ -178,7 +179,10 @@ const EventForm = () => {
                 </div>
             )}
 
-            <div className="absolute inset-0 bg-[url('eventbackground.jpg')] bg-cover bg-center opacity-20"></div>
+            <div
+                className="absolute inset-0 bg-cover bg-center opacity-20"
+                style={{ backgroundImage: `url(${eventBg})` }}
+            ></div>
 
             <div className="relative w-full md:w-[80%] lg:w-[70%] xl:w-[50%] mx-auto p-6 md:p-8 lg:p-10 bg-gray-50 shadow-lg rounded-lg mt-10">
                 <h1 className="text-3xl font-bold  text-orange-700 ">PledgeIt</h1>

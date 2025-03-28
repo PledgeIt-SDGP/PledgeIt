@@ -11,26 +11,24 @@ pip install -r requirements.txt  # Install dependencies
 Create a `.env` file in the `backend` directory with the following variables:
 ```ini
 # MongoDB configuration
-MONGO_URI=<your-mongodb-uri>
+MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority
 DB_NAME=pledgeit_database
 COLLECTION_NAME=events
 VOLUNTEERS_COLLECTION=volunteers
 ORGANIZATIONS_COLLECTION=organizations
 
-# Google OAuth Credentials
-CLIENT_ID=<your-google-client-id>
-CLIENT_SECRET=<your-google-client-secret>
+CLIENT_ID=384476861423-puie17g5sicqhldjatm2hh6b4qgspi5p.apps.googleusercontent.com
+CLIENT_SECRET=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
 
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
-CLOUDINARY_API_KEY=<your-cloudinary-api-key>
-CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
+CLOUDINARY_CLOUD_NAME=dwh8vc3ua
+CLOUDINARY_API_KEY=478486378297543
+CLOUDINARY_API_SECRET=DQgfCn_xqVCcIcwqlkKGumSHQfc
 
 # SMTP settings for email sending using Mailtrap
 SMTP_SERVER=sandbox.smtp.mailtrap.io
 SMTP_PORT=587
-SMTP_USERNAME=<your-smtp-username>
-SMTP_PASSWORD=<your-smtp-password>
+SMTP_USERNAME=5f3cba7bb7eae0
+SMTP_PASSWORD=303bd3798e0b63
 FROM_EMAIL=no-reply@yourdomain.com
 ```
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router } from "react-router-dom"; // Import Router
 import { UserProvider } from "./hooks/UserContext"; // Import UserProvider
 import AppRoutes from "./AppRoutes"; // Import AppRoutes
