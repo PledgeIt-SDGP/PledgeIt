@@ -1,6 +1,13 @@
 # PledgeIt - Volunteer Management Platform
 
-### 1. Set Up the Backend
+PledgeIt is a platform designed to streamline volunteer management for organizations, making it easier to organize events, manage volunteers, and communicate effectively.
+
+## Getting Started
+
+### 1. Backend Setup
+Backend is already so no need to setup it, but if you realy want it follow these steps to set up the backend:
+
+#### Create a Virtual Environment
 ```sh
 cd backend
 python -m venv venv  # Create a virtual environment
@@ -8,7 +15,9 @@ source venv/bin/activate  # Activate it (Use 'venv\Scripts\activate' on Windows)
 pip install -r requirements.txt  # Install dependencies
 ```
 
+#### Configure Environment Variables
 Create a `.env` file in the `backend` directory with the following variables:
+
 ```ini
 # MongoDB configuration
 MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority
@@ -32,8 +41,23 @@ SMTP_PASSWORD=303bd3798e0b63
 FROM_EMAIL=no-reply@yourdomain.com
 ```
 
-Start the FastAPI backend:
+#### Start the Backend
+Run the following command to start the FastAPI backend:
 ```sh
 uvicorn main:app --reload
 ```
 
+
+### 2. Frontend Setup
+Ffollow these steps to set up the backend:
+
+#### Install node modules
+```sh
+npm install
+```
+
+#### Run the frontend
+
+```sh
+npm run dev
+```

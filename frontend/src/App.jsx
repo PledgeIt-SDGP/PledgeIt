@@ -1,17 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router } from "react-router-dom"; // Import Router
-import { UserProvider } from "./hooks/UserContext"; // Import UserProvider
-import AppRoutes from "./AppRoutes"; // Import AppRoutes
-import "./App.css"; // Import App.css
+import { BrowserRouter as Router } from "react-router-dom";
+import { UserProvider } from "./hooks/UserContext";
+import AppRoutes from "./AppRoutes";
+import "./App.css";
 
 function App() {
     return (
         <Router>
             <UserProvider>
-                <AppRoutes /> {/* Render the AppRoutes component inside the Router */}
+                <AppRoutes />
             </UserProvider>
         </Router>
     );
 }
 
-export default App; // Export App only once
+export default App;

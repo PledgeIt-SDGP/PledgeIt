@@ -5,7 +5,6 @@ import HomeEvent from "../../components/home/HomeEvent";
 import DailyQuotes from "../../components/vol-dash/DailyQuotes";
 import { useUser } from "../../hooks/UserContext";
 import { LineChart, PieChart, Users } from "lucide-react";
-import BarChart from "../../components/vol-dash/AreaBaseLine";
 import TopVolunteers from "../../components/org-dash/TopVolunteers";
 
 function VolunteerHome() {

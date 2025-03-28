@@ -23,14 +23,12 @@ import SplashScreen from "./components/loading/SplashScreen";
 
 const AppRoutes = () => {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { user, setUser, logout } = useUser();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("AppRoutes useEffect triggered"); // Debugging: Check if useEffect runs
     const token = localStorage.getItem('token');
     const userRole = localStorage.getItem('userRole');
-    console.log("Token:", token, "UserRole:", userRole); // Debugging: Check token and role
 
     if (token && userRole) {
       const fetchUserData = async () => {
@@ -40,67 +38,83 @@ const AppRoutes = () => {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("Fetched user data:", response.data); // Debugging: Check fetched data
-          setUser(response.data); // Update user context with fetched data
-
-          // Check the current path before navigating
+          
+          setUser(response.data);
+          
           const currentPath = window.location.pathname;
-          // Only redirect from the root, login, or signup pages
           const authPages = ['/', '/login', '/VolSignUp', '/OrgSignUp'];
+          
           if (userRole === 'volunteer' && authPages.includes(currentPath)) {
-            console.log("Navigating to /VolHome");
             navigate('/VolHome');
           } else if (userRole === 'organization' && authPages.includes(currentPath)) {
-            console.log("Navigating to /OrgHome");
             navigate('/OrgHome');
           }
         } catch (error) {
           console.error('Failed to fetch user data:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
+          setUser(null); // Clear user state
           navigate('/login');
         } finally {
-          setIsLoading(false); // Set loading to false after fetching data
+          setIsLoading(false);
         }
       };
 
       fetchUserData();
     } else {
-      setIsLoading(false); // Set loading to false if no token or userRole
+      setIsLoading(false);
+      // Optionally clear user state if no token exists
+      if (user) setUser(null);
     }
-  }, [navigate]);
+  }, [navigate, setUser]); // Added setUser to dependencies
 
   if (isLoading) {
-    return <div><SplashScreen /></div>; // Show a loading spinner or message
+    return <SplashScreen />;
   }
 
   return (
     <Routes>
-      {/* Show HomePage only if user is not logged in */}
-      {!user && <Route path="/" element={<HomePage />} />}
+      {/* Home route with conditional rendering */}
+      <Route 
+        path="/" 
+        element={
+          !user ? <HomePage /> : 
+          user.role === 'volunteer' ? <VolunteerHome /> : 
+          <OrganizationHome />
+        } 
+      />
 
-      {/* Redirect logged-in users to their respective home pages */}
-      {user && user.role === 'volunteer' && <Route path="/" element={<VolunteerHome />} />}
-      {user && user.role === 'organization' && <Route path="/" element={<OrganizationHome />} />}
-
-      <Route path="/UserPage" element={<UserPage />} />
-      <Route path="/Login" element={<Login />} />
+      {/* Auth routes */}
+      <Route path="/login" element={<Login />} />
       <Route path="/VolSignUp" element={<VolSignUp />} />
       <Route path="/OrgSignUp" element={<OrgSignUp />} />
 
-      <Route path="/VolHome" element={<VolunteerHome />} />
-      <Route path="/VolEvents" element={<SearchFilters />} />
+      {/* Volunteer routes */}
+      {user?.role === 'volunteer' && (
+        <>
+          <Route path="/VolHome" element={<VolunteerHome />} />
+          <Route path="/VolEvents" element={<SearchFilters />} />
+          <Route path="/VolMap" element={<VolunteerMap />} />
+          <Route path="/VolSettings" element={<VolunteerSettings />} />
+        </>
+      )}
+
+      {/* Organization routes */}
+      {user?.role === 'organization' && (
+        <>
+          <Route path="/OrgHome" element={<OrganizationHome />} />
+          <Route path="/eventform" element={<EventForm />} />
+          <Route path="/OrgEvents" element={<OrganizationEvents />} />
+          <Route path="/OrgProfile" element={<OrganizationProfile />} />
+          <Route path="/OrgSettings" element={<OrganizationSettings />} />
+        </>
+      )}
+
+      {/* Common routes */}
+      <Route path="/UserPage" element={<UserPage />} />
       <Route path="/latestEvents" element={<HomeEvent />} />
       <Route path="/details" element={<EventDetails />} />
       <Route path="/details/:id" element={<EventDetails />} />
-      <Route path="/VolMap" element={<VolunteerMap />} />
-      <Route path="/VolSettings" element={<VolunteerSettings />} />
-
-      <Route path="/OrgHome" element={<OrganizationHome />} />
-      <Route path="/eventform" element={<EventForm />} />
-      <Route path="/OrgEvents" element={<OrganizationEvents />} />
-      <Route path="/OrgProfile" element={<OrganizationProfile />} />
-      <Route path="/OrgSettings" element={<OrganizationSettings />} />
     </Routes>
   );
 };
