@@ -61,3 +61,9 @@ npm install
 ```sh
 npm run dev
 ```
+
+### Backend and Frontend links
+
+- [PledgeIt BackEnd](https://pledgeit-backend-production-production.up.railway.app/)  
+- [PledgeIt FrontEnd](https://pledgeit-frontend-production-production.up.railway.app/VolHome)
+- [PledgeIt BackEnd documentation](https://pledgeit-backend-production-production.up.railway.app/docs) 
