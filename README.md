@@ -7,15 +7,15 @@ PledgeIt is a platform designed to streamline volunteer management for organizat
 ### 1. Backend Setup
 Backend is already so no need to setup it, but if you realy want it follow these steps to set up the backend:
 
-#### Create a Virtual Environment
+#### -Create a Virtual Environment
 ```sh
 cd backend
 python -m venv venv  # Create a virtual environment
-source venv/bin/activate  # Activate it (Use 'venv\Scripts\activate' on Windows)
+source venv\Scripts\activate  # Activate it (Use 'venv/bin/activate' on Macs)
 pip install -r requirements.txt  # Install dependencies
 ```
 
-#### Configure Environment Variables
+#### -Configure Environment Variables
 Create a `.env` file in the `backend` directory with the following variables:
 
 ```ini
@@ -41,7 +41,7 @@ SMTP_PASSWORD=303bd3798e0b63
 FROM_EMAIL=no-reply@yourdomain.com
 ```
 
-#### Start the Backend
+#### -Start the Backend
 Run the following command to start the FastAPI backend:
 ```sh
 uvicorn main:app --reload
@@ -51,12 +51,12 @@ uvicorn main:app --reload
 ### 2. Frontend Setup
 Ffollow these steps to set up the backend:
 
-#### Install node modules
+#### -Install node modules
 ```sh
 npm install
 ```
 
-#### Run the frontend
+#### -Run the frontend
 
 ```sh
 npm run dev
