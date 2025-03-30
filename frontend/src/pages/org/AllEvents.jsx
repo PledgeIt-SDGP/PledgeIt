@@ -4,39 +4,34 @@ import OrganizationDashboard from "./OrganizationDashboard";
 
 const AllEvents = () => {
   const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch events created by the current organization
-    const fetchOrganizationEvents = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch("/organization/events", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            // Include the organization's authentication token
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch events");
-        }
+        const response = await fetch("http://127.0.0.1:8000/events");
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
-        setEvents(data); // Assuming the API returns an array of events
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching events:", error);
+        setEvents(data);
+        setFilteredEvent(data);
+      } catch (err) {
+        setError(err);
+      } finally {
         setLoading(false);
       }
     };
-
-    fetchOrganizationEvents();
+    fetchData();
   }, []);
 
   if (loading) {
     return <p className="text-center text-white">Loading events...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-white">Error loading events: {error.message}</p>;
   }
 
   return (
@@ -53,9 +48,11 @@ const AllEvents = () => {
               const eventDate = new Date(event.date);
               const month = eventDate.toLocaleString("default", { month: "short" });
               const day = eventDate.getDate();
+              const formattedDate = eventDate.toLocaleDateString();
+              
               return (
                 <div
-                  key={event.event_id} // Use event_id instead of id
+                  key={event.event_id}
                   className="rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white flex flex-col w-82 h-110 mx-auto"
                 >
                   {/* Date Box */}
@@ -65,11 +62,14 @@ const AllEvents = () => {
                       <span className="block text-lg font-bold">{day}</span>
                     </div>
                   </div>
-                  {/* Image */}
+                  {/* Image with fallback */}
                   <img
-                    src={event.image_url}
+                    src={event.image_url || "https://via.placeholder.com/300x150"}
                     alt={event.event_name}
                     className="w-full h-40 object-cover rounded-t-lg"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/300x150";
+                    }}
                   />
                   <div className="p-4 flex flex-col space-y-2">
                     <h2 className="text-lg font-semibold text-gray-800">
@@ -79,11 +79,14 @@ const AllEvents = () => {
                       {event.category}
                     </p>
                     <p className="text-gray-600 text-sm">{event.city}</p>
-                    <p className="text-gray-600 text-sm">{event.date}</p>
-                    <p className="text-gray-500 text-sm">{event.description}</p>
-                    <div className="text-sm font-semibold text-orange-700 bg-red-50 px-2 py-1 my-2 rounded-lg w-fit">
-                      <Link to={`/edit-event/${event.event_id}`} className="view-more-link">
-                        Edit Event Details →
+                    <p className="text-gray-600 text-sm">{formattedDate}</p>
+                    <p className="text-gray-500 text-sm line-clamp-2">{event.description}</p>
+                    <div className="mt-auto pt-4">
+                      <Link
+                        to={`/details/${event.event_id}`}
+                        className="text-md font-semibold text-orange-600 hover:underline"
+                      >
+                        View More →
                       </Link>
                     </div>
                   </div>

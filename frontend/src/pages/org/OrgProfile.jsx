@@ -17,7 +17,7 @@ const OrgProfile = () => {
         contactNumber: user?.contact_number || "000 000 0000",
         address: user?.address || "123 Example Street, City, Country",
         about: user?.about || "This is a default description for the organization.",
-        causesSupported: user?.causes_supported || ["Default Cause 1", "Default Cause 2"],
+        causesSupported: user?.causes_supported || ["Cause 1", "Cause 2", "Cause 3"],
         impactMetrics: {
             volunteersEngaged: user?.volunteers_engaged || 0,
             projectsCompleted: user?.projects_completed || 0
@@ -28,15 +28,7 @@ const OrgProfile = () => {
 
     return (
         <OrganizationDashboard>
-            {/* Error Pop-up */}
-            <div className="fixed top-4 right-4 z-50">
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
-                    <span>Error message</span>
-                    <button>
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
+
 
             <div className="max-w-full min-h-screen">
                 <div className="bg-white shadow-2xl overflow-hidden rounded-lg">
@@ -163,16 +155,23 @@ const OrgProfile = () => {
                             Causes supported by our organization
                         </h2>
                         <div className="flex flex-wrap gap-3">
-                            {organization.causesSupported.map((cause) => (
-                                <div
-                                    key={cause}
+                            {organization.causesSupported
+                                .join(',') // Convert array to string
+                                .replace(/[\[\]\\"]/g, '') // Remove brackets, slashes and quotes
+                                .split(',') // Split back into array
+                                .map(cause => cause.trim()) // Trim whitespace
+                                .filter((cause, index, self) => cause && self.indexOf(cause) === index) // Remove empty strings and duplicates
+                                .map((cleanCause, index) => (
+                                    <span
+                                        key={index}
                                     className="bg-gradient-to-br from-red-100 to-red-200 rounded-md md:rounded-lg shadow-md hover:shadow-lg transition-all p-2 sm:px-5 flex items-center transform hover:-translate-y-1 duration-300 group"
-                                >
-                                    {cause}
-                                </div>
-                            ))}
+                                    >
+                                        {cleanCause}
+                                    </span>
+                                ))}
                         </div>
                     </div>
+
 
                     {/* Events Section */}
                     <div className="p-4 sm:p-8">
@@ -229,7 +228,7 @@ const OrgProfile = () => {
                     </div>
                 </div>
             </div>
-        </OrganizationDashboard>
+        </OrganizationDashboard >
     );
 };
 
