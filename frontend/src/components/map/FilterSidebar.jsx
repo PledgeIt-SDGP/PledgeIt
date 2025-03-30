@@ -62,7 +62,7 @@ const FilterSidebar = ({
           fixed top-0 right-0 h-full w-80 sm:w-96
           bg-white/90 backdrop-blur-lg
           shadow-lg border border-gray-200
-          transition-transform duration-300 z-[1100]
+          transition-transform duration-300 z-[2100]
           overflow-y-auto p-6
           ${sidebarOpen ? "translate-x-0" : "translate-x-full"}
         `}

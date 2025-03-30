@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState, Suspense, useCallback, useRef } from "react";
+import React, { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import axios from "axios";
 import MarkerClusterGroup from "@changey/react-leaflet-markercluster";
@@ -43,9 +42,7 @@ const EventMap = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  // Organization filter remains for filtering by organization name.
   const [selectedOrganization, setSelectedOrganization] = useState("");
-  // Instead of venue, we now use selectedCity for filtering by city.
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +135,7 @@ const EventMap = () => {
           );
           setError(
             err.response?.data?.message ||
-            "Error fetching filtered events. Please try again."
+              "Error fetching filtered events. Please try again."
           );
           setFilteredEvents([]);
         })
@@ -207,7 +204,9 @@ const EventMap = () => {
           Volunteer Events Map
         </h2>
 
-        {error && <p className="text-red-600 font-semibold mb-4 text-center">{error}</p>}
+        {error && (
+          <p className="text-red-600 font-semibold mb-4 text-center">{error}</p>
+        )}
 
         {/* Search & Filter Bar */}
         <SearchFilterBar
@@ -242,15 +241,18 @@ const EventMap = () => {
         {/* MAP SECTION */}
         <div
           ref={mapWrapperRef}
-          className={`relative ${isFullScreen ? "w-screen h-screen" : "w-full max-w-6xl"}`}
+          className={`relative ${isFullScreen ? "w-screen h-screen" : "w-full max-w-6xl"} ${
+            sidebarOpen ? "z-0" : "z-10"
+          }`}
         >
           <Suspense fallback={<CircularProgress color="secondary" />}>
             <MapContainer
               key={filteredEvents.length}
               center={CENTER_POSITION}
               zoom={8}
-              className={`w-full ${isFullScreen ? "h-full" : "h-[600px] sm:h-[500px] md:h-[600px]"
-                } shadow-lg rounded-2xl border border-gray-300`}
+              className={`w-full ${
+                isFullScreen ? "h-full" : "h-[600px] sm:h-[500px] md:h-[600px]"
+              } shadow-lg rounded-2xl border border-gray-300`}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -303,7 +305,10 @@ const EventMap = () => {
                 )}
               </MarkerClusterGroup>
 
-              <MapControls isFullScreen={isFullScreen} toggleFullScreen={toggleFullScreen} />
+              <MapControls
+                isFullScreen={isFullScreen}
+                toggleFullScreen={toggleFullScreen}
+              />
             </MapContainer>
           </Suspense>
 
