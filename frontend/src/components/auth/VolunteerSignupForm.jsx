@@ -34,7 +34,7 @@ const VolunteerSignupForm = () => {
         }
 
         try {
-            const response = await axios.post("https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/register", {
+            const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
                 first_name: firstName,
                 last_name: lastName,
                 email: email,

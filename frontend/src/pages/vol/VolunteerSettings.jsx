@@ -36,7 +36,7 @@ const ProfileSettings = () => {
       }
 
       const response = await axios.put(
-        "https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/update",
+        "http://127.0.0.1:8000/auth/volunteer/update",
         dataToSend,
         {
           headers: {
@@ -63,7 +63,7 @@ const ProfileSettings = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "https://pledgeit-backend-production-production.up.railway.app/auth/logout",
+        "http://127.0.0.1:8000/auth/logout",
         {},
         {
           headers: {
@@ -88,7 +88,7 @@ const ProfileSettings = () => {
       )
     ) {
       try {
-        await axios.delete("https://pledgeit-backend-production-production.up.railway.app/auth/volunteer/delete", {
+        await axios.delete("http://127.0.0.1:8000/auth/volunteer/delete", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

@@ -56,7 +56,7 @@ const Settings = () => {
 
         try {
             const response = await axios.put(
-                "https://pledgeit-backend-production-production.up.railway.app/auth/organization/update",
+                "http://127.0.0.1:8000/auth/organization/update",
                 formDataToSend,
                 {
                     headers: {
@@ -84,7 +84,7 @@ const Settings = () => {
     const handleLogout = async () => {
         try {
             await axios.post(
-                "https://pledgeit-backend-production-production.up.railway.app/auth/logout",
+                "http://127.0.0.1:8000/auth/logout",
                 {},
                 {
                     headers: {
@@ -106,7 +106,7 @@ const Settings = () => {
         if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
             try {
                 await axios.delete(
-                    "https://pledgeit-backend-production-production.up.railway.app/auth/organization/delete",
+                    "http://127.0.0.1:8000/auth/organization/delete",
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("token")}`,

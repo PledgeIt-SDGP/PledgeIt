@@ -17,7 +17,7 @@ const EventDetails = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch(`https://pledgeit-backend-production-production.up.railway.app/events/${id}`);
+        const response = await fetch(`http://127.0.0.1:8000/events/${id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -51,7 +51,7 @@ const EventDetails = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://pledgeit-backend-production-production.up.railway.app/events/${id}/join`, {
+      const response = await fetch(`http://127.0.0.1:8000/events/${id}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

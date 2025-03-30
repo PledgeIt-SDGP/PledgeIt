@@ -33,7 +33,7 @@ const AppRoutes = () => {
     if (token && userRole) {
       const fetchUserData = async () => {
         try {
-          const response = await axios.get("https://pledgeit-backend-production-production.up.railway.app/auth/me", {
+          const response = await axios.get("http://127.0.0.1:8000/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
