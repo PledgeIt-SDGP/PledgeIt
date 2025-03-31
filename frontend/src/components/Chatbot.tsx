@@ -1,12 +1,29 @@
 import React, { useState, useRef } from "react";
+import "../Chatbot.css";
 
-const Chatbox: React.FC = () => {
+// Update the interface to accept props
+interface ChatboxProps {
+  isOpen?: boolean;
+  toggleChat?: () => void;
+}
+
+const Chatbox: React.FC<ChatboxProps> = ({ isOpen = false, toggleChat }) => {
   const [messages, setMessages] = useState<any[]>([]);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  // Only use internal state if no external state is provided
+  const [internalIsOpen, setInternalIsOpen] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Use either the prop or internal state
+  const chatboxIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
+  
   const toggleState = () => {
-    setIsOpen((prevState) => !prevState);
+    if (toggleChat) {
+      // Use external toggle if provided
+      toggleChat();
+    } else {
+      // Otherwise use internal state
+      setInternalIsOpen((prevState) => !prevState);
+    }
   };
 
   const onSendButton = () => {
@@ -38,9 +55,9 @@ const Chatbox: React.FC = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ position: 'fixed', bottom: 10, right: 0, zIndex: 1000 }}>
       <div className="chatbox">
-        <div className={`chatbox__support ${isOpen ? "chatbox--active" : ""}`}>
+        <div className={`chatbox__support ${chatboxIsOpen ? "chatbox--active" : ""}`}>
           <div className="chatbox__header">
             <div className="chatbox__image--header">
               <img
@@ -87,217 +104,28 @@ const Chatbox: React.FC = () => {
           </div>
         </div>
 
-        <div className="chatbox__button">
-          <button onClick={toggleState}>
-            <img
-              width="45"
-              height="45"
-              src="https://img.icons8.com/glyph-neue/64/user--v1.png"
-              alt="chatbox-icon"
-            />
-          </button>
-        </div>
+        {/* Only show the chatbox button if we're using internal state */}
+        {toggleChat === undefined && (
+          <div className="chatbox__button">
+            <button
+              onClick={toggleState}
+              className="fixed bottom-5 right-5 z-50 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-lg transform transition duration-300 hover:scale-110"
+            >
+              💬
+            </button>
+          </div>
+        )}
       </div>
-
-      <style jsx>{`
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-
-        body {
-          font-family: "Nunito", sans-serif;
-          font-weight: 400;
-          font-size: 100%;
-          background: #f1f1f1;
-        }
-
-        *,
-        html {
-          --primaryGradient: linear-gradient(
-            93.12deg,
-            #581b98 0.52%,
-            #9c1de7 100%
-          );
-          --secondaryGradient: linear-gradient(
-            268.91deg,
-            #581b98 -2.14%,
-            #9c1de7 99.69%
-          );
-          --primaryBoxShadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
-          --secondaryBoxShadow: 0px -10px 15px rgba(0, 0, 0, 0.1);
-          --primary: #581b98;
-        }
-
-        /* CHATBOX */
-        .chatbox {
-          position: absolute;
-          bottom: 30px;
-          right: 30px;
-        }
-
-        .chatbox__support {
-          display: flex;
-          flex-direction: column;
-          background: #eee;
-          width: 300px;
-          height: 350px;
-          z-index: -123456;
-          opacity: 0;
-          transition: all 0.5s ease-in-out;
-        }
-
-        .chatbox--active {
-          transform: translateY(-40px);
-          z-index: 123456;
-          opacity: 1;
-        }
-
-        .chatbox__button {
-          text-align: right;
-        }
-
-        .send__button {
-          padding: 6px;
-          background: transparent;
-          border: none;
-          outline: none;
-          cursor: pointer;
-        }
-
-        .chatbox__header {
-          position: sticky;
-          top: 0;
-          background: orange;
-        }
-
-        .chatbox__messages {
-          margin-top: auto;
-          display: flex;
-          overflow-y: scroll;
-          flex-direction: column-reverse;
-        }
-
-        .messages__item {
-          background: orange;
-          max-width: 60.6%;
-          width: fit-content;
-        }
-
-        .messages__item--operator {
-          margin-left: auto;
-        }
-
-        .messages__item--visitor {
-          margin-right: auto;
-        }
-
-        .chatbox__footer {
-          position: sticky;
-          bottom: 0;
-        }
-
-        .chatbox__support {
-          background: #f9f9f9;
-          height: 450px;
-          width: 350px;
-          box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-          border-top-left-radius: 20px;
-          border-top-right-radius: 20px;
-        }
-
-        .chatbox__header {
-          background: var(--primaryGradient);
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          justify-content: center;
-          padding: 15px 20px;
-          border-top-left-radius: 20px;
-          border-top-right-radius: 20px;
-          box-shadow: var(--primaryBoxShadow);
-        }
-
-        .chatbox__image--header {
-          margin-right: 10px;
-        }
-
-        .chatbox__heading--header {
-          font-size: 1.2rem;
-          color: white;
-        }
-
-        .chatbox__description--header {
-          font-size: 0.9rem;
-          color: white;
-        }
-
-        .chatbox__messages {
-          padding: 0 20px;
-        }
-
-        .messages__item {
-          margin-top: 10px;
-          background: #e0e0e0;
-          padding: 8px 12px;
-          max-width: 70%;
-        }
-
-        .messages__item--visitor,
-        .messages__item--typing {
-          border-top-left-radius: 20px;
-          border-top-right-radius: 20px;
-          border-bottom-right-radius: 20px;
-        }
-
-        .messages__item--operator {
-          border-top-left-radius: 20px;
-          border-top-right-radius: 20px;
-          border-bottom-left-radius: 20px;
-          background: var(--primary);
-          color: white;
-        }
-
-        .chatbox__footer {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          justify-content: space-between;
-          padding: 20px 20px;
-          background: var(--secondaryGradient);
-          box-shadow: var(--secondaryBoxShadow);
-          border-bottom-right-radius: 10px;
-          border-bottom-left-radius: 10px;
-          margin-top: 20px;
-        }
-
-        .chatbox__footer input {
-          width: 80%;
-          border: none;
-          padding: 10px 10px;
-          border-radius: 30px;
-          text-align: left;
-        }
-
-        .chatbox__send--footer {
-          color: white;
-        }
-
-        .chatbox__button button,
-        .chatbox__button button:focus,
-        .chatbox__button button:visited {
-          padding: 10px;
-          background: white;
-          border: none;
-          outline: none;
-          border-top-left-radius: 50px;
-          border-top-right-radius: 50px;
-          border-bottom-left-radius: 50px;
-          box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
-          cursor: pointer;
-        }
-      `}</style>
+      
+      {/* Add the button if external toggle is provided */}
+      {toggleChat !== undefined && (
+        <button
+          onClick={toggleState}
+          className="fixed bottom-5 right-5 z-50 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-lg transform transition duration-300 hover:scale-110 cursor-pointer"
+        >
+          💬
+        </button>
+      )}
     </div>
   );
 };
