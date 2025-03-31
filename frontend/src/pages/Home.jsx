@@ -7,7 +7,7 @@ import { Heart } from "lucide-react";
 import HomeCities from "../components/home/HomeCities";
 import HomeAboutUs from "../components/home/HomeAboutUs";
 import HomeEvent from "../components/home/HomeEvent";
-import HomeCarousel from "../components/home/HomCarousel";
+import HomeCarousel from "../components/home/HomeCarousel";
 import HomeTimeLine from "../components/home/HomeTimeLine";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";

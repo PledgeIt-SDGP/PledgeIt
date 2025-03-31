@@ -1,7 +1,10 @@
 from flask import Flask,render_template,request,jsonify
 from flask_cors import CORS
 from chat import get_response
-
+import nltk
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
 
 
 app=Flask(__name__)

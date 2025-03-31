@@ -15,7 +15,7 @@ const Chatbox: React.FC<ChatboxProps> = ({ isOpen = false, toggleChat }) => {
 
   // Use either the prop or internal state
   const chatboxIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
-  
+
   const toggleState = () => {
     if (toggleChat) {
       // Use external toggle if provided
@@ -63,14 +63,14 @@ const Chatbox: React.FC<ChatboxProps> = ({ isOpen = false, toggleChat }) => {
               <img
                 width="45"
                 height="45"
-                src="https://img.icons8.com/color/48/user.png"
+                src="./image.png"
                 alt="chatbox-icon"
               />
             </div>
             <div className="chatbox__content--header">
-              <h4 className="chatbox__heading--header">Chat support</h4>
+              <h3 className="chatbox__heading--header">Chat support</h3>
               <p className="chatbox__description--header">
-                Hi. My name is Sam. How can I help you?
+                Hi. My name is Pledgy. How can I help you today?
               </p>
             </div>
           </div>
@@ -90,17 +90,41 @@ const Chatbox: React.FC<ChatboxProps> = ({ isOpen = false, toggleChat }) => {
           </div>
 
           <div className="chatbox__footer">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Write a message..."
-            />
-            <button
-              className="chatbox__send--footer send__button"
-              onClick={onSendButton}
-            >
-              Send
-            </button>
+            <div className="chatbox__input-container">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Write a message..."
+                className="chatbox__input"
+                aria-label="Type your message"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    onSendButton();
+                  }
+                }}
+              />
+              <button
+                className="chatbox__send-button"
+                onClick={onSendButton}
+                aria-label="Send message"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -116,7 +140,7 @@ const Chatbox: React.FC<ChatboxProps> = ({ isOpen = false, toggleChat }) => {
           </div>
         )}
       </div>
-      
+
       {/* Add the button if external toggle is provided */}
       {toggleChat !== undefined && (
         <button

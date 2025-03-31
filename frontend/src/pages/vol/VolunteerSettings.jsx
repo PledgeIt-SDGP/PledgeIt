@@ -206,7 +206,7 @@ const ProfileSettings = () => {
                 <div>
                   <button
                     type="submit"
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-400 transition duration-200"
+                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-400 transition duration-200 cursor-pointer"
                   >
                     Save Changes
                   </button>
@@ -215,14 +215,14 @@ const ProfileSettings = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200"
+                    className="cursor-pointer bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200"
                   >
                     Logout
                   </button>
                   <button
                     type="button"
                     onClick={handleDeleteAccount}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-200"
+                    className="cursor-pointer bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-200"
                   >
                     Delete Account
                   </button>
