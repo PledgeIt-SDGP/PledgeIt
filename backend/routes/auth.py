@@ -88,6 +88,9 @@ def verify_passwords(password: str, password_confirmation: str):
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
+    # Ensure user_id is a string representation of ObjectId
+    if '_id' in to_encode:
+        to_encode['user_id'] = str(to_encode['_id'])
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
