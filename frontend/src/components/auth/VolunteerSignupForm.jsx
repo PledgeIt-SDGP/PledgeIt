@@ -40,6 +40,10 @@ const VolunteerSignupForm = () => {
                 email: email,
                 password: password,
                 password_confirmation: confirmPassword,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
             // Store token and role in localStorage

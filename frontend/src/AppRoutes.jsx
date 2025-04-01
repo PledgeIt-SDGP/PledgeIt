@@ -93,7 +93,7 @@ const AppRoutes = () => {
       {/* Volunteer routes */}
       {user?.role === 'volunteer' && (
         <>
-          <Route path="/VolHome" element={<VolunteerHome />} />
+          <Route path="/volHome" element={<VolunteerHome />} />
           <Route path="/VolEvents" element={<SearchFilters />} />
           <Route path="/VolMap" element={<VolunteerMap />} />
           <Route path="/VolSettings" element={<VolunteerSettings />} />
@@ -107,7 +107,7 @@ const AppRoutes = () => {
           <Route path="/eventform" element={<EventForm />} />
           <Route path="/OrgEvents" element={<OrganizationEvents />} />
           <Route path="/OrgEventsUpdate" element={<OrganizationEventsUpdate />} />
-          {/* <Route path="/OrgProfile" element={<OrganizationProfile />} /> */}
+          <Route path="/OrgProfile" element={<OrganizationProfile />} />
           <Route path="/OrgSettings" element={<OrganizationSettings />} />
         </>
       )}
@@ -117,7 +117,6 @@ const AppRoutes = () => {
       <Route path="/latestEvents" element={<HomeEvent />} />
       <Route path="/details" element={<EventDetails />} />
       <Route path="/details/:id" element={<EventDetails />} />
-      <Route path="/OrgProfile" element={<OrganizationProfile />} />
     </Routes>
   );
 };

@@ -39,6 +39,7 @@ client = MongoClient(os.getenv('MONGO_URI'))
 db = client[os.getenv('DB_NAME')]
 volunteers_collection = db[os.getenv('VOLUNTEERS_COLLECTION')]
 organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
+refresh_tokens_collection = db[os.getenv('REFRESH_TOKENS_COLLECTION')]
 
 # JWT Config
 JWT_SECRET = os.getenv("JWT_SECRET", "your_secret_key")
@@ -263,28 +264,27 @@ def role_required(required_role: str):
 async def login(email: str = Form(...), password: str = Form(...), response: Response = None):
     user = get_user_by_email(email)
     
-    if not user or not user.get("password") or not pwd_context.verify(password, user["password"]):
+    if not user or not pwd_context.verify(password, user.get("password", "")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     access_token = create_access_token({"user_id": str(user["_id"]), "role": user["role"]})
     refresh_token = create_refresh_token()
 
     # Store refresh token in MongoDB
-    db.refresh_tokens.update_one(
+    refresh_tokens_collection.update_one(
         {"user_id": str(user["_id"])},
-        {"$set": {"refresh_token": refresh_token, "created_at": datetime.utcnow()}},
+        {"$set": {"refresh_token": refresh_token, "created_at": datetime.utcnow(), "role": user["role"]}},
         upsert=True
     )
 
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
 
-    # Return user details along with the token
     return {
         "access_token": access_token, 
         "token_type": "bearer",
         "user": {
             "id": str(user["_id"]),
-            "name": user.get("first_name") or user.get("name"),  # Volunteer has first_name, Organization has name
+            "name": user.get("first_name") or user.get("name"),
             "email": user.get("email"),
             "role": user.get("role")
         }
@@ -369,7 +369,18 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
     elif user["role"] == "volunteer":
         # Fetch events this volunteer has registered for
         registered_event_ids = user_data.get("registered_events", [])
-        events = list(db.events.find({"_id": {"$in": [ObjectId(eid) for eid in registered_event_ids]}}))
+        valid_event_ids = []
+        for eid in registered_event_ids:
+            try:
+                # Try to convert to ObjectId to validate
+                ObjectId(eid)
+                valid_event_ids.append(eid)
+            except:
+                logging.warning(f"Invalid event ID found in registered_events: {eid}")
+                continue
+        
+        if valid_event_ids:
+            events = list(db.events.find({"_id": {"$in": [ObjectId(eid) for eid in valid_event_ids]}}))
     
     # Convert ObjectId to string for each event
     events_data = []
@@ -392,16 +403,16 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "causes_supported": user_data.get("causes_supported"),
             "contact_number": user_data.get("contact_number"),
             "address": user_data.get("address"),
-            "events": events_data  # Add events data
+            "events": events_data
         }
     else:
         # Return basic fields for volunteers
         return {
             "id": str(user_data["_id"]),
-            "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".trim(),
+            "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
             "email": user_data.get("email"),
             "role": user_data.get("role"),
-            "events": events_data  # Add events data
+            "events": events_data
         }
     
 @router.get("/auth/total-users")

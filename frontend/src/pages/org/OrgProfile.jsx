@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Building2, 
-  Globe, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Star, 
-  Award, 
-  Users, 
-  Contact,
-  Calendar,
-  ChevronRight,
-  Plus
+import {
+    Building2,
+    Globe,
+    Mail,
+    Phone,
+    MapPin,
+    Star,
+    Award,
+    Users,
+    Contact,
+    Calendar,
+    ChevronRight,
+    Plus
 } from 'lucide-react';
 import OrganizationDashboard from './OrganizationDashboard';
 import { useUser } from '../../hooks/UserContext';
@@ -110,19 +110,19 @@ const OrgProfile = () => {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     {/* Impact Metrics */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                        <MetricCard 
+                        <MetricCard
                             icon={Users}
                             title="Volunteers Engaged"
                             value={organization.impactMetrics.volunteersEngaged.toLocaleString()}
                             color="orange"
                         />
-                        <MetricCard 
+                        <MetricCard
                             icon={Award}
                             title="Projects Completed"
                             value={organization.impactMetrics.projectsCompleted.toLocaleString()}
                             color="red"
                         />
-                        <MetricCard 
+                        <MetricCard
                             icon={Calendar}
                             title="Hours Contributed"
                             value={organization.impactMetrics.hoursContributed.toLocaleString()}
@@ -132,12 +132,12 @@ const OrgProfile = () => {
 
                     {/* About and Contact Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        <InfoSection 
+                        <InfoSection
                             icon={Building2}
                             title="About Our Organization"
                             content={organization.about}
                         />
-                        <InfoSection 
+                        <InfoSection
                             icon={Contact}
                             title="Contact Information"
                             items={[
@@ -263,10 +263,10 @@ const InfoSection = ({ icon: Icon, title, content, items }) => (
                     <div key={index} className="flex items-start">
                         <item.icon className="mt-0.5 mr-3 w-4 h-4 text-orange-500 flex-shrink-0" />
                         {item.link ? (
-                            <a 
-                                href={item.link} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                            <a
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-gray-700 hover:text-orange-600 break-words"
                             >
                                 {item.text}
@@ -322,11 +322,11 @@ const EventCard = ({ event }) => {
                             {event.event_name}
                         </h2>
                     </div>
-                    
+
                     <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-semibold mb-3">
                         {event.category}
                     </span>
-                    
+
                     <div className="flex items-center text-gray-600 text-sm mb-2">
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -334,14 +334,14 @@ const EventCard = ({ event }) => {
                         </svg>
                         {event.city}
                     </div>
-                    
+
                     <div className="flex items-center text-gray-600 text-sm mb-3">
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         {formattedDate}
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                         {event.description}
                     </p>
@@ -354,7 +354,7 @@ const EventCard = ({ event }) => {
                         </svg>
                         {event.total_registered_volunteers} registered
                     </div>
-                    
+
                     <div className="flex space-x-2">
                         <Link
                             to={`/details/${event.event_id}`}
