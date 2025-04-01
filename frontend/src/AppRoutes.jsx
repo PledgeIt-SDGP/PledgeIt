@@ -20,6 +20,7 @@ import VolunteerMap from "./pages/vol/EventMap";
 import VolunteerSettings from "./pages/vol/VolunteerSettings";
 import EventForm from "./pages/org/EventForm";
 import SplashScreen from "./components/loading/SplashScreen";
+import OrganizationEventsUpdate from "./components/event/UpdateEvent";
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -105,6 +106,7 @@ const AppRoutes = () => {
           <Route path="/OrgHome" element={<OrganizationHome />} />
           <Route path="/eventform" element={<EventForm />} />
           <Route path="/OrgEvents" element={<OrganizationEvents />} />
+          <Route path="/OrgEventsUpdate" element={<OrganizationEventsUpdate />} />
           {/* <Route path="/OrgProfile" element={<OrganizationProfile />} /> */}
           <Route path="/OrgSettings" element={<OrganizationSettings />} />
         </>

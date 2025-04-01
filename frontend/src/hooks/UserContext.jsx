@@ -1,14 +1,14 @@
-import { createContext, useState, useContext, useEffect } from 'react'; // Also works
+import { createContext, useState, useContext, useEffect } from 'react';
+import axios from 'axios';
 
-// Create context with a default value (optional but helpful for TypeScript)
 const UserContext = createContext({
     user: null,
-    setUser: () => { },
-    logout: () => { },
+    setUser: () => {},
+    logout: () => {},
     isLoading: true,
+    refreshUser: () => {},
 });
 
-// Custom hook for easy access
 export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) {
@@ -17,30 +17,55 @@ export const useUser = () => {
     return context;
 };
 
-// Provider component
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); // Track loading state
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Logout function (clears user and localStorage)
+    const fetchUserData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setIsLoading(false);
+                return;
+            }
+            
+            const response = await axios.get('/auth/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            
+            setUser(response.data);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            logout();
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userRole');
         setUser(null);
     };
 
-    // Optional: Auto-login if token exists (alternative to AppRoutes.jsx logic)
+    const refreshUser = async () => {
+        await fetchUserData();
+    };
+
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            // Fetch user data here if needed
-        } else {
-            setIsLoading(false);
-        }
+        fetchUserData();
     }, []);
 
     return (
-        <UserContext.Provider value={{ user, setUser, logout, isLoading }}>
+        <UserContext.Provider value={{ 
+            user, 
+            setUser, 
+            logout, 
+            isLoading,
+            refreshUser 
+        }}>
             {children}
         </UserContext.Provider>
     );

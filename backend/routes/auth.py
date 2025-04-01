@@ -361,6 +361,23 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
     if not user_data:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Get events based on role
+    events = []
+    if user["role"] == "organization":
+        # Fetch events created by this organization
+        events = list(db.events.find({"organization_id": str(user_data["_id"])}))
+    elif user["role"] == "volunteer":
+        # Fetch events this volunteer has registered for
+        registered_event_ids = user_data.get("registered_events", [])
+        events = list(db.events.find({"_id": {"$in": [ObjectId(eid) for eid in registered_event_ids]}}))
+    
+    # Convert ObjectId to string for each event
+    events_data = []
+    for event in events:
+        event_data = dict(event)
+        event_data["_id"] = str(event["_id"])
+        events_data.append(event_data)
+    
     # Return all fields for organizations
     if user["role"] == "organization":
         return {
@@ -375,14 +392,16 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "causes_supported": user_data.get("causes_supported"),
             "contact_number": user_data.get("contact_number"),
             "address": user_data.get("address"),
+            "events": events_data  # Add events data
         }
     else:
         # Return basic fields for volunteers
         return {
             "id": str(user_data["_id"]),
-            "name": user_data.get("first_name") or user_data.get("name"),
+            "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".trim(),
             "email": user_data.get("email"),
             "role": user_data.get("role"),
+            "events": events_data  # Add events data
         }
     
 @router.get("/auth/total-users")

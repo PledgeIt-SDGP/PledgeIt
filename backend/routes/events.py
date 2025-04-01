@@ -461,12 +461,14 @@ async def get_organization_events(user: dict = Depends(get_current_user)):
     if user["role"] != "organization":
         raise HTTPException(status_code=403, detail="Only organizations can access this endpoint.")
 
+    # Fetch organization by ID to get its name
     organization = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    event_ids = organization.get("created_events", [])
-    events = list(events_collection.find({"event_id": {"$in": event_ids}}))
+    # Query events by organization name (matches your event creation logic)
+    events = list(events_collection.find({"organization": organization["name"]}))
+    
     return [Event(**event_serializer(event)) for event in events]
 
 @router.get("/volunteer/events")
