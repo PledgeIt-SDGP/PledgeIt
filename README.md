@@ -25,6 +25,7 @@ DB_NAME=pledgeit_database
 COLLECTION_NAME=events
 VOLUNTEERS_COLLECTION=volunteers
 ORGANIZATIONS_COLLECTION=organizations
+REFRESH_TOKENS_COLLECTION=refresh_tokens
 
 CLIENT_ID=384476861423-puie17g5sicqhldjatm2hh6b4qgspi5p.apps.googleusercontent.com
 CLIENT_SECRET=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
