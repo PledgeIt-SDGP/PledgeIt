@@ -364,7 +364,7 @@ async def create_event(
     
     events_collection.insert_one(event_data)
     try:
-        from services.qr_email_handler import send_event_qr_to_organization
+        from backend.services.email_handler import send_event_qr_to_organization
         send_event_qr_to_organization(event_id, current_org["email"])
     except Exception as e:
         logging.error(f"Failed to send QR code email to organization: {e}")
