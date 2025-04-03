@@ -19,27 +19,34 @@ pip install -r requirements.txt  # Install dependencies
 Create a `.env` file in the `backend` directory with the following variables:
 
 ```ini
-# MongoDB configuration
-MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority
+# MongoDB Configuration
+MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority&appName=pledgeit
 DB_NAME=pledgeit_database
 COLLECTION_NAME=events
 VOLUNTEERS_COLLECTION=volunteers
 ORGANIZATIONS_COLLECTION=organizations
-REFRESH_TOKENS_COLLECTION=refresh_tokens
 
+# Google OAuth Configuration
 CLIENT_ID=384476861423-puie17g5sicqhldjatm2hh6b4qgspi5p.apps.googleusercontent.com
 CLIENT_SECRET=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
 
+# Cloudinary Configuration
 CLOUDINARY_CLOUD_NAME=dwh8vc3ua
 CLOUDINARY_API_KEY=478486378297543
 CLOUDINARY_API_SECRET=DQgfCn_xqVCcIcwqlkKGumSHQfc
 
-# SMTP settings for email sending using Mailtrap
-SMTP_SERVER=sandbox.smtp.mailtrap.io
-SMTP_PORT=587
-SMTP_USERNAME=5f3cba7bb7eae0
-SMTP_PASSWORD=303bd3798e0b63
-FROM_EMAIL=no-reply@yourdomain.com
+# Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=pledgeit6@gmail.com
+EMAIL_PASSWORD=qqjh ivrd gkml nqce
+EMAIL_FROM_NAME=PledgeIt Team
+EMAIL_FROM_ADDRESS=pledgeit6@gmail.com
+
+# Application Configuration
+APP_NAME=PledgeIt
+APP_URL=https://pledgeit.live
+FRONTEND_URL=https://pledgeit.live
 ```
 
 #### -Start the Backend
