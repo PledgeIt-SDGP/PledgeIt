@@ -87,10 +87,22 @@ def event_serializer(event) -> dict:
 def get_next_event_id() -> int:
     """Returns the next sequential event_id using atomic operation"""
     try:
+        # Initialize counter if it doesn't exist
+        counter = events_collection.find_one({"_id": "event_counter"})
+        if not counter:
+            # Find the highest existing event_id to initialize the counter
+            highest_event = events_collection.find_one(
+                {"event_id": {"$exists": True}},
+                sort=[("event_id", -1)]
+            )
+            initial_count = highest_event["event_id"] + 1 if highest_event else 1
+            events_collection.insert_one({"_id": "event_counter", "count": initial_count})
+            return initial_count
+
         result = events_collection.find_one_and_update(
             {"_id": "event_counter"},
             {"$inc": {"count": 1}},
-            upsert=True,
+            upsert=False,
             return_document=True
         )
         return result["count"]
