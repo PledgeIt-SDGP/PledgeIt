@@ -34,15 +34,16 @@ const EventForm = () => {
     const [error, setError] = useState(null); // State for error messages
 
     const [categories, setCategories] = useState([
-        { id: 1, name: "Environmental", icon: <SproutIcon />, selected: false },
-        { id: 2, name: "Community Service", icon: <Users />, selected: false },
-        { id: 3, name: "Education", icon: <School />, selected: false },
-        { id: 4, name: "Healthcare", icon: <HeartPulse />, selected: false },
-        { id: 5, name: "Animal Welfare", icon: <PawPrint />, selected: false },
-        { id: 6, name: "Disaster Relief", icon: <CloudRainWind />, selected: false },
-        { id: 7, name: "Lifestyle & Culture", icon: <Brush />, selected: false },
-        { id: 8, name: "Fundraising & Charity", icon: <Ribbon />, selected: false }
+        { name: "Environmental", icon: <SproutIcon />, selected: false },
+        { name: "Community Service", icon: <Users />, selected: false },
+        { name: "Education", icon: <School />, selected: false },
+        { name: "Healthcare", icon: <HeartPulse />, selected: false },
+        { name: "Animal Welfare", icon: <PawPrint />, selected: false },
+        { name: "Disaster Relief", icon: <CloudRainWind />, selected: false },
+        { name: "Lifestyle & Culture", icon: <Brush />, selected: false },
+        { name: "Fundraising & Charity", icon: <Ribbon />, selected: false }
     ]);
+
     const cityOptions = ["Colombo", "Galle", "Kandy"];
 
     const handleChange = (e) => {
@@ -61,20 +62,21 @@ const EventForm = () => {
         }
     };
 
-    const handleCategoryChange = (id) => {
+    const handleCategoryChange = (categoryName) => {
         // Update the selected state in the categories array
-        setCategories((prevCategories) =>
-            prevCategories.map((category) =>
-                category.id === id ? { ...category, selected: !category.selected } : category
+        setCategories(prevCategories =>
+            prevCategories.map(category =>
+                category.name === categoryName
+                    ? { ...category, selected: !category.selected }
+                    : category
             )
         );
 
         // Update the category state in formData
-        setFormData((prevData) => {
-            const selectedCategories = prevData.category.includes(id)
-                ? prevData.category.filter((categoryId) => categoryId !== id)
-                : [...prevData.category, id];
-            console.log("Selected Categories:", selectedCategories);
+        setFormData(prevData => {
+            const selectedCategories = prevData.category.includes(categoryName)
+                ? prevData.category.filter(name => name !== categoryName)
+                : [...prevData.category, categoryName];
             return { ...prevData, category: selectedCategories };
         });
     };
@@ -82,12 +84,19 @@ const EventForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(null); // Clear previous errors
+        setError(null);
 
         const formDataToSend = new FormData();
+        // For other fields
         Object.keys(formData).forEach((key) => {
-            const value = key === "category" ? formData[key].join(",") : formData[key];
-            formDataToSend.append(key, value);
+            if (key !== 'category') {
+                formDataToSend.append(key, formData[key]);
+            }
+        });
+
+        // For categories - append each selected category separately
+        formData.category.forEach(cat => {
+            formDataToSend.append('category', cat);
         });
 
         // Add organization ID if available
@@ -226,14 +235,13 @@ const EventForm = () => {
                     <div className="mb-5">
                         <label className="block text-gray-700 mb-1">Category * </label>
                         <p className="text-gray-500 mb-1">Only select one</p>
-
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             {categories.map((category) => (
                                 <div
-                                    key={category.id}
-                                    onClick={() => handleCategoryChange(category.id)}
+                                    key={category.name}
+                                    onClick={() => handleCategoryChange(category.name)}
                                     className={`flex flex-col items-center justify-center w-auto p-5 border rounded-xl shadow-md cursor-pointer 
-                                        ${category.selected ? "border-orange-400 bg-red-100" : "border-red-600/90 bg-white"} transition`}
+                    ${category.selected ? "border-orange-400 bg-red-100" : "border-red-600/90 bg-white"} transition`}
                                 >
                                     <div className="flex items-center">
                                         {category.icon}

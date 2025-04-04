@@ -196,9 +196,12 @@ async def create_event(
                     detail=f"{field.replace('_', ' ').title()} cannot be empty"
                 )
 
-        # Validate email
-        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", contact_email):
-            raise HTTPException(status_code=400, detail="Invalid email format")
+        # Validate email format
+        pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        is_email_valid = bool(re.fullmatch(pattern, contact_email.strip()))
+
+        if(is_email_valid == False):
+            raise HTTPException(status_code=400, detail="Invalid contact email format.")
 
         # Validate dates
         try:
@@ -294,24 +297,23 @@ async def create_event(
 
         events_collection.insert_one(event_data)
 
-        # # Save to database in transaction
-        # client = MongoClient(os.getenv('MONGO_URI'))
-        # with client.start_session() as session:
-        #     with session.start_transaction():
-        #         events_collection.insert_one(event_data, session=session)
-        #         organizations_collection.update_one(
-        #             {"_id": ObjectId(current_org["_id"])},
-        #             {"$push": {"created_events": str(event_id)}},
-        #             session=session
-        # )
-
-        return {"message": "Event created successfully", "event_id": event_id}
-
-    except HTTPException:
-        raise
     except Exception as e:
-        logging.error(f"Error creating event: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to create event: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    # Send QR code email to organization
+    try:
+        email_service = EmailService()
+        email_service.send_event_qr_to_organization(
+            event_id=event_id,
+            event_name=event_name,
+            organization_email=current_org["email"],
+            event_details=event_data
+        )   
+    except Exception as e:
+        logging.error(f"Failed to send QR code email to organization: {e}")
+
+    return {"message": "Event created successfully", "event_id": event_id}
+
 
 @router.get("/events", response_model=List[Event])
 async def get_events():
