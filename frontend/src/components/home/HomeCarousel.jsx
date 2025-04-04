@@ -1,90 +1,18 @@
-// import { Carousel, Typography, Button } from "@material-tailwind/react";
-
-
-// export function HomeCarousel() {
-//   return (
-//     <Carousel className="rounded-xl">
-//       <div className="relative h-full w-full">
-//         <img
-//           src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHZvbHVudGVlcnxlbnwwfHwwfHx8MA%3D%3D"
-//           alt="image 1"
-//           className="h-[700px] w-full object-cover"
-//         />
-//         <div className="absolute inset-0 grid h-[700px] w-full place-items-center bg-black/35">
-//           <div className="w-3/4 text-center md:w-2/4">
-//             <Typography
-//               variant="h1"
-//               color="white"
-//               className="mb-4 text-3xl md:text-4xl lg:text-5xl text-justify"
-//             >
-//               "We make a living by what we get, but we make a life by what we
-//               give."
-//             </Typography>
-//             <Typography variant="lead" color="white" className="text-2xl mb-10">
-//               -Winston Churchill
-//             </Typography>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="relative h-full w-full">
-//         <img
-//           src="https://img.freepik.com/free-photo/close-up-veterinarian-taking-care-dog_23-2149100187.jpg?t=st=1740834973~exp=1740838573~hmac=20da7feb0b8cc4cc491ece2868d66ef4adaa8aafa69d613b498032c76b6d14ce&w=2000"
-//           alt="image 2"
-//           className="h-[700px] w-full object-cover"
-//         />
-//         <div className="absolute inset-0 grid h-[700px] w-full items-center bg-black/35">
-//           <div className="w-3/4 pl-12 md:w-2/4 md:pl-20 lg:pl-32">
-//             <Typography
-//               variant="h1"
-//               color="white"
-//               className="mb-4 text-3xl md:text-4xl lg:text-5xl"
-//             >
-//               "Volunteers do not necessarily have the time; they just have the
-//               heart."{" "}
-//             </Typography>
-//             <Typography variant="lead" color="white" className="text-2xl mb-10">
-//               -Elizabeth Andrew
-//             </Typography>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="relative h-full w-full">
-//         <img
-//           src="https://img.freepik.com/free-photo/team-environment-volunteers-digging-holes-planting-small-trees_482257-90982.jpg?t=st=1740836218~exp=1740839818~hmac=51298889e5c730dd6ef673f117ff8d56a3a1cc62c064876c7fff1a467118e46d&w=2000"
-//           alt="image 3"
-//           className="h-[700px] w-full object-cover"
-//         />
-//         <div className="absolute inset-0 grid h-[700px] w-full items-end bg-black/35">
-//           <div className="w-3/4 pl-12 pb-12 md:w-2/4 md:pl-20 md:pb-20 lg:pl-32 lg:pb-32">
-//             <Typography
-//               variant="h1"
-//               color="white"
-//               className="mb-4 text-3xl md:text-4xl lg:text-5xl text-left"
-//             >
-//               "Small acts, when multiplied by millions of people, can transform
-//               the world."
-//             </Typography>
-//             <Typography variant="lead" color="white" className="text-2xl mb-10">
-//               -Winston Churchill
-//             </Typography>
-//           </div>
-//         </div>
-//       </div>
-//     </Carousel>
-
-//   );
-// }
-// export default HomeCarousel;
-
 import { useState } from "react";
 
 const images = [
-  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHZvbHVudGVlcnxlbnwwfHwwfHx8MA%3D%3D",
-  "https://img.freepik.com/free-photo/close-up-veterinarian-taking-care-dog_23-2149100187.jpg?t=st=1740834973~exp=1740838573~hmac=20da7feb0b8cc4cc491ece2868d66ef4adaa8aafa69d613b498032c76b6d14ce&w=2000",
-  "https://img.freepik.com/free-photo/team-environment-volunteers-digging-holes-planting-small-trees_482257-90982.jpg?t=st=1740836218~exp=1740839818~hmac=51298889e5c730dd6ef673f117ff8d56a3a1cc62c064876c7fff1a467118e46d&w=2000",
+  "https://res.cloudinary.com/dwh8vc3ua/image/upload/v1742659364/carousel2_gxii5n.avif",
+  "https://res.cloudinary.com/dwh8vc3ua/image/upload/v1742658637/carouesel1_boktvu.jpg",
+  "https://res.cloudinary.com/dwh8vc3ua/image/upload/v1742664243/team-environment-volunteers-digging-holes-planting-small-trees_482257-90982_o5ujk8.avif",
 ];
+
+const captions = [
+  "We make a living by what we get, but we make a life by what we give",
+  "Volunteers do not necessarily have the time; they just have the heart",
+  "Small acts, when multiplied by millions of people, can transform the world.",
+];
+
+const person = ["Winston Churchill", "Elizabeth Andrew", "Winston Churchill"];
 
 const HomCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -104,16 +32,30 @@ const HomCarousel = () => {
   return (
     <div className="relative w-full">
       {/* Carousel Wrapper */}
-      <div className="relative h-50 overflow-hidden rounded-lg md:h-96 lg:h-150 xl:h-160">
+      <div className="relative h-50 overflow-hidden rounded-lg md:h-96 lg:h-170 xl:h-170">
         {images.map((image, index) => (
-          <img
+          <div
             key={index}
-            src={image}
-            alt={`Slide ${index + 1}`}
-            className={`absolute w-full h-full object-cover transition-opacity duration-700 ${
+            className={`absolute w-full h-full transition-opacity duration-700 ${
               index === currentIndex ? "opacity-100" : "opacity-0"
             }`}
-          />
+          >
+            {/* Image */}
+            <img
+              src={image}
+              alt={`Slide ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            {/* Black Overlay */}
+            <div className="absolute inset-0 bg-black/50"></div>
+            {/* Caption */}
+            <div className="absolute left-5 top-1/2 -translate-y-1/2  w-100 text-white text-2xl lg:text-6xl font-semibold  px-4 py-2 rounded-lg lg:w-210 break-words">
+              {captions[index]}
+              <div className="text-lg lg:text-4xl font-normal text-gray-300 mt-10">
+                - {person[index]}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -144,7 +86,11 @@ const HomCarousel = () => {
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path d="M5 1L1 5l4 4" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M5 1L1 5l4 4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </span>
       </button>
@@ -162,7 +108,11 @@ const HomCarousel = () => {
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path d="M1 9l4-4-4-4" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M1 9l4-4-4-4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </span>
       </button>
