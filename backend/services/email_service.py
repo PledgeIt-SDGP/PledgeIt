@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import HTTPException
 import logging
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, dict
 
 # Load environment variables
 load_dotenv()

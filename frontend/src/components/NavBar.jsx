@@ -33,7 +33,7 @@ export default function Navbar() {
           </li>
           <li>
             <a
-              href="#HomeFeature"
+              href="#Features"
               className="text-gray-700 hover:text-orange-600"
             >
               Features

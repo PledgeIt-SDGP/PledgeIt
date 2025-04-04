@@ -83,12 +83,12 @@ const Home = () => {
               >
                 Start your journey
               </Link>
-              <Link
-                to="/"
+              <a
+                href="#HomeFeature"
                 className="px-4 py-3 text-sm font-medium border-2 border-orange-600 text-orange-600 rounded-full hover:bg-orange-50 lg:px-6 lg:py-3 "
               >
                 Learn More
-              </Link>
+              </a>
             </motion.div>
 
             <HomeCards />
@@ -170,6 +170,7 @@ const Home = () => {
         whileInView="visible"
         viewport={{ once: true }}
         className="m-10"
+        id="Features"
       >
         <HomeTimeLine />
       </motion.div>
@@ -187,7 +188,11 @@ const Home = () => {
           </span>
           <br />
           <button className="mt-2 px-3 py-1 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 hover:opacity-80 text-sm text-white font-semibold rounded-lg shadow-md hover:bg-gray-200  md:text- md:px-6 md:py-3  lg:mt-4 lg:px-6 lg:py-3 lg:text-xl">
-            Get Involved
+            <Link
+              to="/userpage"
+            >
+              Get Involved
+            </Link>
           </button>
         </div>
       </motion.div>

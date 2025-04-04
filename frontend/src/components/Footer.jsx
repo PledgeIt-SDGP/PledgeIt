@@ -20,7 +20,7 @@ const SITEMAP = [
     links: [
       { name: "Home", href: "#Home" },
       { name: "About", href: "#HomeAboutUs" },
-      { name: "Features", href: "#HomeFeature" },
+      { name: "Features", href: "#Features" },
     ],
   },
 ];
@@ -61,16 +61,13 @@ export default function Footer() {
             <a href="https://material-tailwind.com/">PledgeIt</a>. All Rights Reserved.
           </Typography>
           <div className="flex gap-4 text-blue-gray-900 sm:justify-center">
-            <a href="#" className="opacity-80 transition-opacity hover:opacity-100">
-              <Facebook className="h-5 w-5" />
-            </a>
-            <a href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <a href="https://www.instagram.com/pledge_it" target="_blank" className="opacity-80 transition-opacity hover:opacity-100">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <a href="https://www.linkedin.com/company/pledgeit/" target="_blank" className="opacity-80 transition-opacity hover:opacity-100">
               <Linkedin className="h-5 w-5" />
             </a>
-            <a href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <a href="mailto:pledgeit6@gmail.com" target="_blank" className="opacity-80 transition-opacity hover:opacity-100">
               <Mail className="h-5 w-5" />
             </a>
           </div>

@@ -11,7 +11,7 @@ const SplashScreen = () => {
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
-        navigate("/home");
+        navigate("/");
       }, 800);
     }, 3200);
     return () => clearTimeout(timer);

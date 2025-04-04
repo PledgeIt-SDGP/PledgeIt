@@ -5,9 +5,11 @@ PledgeIt is a platform designed to streamline volunteer management for organizat
 ## Getting Started
 
 ### 1. Backend Setup
+
 Backend is already so no need to setup it, but if you realy want it follow these steps to set up the backend:
 
 #### -Create a Virtual Environment
+
 ```sh
 cd backend
 python -m venv venv  # Create a virtual environment
@@ -16,15 +18,18 @@ pip install -r requirements.txt  # Install dependencies
 ```
 
 #### -Configure Environment Variables
+
 Create a `.env` file in the `backend` directory with the following variables:
 
 ```ini
 # MongoDB Configuration
+# MongoDB Configuration
 MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority&appName=pledgeit
 DB_NAME=pledgeit_database
-COLLECTION_NAME=events
+EVENTS_COLLECTION=events
 VOLUNTEERS_COLLECTION=volunteers
 ORGANIZATIONS_COLLECTION=organizations
+REFRESH_TOKENS_COLLECTION=refresh_tokens
 
 # Google OAuth Configuration
 CLIENT_ID=384476861423-puie17g5sicqhldjatm2hh6b4qgspi5p.apps.googleusercontent.com
@@ -50,16 +55,19 @@ FRONTEND_URL=https://pledgeit.live
 ```
 
 #### -Start the Backend
+
 Run the following command to start the FastAPI backend:
+
 ```sh
 uvicorn main:app --reload
 ```
 
-
 ### 2. Frontend Setup
+
 Ffollow these steps to set up the backend:
 
 #### -Install node modules
+
 ```sh
 npm install
 ```
@@ -74,4 +82,5 @@ npm run dev
 
 - [PledgeIt BackEnd](http://127.0.0.1:8000/)  
 - [PledgeIt FrontEnd](https://pledgeit-frontend-production-production.up.railway.app/VolHome)
-- [PledgeIt BackEnd documentation](http://127.0.0.1:8000/docs) 
+- [PledgeIt BackEnd documentation](http://127.0.0.1:8000/docs)
+
