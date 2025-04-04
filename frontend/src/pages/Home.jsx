@@ -150,18 +150,13 @@ const Home = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="my-10"
+        className="relative mt-10 mb-10 bg-cover p-5 bg-center lg:p-15"
+        style={{ backgroundImage: "url('assests/bg3.png')" }}
       >
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-6 lg:text-4xl">
+        <h2 className="text-3xl font-bold text-white text-center mb-6 lg:text-4xl">
           Latest Volunteer Events
         </h2>
-        <HomeEvent
-          style={{
-            backgroundImage: "url('/assests/bg3.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
+        <HomeEvent />
       </motion.div>
 
       <motion.div

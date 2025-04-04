@@ -21,6 +21,7 @@ import VolunteerSettings from "./pages/vol/VolunteerSettings";
 import EventForm from "./pages/org/EventForm";
 import SplashScreen from "./components/loading/SplashScreen";
 import OrganizationEventsUpdate from "./components/event/UpdateEvent";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -117,6 +118,7 @@ const AppRoutes = () => {
       <Route path="/latestEvents" element={<HomeEvent />} />
       <Route path="/details" element={<EventDetails />} />
       <Route path="/details/:id" element={<EventDetails />} />
+      <Route path="/TermsAndConditions" element={<TermsAndConditions />} />
     </Routes>
   );
 };

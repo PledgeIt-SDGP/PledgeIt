@@ -5,14 +5,14 @@ const SITEMAP = [
   {
     title: "About",
     links: [
-      { name: "Empowering volunteers across Sri Lanka to make a difference in their communities.", href: "#" },
+      { name: "Empowering volunteers across Sri Lanka to make a difference in their communities." },
     ],
   },
   {
     title: "Help Center",
     links: [
-      { name: "Terms & Conditions", href: "#" },
-      { name: "Contact Us", href: "#" },
+      { name: "Terms & Conditions", href: "/TermsAndConditions" },
+      { name: "Contact Us", href: "mailto:pledgeit6@gmail.com" },
     ],
   },
   {
