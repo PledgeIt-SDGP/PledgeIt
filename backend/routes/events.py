@@ -581,3 +581,54 @@ async def get_volunteer_events(user: dict = Depends(get_current_user)):
     except Exception as e:
         logging.error(f"Error fetching volunteer events: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch volunteer events")
+    
+@router.post("/events/{event_id}/scan")
+async def scan_qr_code(
+    event_id: int,
+    user: dict = Depends(get_current_user),
+    email_service: EmailService = Depends()
+):
+    """
+    Endpoint for scanning QR code to confirm attendance
+    """
+    if user["role"] != "volunteer":
+        raise HTTPException(status_code=403, detail="Only volunteers can scan QR codes")
+    
+    # Get event
+    event = events_collection.find_one({"event_id": event_id})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Check if volunteer is registered for this event
+    if str(user["user_id"]) not in event.get("registered_volunteers", []):
+        raise HTTPException(status_code=400, detail="You must register for this event first")
+    
+    # Check if volunteer already attended (optional)
+    volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    if str(event_id) in volunteer.get("attended_events", []):
+        raise HTTPException(status_code=400, detail="You already attended this event")
+    
+    # Update volunteer's points and attended events
+    points_to_add = 10  # Or calculate based on event duration/type
+    volunteers_collection.update_one(
+        {"_id": ObjectId(user["user_id"])},
+        {
+            "$inc": {"points": points_to_add},
+            "$push": {"attended_events": str(event_id)}
+        }
+    )
+    
+    # Send confirmation email
+    volunteer_data = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    email_service.send_participation_confirmation(
+        volunteer_email=volunteer_data["email"],
+        volunteer_name=f"{volunteer_data['first_name']} {volunteer_data['last_name']}",
+        event_name=event["event_name"],
+        event_details=event
+    )
+    
+    return {
+        "message": "Attendance confirmed!",
+        "points_added": points_to_add,
+        "total_points": volunteer_data.get("points", 0) + points_to_add
+    }

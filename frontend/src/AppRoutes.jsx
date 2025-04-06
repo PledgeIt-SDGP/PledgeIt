@@ -22,6 +22,7 @@ import EventForm from "./pages/org/EventForm";
 import SplashScreen from "./components/loading/SplashScreen";
 import OrganizationEventsUpdate from "./components/event/UpdateEvent";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import AttendanceConfirmation from "./components/vol-dash/AttendanceConfirmation";
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ const AppRoutes = () => {
           console.error('Failed to fetch user data:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
-          setUser(null); // Clear user state
+          setUser(null);
           navigate('/login');
         } finally {
           setIsLoading(false);
@@ -65,10 +66,9 @@ const AppRoutes = () => {
       fetchUserData();
     } else {
       setIsLoading(false);
-      // Optionally clear user state if no token exists
       if (user) setUser(null);
     }
-  }, [navigate, setUser]); // Added setUser to dependencies
+  }, [navigate, setUser]);
 
   if (isLoading) {
     return <SplashScreen />;
@@ -98,6 +98,7 @@ const AppRoutes = () => {
           <Route path="/VolEvents" element={<SearchFilters />} />
           <Route path="/VolMap" element={<VolunteerMap />} />
           <Route path="/VolSettings" element={<VolunteerSettings />} />
+          <Route path="/events/:eventId/confirm" element={<AttendanceConfirmation />} />
         </>
       )}
 

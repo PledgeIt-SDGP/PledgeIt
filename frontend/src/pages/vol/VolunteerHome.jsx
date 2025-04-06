@@ -4,7 +4,7 @@ import VolunteerDashboard from "./VolunteerDashboard";
 import HomeEvent from "../../components/home/HomeEvent";
 import DailyQuotes from "../../components/vol-dash/DailyQuotes";
 import { useUser } from "../../hooks/UserContext";
-import { LineChart, PieChart, Users } from "lucide-react";
+import { LineChart, PieChart, Users, BarChart3 } from "lucide-react";
 import TopVolunteers from "../../components/org-dash/TopVolunteers";
 
 function VolunteerHome() {
@@ -142,19 +142,52 @@ function VolunteerHome() {
                 Participate in events to earn XP points!
               </p>
             </div>
-            <div className="bg-red-50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-x-auto h-96">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-6">
-                <Users size={20} color="black" className="text-blue-500" />
-                Top Volunteers
-              </h3>
-              <TopVolunteers />
+            {/* Top Volunteers Section */}
+            <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
+                  <BarChart3 size={18} className="mr-2 text-orange-500" />
+                  Top Volunteers
+                </h2>
+              </div>
+              <div className="mt-2">
+                <TopVolunteers />
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+              <div className="text-gray-800">
+                <p className="text-sm text-gray-500">Your Volunteer Points</p>
+                <p className="font-bold text-3xl">
+                  {user?.points || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {user?.attended_events?.length || 0} events attended
+                </p>
+              </div>
+              <div className="bg-gradient-to-r from-green-100 to-green-50 text-green-600 rounded-lg p-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-award"
+                >
+                  <circle cx="12" cy="8" r="6" />
+                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                </svg>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0  ">
             <h2 className="flex justify-center pt-10 text-xl font-bold text-gray-800">
               Latest Volunteer Events
             </h2>
-                        <HomeEvent />
+            <HomeEvent />
           </div>
         </div>
         <Footer1 />

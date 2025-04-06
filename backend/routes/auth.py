@@ -114,7 +114,7 @@ class OrganizationRegister(BaseModel):
     causes_supported: list[str] = Field(..., min_items=1, max_items=8)
     password: str
     password_confirmation: str
-    created_events: list[str] = Field(default_factory=list)  # New field for event IDs
+    created_events: list[str] = Field(default_factory=list)
 
     @validator("causes_supported")
     def validate_causes(cls, values):
@@ -131,7 +131,8 @@ class VolunteerRegister(BaseModel):
     email: str
     password: str
     password_confirmation: str
-    registered_events: list[str] = Field(default_factory=list)  # New field for event IDs
+    registered_events: list[str] = Field(default_factory=list)
+    points: int = Field(default=0)
 
 # Register Volunteer
 @router.post('/auth/volunteer/register')
@@ -510,3 +511,22 @@ async def update_organization_details(
     organizations_collection.update_one({"_id": ObjectId(user["user_id"])}, {"$set": update_data})
 
     return {"message": "Organization details updated successfully"}
+
+@router.get("/volunteers/leaderboard")
+async def get_leaderboard(limit: int = 10):
+    """
+    Returns top volunteers by points
+    """
+    top_volunteers = list(volunteers_collection.find(
+        {},
+        {"first_name": 1, "last_name": 1, "points": 1, "attended_events": 1}
+    ).sort("points", -1).limit(limit))
+    
+    return [
+        {
+            "name": f"{v['first_name']} {v['last_name']}",
+            "points": v.get("points", 0),
+            "events_attended": len(v.get("attended_events", []))
+        }
+        for v in top_volunteers
+    ]
