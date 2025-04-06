@@ -1,15 +1,28 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useUser } from "../../hooks/UserContext";
-import { BadgeInfo, Settings2, Building, Image, LogOut, Trash2, X } from "lucide-react";
+import { BadgeInfo, Settings2, Building, Image, LogOut, Trash2, X, Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 import OrganizationDashboard from "./OrganizationDashboard";
 
+const VALID_CAUSES = [
+  "Environmental",
+  "Community Service",
+  "Education",
+  "Healthcare",
+  "Animal Welfare",
+  "Disaster Relief",
+  "Lifestyle & Culture",
+  "Fundraising & Charity"
+];
+
 const Settings = () => {
-    const { user, setUser } = useUser(); // Access user context
-    const [activeTab, setActiveTab] = useState("account");
+    const { user, setUser, refreshUser } = useUser();
+    const [activeTab, setActiveTab] = useState("organization");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
-    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         name: user?.name || "",
         website_url: user?.website_url || "",
@@ -18,43 +31,98 @@ const Settings = () => {
         contact_number: user?.contact_number || "",
         address: user?.address || "",
         causes_supported: user?.causes_supported || [],
-        password: "",
+        current_password: "",
+        new_password: "",
         password_confirmation: "",
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+        if (errors[name]) {
+            setErrors({ ...errors, [name]: null });
+        }
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (!file.type.match('image.*')) {
+                setErrors({ ...errors, logo: "Only image files are allowed" });
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                setErrors({ ...errors, logo: "File size must be less than 5MB" });
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = () => setPreviewImage(reader.result);
             reader.readAsDataURL(file);
+            setErrors({ ...errors, logo: null });
         }
+    };
+
+    const handleCauseChange = (cause) => {
+        const updatedCauses = formData.causes_supported.includes(cause)
+            ? formData.causes_supported.filter((c) => c !== cause)
+            : [...formData.causes_supported, cause];
+        
+        setFormData({ ...formData, causes_supported: updatedCauses });
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        
+        if (activeTab === "organization") {
+            if (!formData.name) newErrors.name = "Organization name is required";
+            if (!formData.website_url) newErrors.website_url = "Website URL is required";
+            if (!formData.about) newErrors.about = "About section is required";
+            if (!formData.contact_number) newErrors.contact_number = "Contact number is required";
+            if (!formData.address) newErrors.address = "Address is required";
+            if (formData.causes_supported.length === 0) newErrors.causes_supported = "At least one cause must be selected";
+        }
+        
+        // Password validation if changing password
+        if (formData.new_password || formData.password_confirmation) {
+            if (!formData.current_password) newErrors.current_password = "Current password is required";
+            if (formData.new_password.length < 8) newErrors.new_password = "Password must be at least 8 characters";
+            if (formData.new_password !== formData.password_confirmation) {
+                newErrors.password_confirmation = "Passwords do not match";
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleUpdateOrganizationDetails = async (e) => {
         e.preventDefault();
-        const formDataToSend = new FormData();
-        formDataToSend.append("name", formData.name);
-        formDataToSend.append("website_url", formData.website_url);
-        formDataToSend.append("organization_type", formData.organization_type);
-        formDataToSend.append("about", formData.about);
-        formDataToSend.append("contact_number", formData.contact_number);
-        formDataToSend.append("address", formData.address);
-        formDataToSend.append("causes_supported", JSON.stringify(formData.causes_supported));
-        if (formData.password) {
-            formDataToSend.append("password", formData.password);
-            formDataToSend.append("password_confirmation", formData.password_confirmation);
-        }
-        if (e.target.image_url.files[0]) {
-            formDataToSend.append("logo", e.target.image_url.files[0]);
-        }
+        
+        if (!validateForm()) return;
 
+        setIsLoading(true);
         try {
+            const formDataToSend = new FormData();
+            formDataToSend.append("name", formData.name);
+            formDataToSend.append("website_url", formData.website_url);
+            formDataToSend.append("organization_type", formData.organization_type);
+            formDataToSend.append("about", formData.about);
+            formDataToSend.append("contact_number", formData.contact_number);
+            formDataToSend.append("address", formData.address);
+            formDataToSend.append("causes_supported", JSON.stringify(formData.causes_supported));
+            
+            // Only include password fields if they're being changed
+            if (formData.new_password) {
+                formDataToSend.append("current_password", formData.current_password);
+                formDataToSend.append("password", formData.new_password);
+                formDataToSend.append("password_confirmation", formData.password_confirmation);
+            }
+            
+            if (e.target.image_url.files[0]) {
+                formDataToSend.append("logo", e.target.image_url.files[0]);
+            }
+
             const response = await axios.put(
                 "http://127.0.0.1:8000/auth/organization/update",
                 formDataToSend,
@@ -65,19 +133,24 @@ const Settings = () => {
                     },
                 }
             );
-            console.log("Organization details updated:", response.data);
 
-            // Update the user context with the new details
-            setUser((prevUser) => ({
-                ...prevUser,
+            // Refresh user data
+            await refreshUser();
+            
+            toast.success("Organization details updated successfully!");
+            
+            // Reset password fields
+            setFormData({
                 ...formData,
-                logo: previewImage || prevUser.logo, // Update logo if a new one was uploaded
-            }));
-
-            alert("Organization details updated successfully!");
+                current_password: "",
+                new_password: "",
+                password_confirmation: "",
+            });
         } catch (error) {
-            console.error("Failed to update organization details:", error);
-            alert("Failed to update details. Please try again.");
+            console.error("Update failed:", error);
+            toast.error(error.response?.data?.detail || "Failed to update organization details");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -94,54 +167,42 @@ const Settings = () => {
             );
             localStorage.removeItem("token");
             localStorage.removeItem("userRole");
-            setUser(null); // Clear user context
-            window.location.href = "/"; // Redirect to login page
+            setUser(null);
+            window.location.href = "/";
         } catch (error) {
-            console.error("Failed to logout:", error);
-            alert("Failed to logout. Please try again.");
+            console.error("Logout failed:", error);
+            toast.error("Failed to logout. Please try again.");
         }
     };
 
     const handleDeleteAccount = async () => {
-        if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-            try {
-                await axios.delete(
-                    "http://127.0.0.1:8000/auth/organization/delete",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        },
-                    }
-                );
-                localStorage.removeItem("token");
-                localStorage.removeItem("userRole");
-                setUser(null); // Clear user context
-                window.location.href = "/"; // Redirect to login page
-            } catch (error) {
-                console.error("Failed to delete account:", error);
-                alert("Failed to delete account. Please try again.");
-            }
+        if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            return;
         }
-    };
 
-    const handleCloseError = () => {
-        setError(null); // Clear the error message
+        try {
+            await axios.delete(
+                "http://127.0.0.1:8000/auth/organization/delete",
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+            localStorage.removeItem("token");
+            localStorage.removeItem("userRole");
+            setUser(null);
+            window.location.href = "/";
+            toast.success("Account deleted successfully");
+        } catch (error) {
+            console.error("Delete failed:", error);
+            toast.error(error.response?.data?.detail || "Failed to delete account");
+        }
     };
 
     return (
         <OrganizationDashboard>
-            {/* Error Pop-up */}
-            {error && (
-                <div className="fixed top-4 right-4 z-50">
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
-                        <span>{error}</span>
-                        <button onClick={handleCloseError} className="ml-4">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            )}
-            <div className="flex flex-col p-5 bg-gray-50">
+            <div className="flex flex-col p-5 bg-gray-50 min-h-screen">
                 <h1 className="text-2xl font-bold m-8">Settings</h1>
 
                 <div className="mb-6">
@@ -152,7 +213,6 @@ const Settings = () => {
                         >
                             Account Settings
                         </button>
-
                         <button
                             className={`px-4 py-2 ${activeTab === "organization" ? "border-b-2 border-red-500 font-semibold" : "text-gray-500"}`}
                             onClick={() => setActiveTab("organization")}
@@ -170,17 +230,34 @@ const Settings = () => {
                             <Settings2 size={18} className="mr-2" />
                             <p className="text-sm text-gray-500">Manage your account preferences.</p>
                         </div>
-                        <form>
+                        <form onSubmit={handleUpdateOrganizationDetails}>
                             <div className="mb-5">
-                                <label className="block text-gray-700 mb-1">Password</label>
+                                <label className="block text-gray-700 mb-1">Current Password *</label>
                                 <input
                                     type="password"
-                                    name="password"
-                                    value={formData.password}
+                                    name="current_password"
+                                    value={formData.current_password}
                                     onChange={handleChange}
-                                    placeholder="New Password"
-                                    className="w-full p-2 border rounded"
+                                    placeholder="Enter current password"
+                                    className={`w-full p-2 border rounded ${errors.current_password ? 'border-red-500' : 'border-gray-300'}`}
                                 />
+                                {errors.current_password && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.current_password}</p>
+                                )}
+                            </div>
+                            <div className="mb-5">
+                                <label className="block text-gray-700 mb-1">New Password</label>
+                                <input
+                                    type="password"
+                                    name="new_password"
+                                    value={formData.new_password}
+                                    onChange={handleChange}
+                                    placeholder="Enter new password"
+                                    className={`w-full p-2 border rounded ${errors.new_password ? 'border-red-500' : 'border-gray-300'}`}
+                                />
+                                {errors.new_password && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.new_password}</p>
+                                )}
                             </div>
                             <div className="mb-5">
                                 <label className="block text-gray-700 mb-1">Confirm Password</label>
@@ -189,28 +266,40 @@ const Settings = () => {
                                     name="password_confirmation"
                                     value={formData.password_confirmation}
                                     onChange={handleChange}
-                                    placeholder="Confirm Password"
-                                    className="w-full p-2 border rounded"
+                                    placeholder="Confirm new password"
+                                    className={`w-full p-2 border rounded ${errors.password_confirmation ? 'border-red-500' : 'border-gray-300'}`}
                                 />
+                                {errors.password_confirmation && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.password_confirmation}</p>
+                                )}
                             </div>
-                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">
-                                Update Password
-                            </button>
-                        </form>
-
-                        {/* Logout Button */}
-                        <div className="mt-8 pt-6 border-t border-gray-200">
-                            <h3 className="text-lg font-semibold mb-4">Account Access</h3>
                             <button
-                                onClick={handleLogout}
-                                className="flex items-center bg-red-500 text-red-50 px-4 py-2 rounded hover:bg-red-700 mb-4"
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-red-500 text-white px-4 py-2 rounded flex items-center gap-2"
                             >
-                                <LogOut size={18} className="mr-2" />
-                                Log Out
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    "Update Password"
+                                )}
                             </button>
 
-                            {/* Delete Account Button */}
-                            {!showDeleteConfirm ? (
+                            {/* Logout Button */}
+                            <div className="mt-8 pt-6 border-t border-gray-200">
+                                <h3 className="text-lg font-semibold mb-4">Account Access</h3>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center bg-red-500 text-red-50 px-4 py-2 rounded hover:bg-red-700 mb-4"
+                                >
+                                    <LogOut size={18} className="mr-2" />
+                                    Log Out
+                                </button>
+
+                                {/* Delete Account Button */}
                                 <button
                                     onClick={() => setShowDeleteConfirm(true)}
                                     className="flex items-center bg-red-50 text-red-500 font-semibold border border-red-500 px-4 py-2 rounded hover:bg-red-50"
@@ -218,26 +307,8 @@ const Settings = () => {
                                     <Trash2 size={18} className="mr-2" />
                                     Delete Account
                                 </button>
-                            ) : (
-                                <div className="bg-red-50 p-4 rounded border border-red-200">
-                                    <p className="text-sm text-red-700 mb-3">Are you sure you want to delete your account? This action cannot be undone.</p>
-                                    <div className="flex space-x-3">
-                                        <button
-                                            onClick={handleDeleteAccount}
-                                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                                        >
-                                            Yes, Delete Account
-                                        </button>
-                                        <button
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 )}
 
@@ -254,18 +325,26 @@ const Settings = () => {
                             {/* Organization Logo */}
                             <div className="mb-5">
                                 <label className="block text-gray-700 mb-1">ORGANIZATION LOGO</label>
-                                <div className="border-2 border-dashed border-gray-300 p-4 rounded-lg text-center lg:w-[50%]">
-                                    <p className="text-sm text-gray-500 mb-2">Upload here*</p>
+                                <div className={`border-2 ${errors.logo ? 'border-red-500' : 'border-gray-300'} border-dashed p-4 rounded-lg text-center lg:w-[50%]`}>
+                                    <p className="text-sm text-gray-500 mb-2">Upload here (PNG, JPG, max 5MB)</p>
                                     <input
                                         type="file"
                                         name="image_url"
                                         onChange={handleFileChange}
+                                        accept="image/*"
                                         className="file-input w-full"
                                     />
+                                    {errors.logo && (
+                                        <p className="text-red-500 text-xs mt-2">{errors.logo}</p>
+                                    )}
                                     {/* Image Preview */}
-                                    {previewImage && (
+                                    {(previewImage || user?.logo) && (
                                         <div className="flex justify-center mt-4">
-                                            <img src={previewImage} alt="Preview" className="w-45 h-45 object-cover rounded-full shadow-md border" />
+                                            <img 
+                                                src={previewImage || user?.logo} 
+                                                alt="Organization logo" 
+                                                className="w-32 h-32 object-cover rounded-full shadow-md border" 
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -281,19 +360,40 @@ const Settings = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded"
+                                        className={`w-full p-2 border rounded ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                                     />
+                                    {errors.name && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                                    )}
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block text-gray-700 mb-1">Website Url *</label>
+                                    <label className="block text-gray-700 mb-1">Website URL *</label>
                                     <input
-                                        type="text"
+                                        type="url"
                                         name="website_url"
                                         value={formData.website_url}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded"
+                                        className={`w-full p-2 border rounded ${errors.website_url ? 'border-red-500' : 'border-gray-300'}`}
                                         placeholder="https://"
                                     />
+                                    {errors.website_url && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.website_url}</p>
+                                    )}
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 mb-1">Organization Type *</label>
+                                    <select
+                                        name="organization_type"
+                                        value={formData.organization_type}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-300 rounded"
+                                    >
+                                        <option value="">Select organization type</option>
+                                        <option value="Private Business">Private Business</option>
+                                        <option value="NGO">NGO</option>
+                                        <option value="Educational Institution">Educational Institution</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">About Your Organization *</label>
@@ -301,10 +401,13 @@ const Settings = () => {
                                         name="about"
                                         value={formData.about}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded"
+                                        className={`w-full p-2 border rounded ${errors.about ? 'border-red-500' : 'border-gray-300'}`}
                                         rows="4"
                                         placeholder="Write 1-2 paragraphs to share your mission, describe the work you do, and highlight the impact you make"
                                     />
+                                    {errors.about && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.about}</p>
+                                    )}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Email Address *</label>
@@ -313,7 +416,7 @@ const Settings = () => {
                                         name="email"
                                         value={user?.email || ""}
                                         disabled
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 border rounded bg-gray-100"
                                     />
                                 </div>
                                 <div className="mb-4">
@@ -323,8 +426,11 @@ const Settings = () => {
                                         name="contact_number"
                                         value={formData.contact_number}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded"
+                                        className={`w-full p-2 border rounded ${errors.contact_number ? 'border-red-500' : 'border-gray-300'}`}
                                     />
+                                    {errors.contact_number && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.contact_number}</p>
+                                    )}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Address *</label>
@@ -332,26 +438,26 @@ const Settings = () => {
                                         name="address"
                                         value={formData.address}
                                         onChange={handleChange}
-                                        className="w-full p-2 border rounded"
+                                        className={`w-full p-2 border rounded ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
                                         rows="2"
                                     />
+                                    {errors.address && (
+                                        <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+                                    )}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 mb-1">Causes Supported *</label>
+                                    {errors.causes_supported && (
+                                        <p className="text-red-500 text-xs mb-2">{errors.causes_supported}</p>
+                                    )}
                                     <div className="grid grid-cols-2 gap-2">
-                                        {["Environmental", "Community Service", "Education", "Healthcare", "Animal Welfare", "Disaster Relief", "Lifestyle & Culture", "Fundraising & Charity"].map((cause) => (
+                                        {VALID_CAUSES.map((cause) => (
                                             <div key={cause} className="flex items-center">
                                                 <input
                                                     type="checkbox"
                                                     id={cause}
-                                                    name="causes_supported"
                                                     checked={formData.causes_supported.includes(cause)}
-                                                    onChange={(e) => {
-                                                        const updatedCauses = e.target.checked
-                                                            ? [...formData.causes_supported, cause]
-                                                            : formData.causes_supported.filter((c) => c !== cause);
-                                                        setFormData({ ...formData, causes_supported: updatedCauses });
-                                                    }}
+                                                    onChange={() => handleCauseChange(cause)}
                                                     className="mr-2"
                                                 />
                                                 <label htmlFor={cause}>{cause}</label>
@@ -361,8 +467,19 @@ const Settings = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded">
-                                Save Organization Changes
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-red-500 text-white px-4 py-2 rounded flex items-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    "Save Organization Changes"
+                                )}
                             </button>
                         </form>
                     </div>

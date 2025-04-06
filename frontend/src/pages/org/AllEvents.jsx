@@ -4,6 +4,7 @@ import OrganizationDashboard from "./OrganizationDashboard";
 import { useUser } from "../../hooks/UserContext";
 import axios from "axios";
 import { format, parseISO } from "date-fns";
+import { Trash2 } from 'lucide-react';
 
 const AllEvents = () => {
   const [events, setEvents] = useState([]);
@@ -37,6 +38,25 @@ const AllEvents = () => {
 
     fetchOrganizationEvents();
   }, [user]);
+
+  const handleDeleteEvent = async (eventId) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/events/${eventId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            'x-org-email': user.email // Add this line
+          },
+        });
+        // Refresh the events list after deletion
+        const updatedEvents = events.filter(event => event.event_id !== eventId);
+        setEvents(updatedEvents);
+      } catch (error) {
+        console.error("Error deleting event:", error);
+        alert("Failed to delete event: " + (error.response?.data?.detail || "An error occurred"));
+      }
+    }
+  };
 
   const formatEventDate = (dateString) => {
     try {
@@ -167,11 +187,11 @@ const AllEvents = () => {
                             {event.event_name}
                           </h2>
                         </div>
-                        
+
                         <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-semibold mb-3">
                           {event.category}
                         </span>
-                        
+
                         <div className="flex items-center text-gray-600 text-sm mb-2">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -179,14 +199,14 @@ const AllEvents = () => {
                           </svg>
                           {event.city}
                         </div>
-                        
+
                         <div className="flex items-center text-gray-600 text-sm mb-3">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           {formattedDate}
                         </div>
-                        
+
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                           {event.description}
                         </p>
@@ -199,7 +219,7 @@ const AllEvents = () => {
                           </svg>
                           {event.total_registered_volunteers} registered
                         </div>
-                        
+
                         <div className="flex space-x-2">
                           <Link
                             to={`/details/${event.event_id}`}
@@ -213,6 +233,15 @@ const AllEvents = () => {
                           >
                             Edit
                           </Link>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteEvent(event.event_id);
+                            }}
+                            className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </div>
                     </div>

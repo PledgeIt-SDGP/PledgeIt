@@ -108,7 +108,7 @@ const AppRoutes = () => {
           <Route path="/OrgHome" element={<OrganizationHome />} />
           <Route path="/eventform" element={<EventForm />} />
           <Route path="/OrgEvents" element={<OrganizationEvents />} />
-          <Route path="/OrgEventsUpdate" element={<OrganizationEventsUpdate />} />
+          <Route path="/OrgEventsUpdate/:eventId" element={<OrganizationEventsUpdate />} />
           <Route path="/OrgProfile" element={<OrganizationProfile />} />
           <Route path="/OrgSettings" element={<OrganizationSettings />} />
         </>
