@@ -431,7 +431,8 @@ async def update_volunteer_details(
     user: dict = Depends(get_current_user),
     first_name: str = Form(None),
     last_name: str = Form(None),
-    password: str = Form(None),
+    current_password: str = Form(None),
+    new_password: str = Form(None),
     password_confirmation: str = Form(None),
 ):
     if user["role"] != "volunteer":
@@ -444,13 +445,35 @@ async def update_volunteer_details(
         update_data["last_name"] = last_name
 
     # Handle password update
-    if password and password_confirmation:
-        verify_passwords(password, password_confirmation)
-        update_data["password"] = hash_password(password)
-    elif password or password_confirmation:
-        raise HTTPException(status_code=400, detail="Both password and password confirmation are required.")
+    if new_password or password_confirmation:
+        if not current_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Current password is required when changing password"
+            )
+        
+        # Verify current password
+        volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+        if not pwd_context.verify(current_password, volunteer.get("password", "")):
+            raise HTTPException(
+                status_code=400,
+                detail="Current password is incorrect"
+            )
+        
+        if new_password != password_confirmation:
+            raise HTTPException(
+                status_code=400,
+                detail="New password and confirmation do not match"
+            )
+        
+        update_data["password"] = hash_password(new_password)
 
-    # Update the volunteer's details in the database
+    if not update_data:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid fields provided for update"
+        )
+
     result = volunteers_collection.update_one(
         {"_id": ObjectId(user["user_id"])},
         {"$set": update_data}

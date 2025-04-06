@@ -54,39 +54,36 @@ const ProfileSettings = () => {
 
     setIsLoading(true);
     try {
-      const dataToSend = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-      };
+      const formData = new FormData();
+      formData.append("first_name", formData.first_name);
+      formData.append("last_name", formData.last_name);
 
-      // Only include password fields if they're being changed
       if (formData.new_password) {
-        dataToSend.current_password = formData.current_password;
-        dataToSend.password = formData.new_password;
-        dataToSend.password_confirmation = formData.password_confirmation;
+        formData.append("current_password", formData.current_password);
+        formData.append("new_password", formData.new_password);
+        formData.append("password_confirmation", formData.password_confirmation);
       }
 
-      await axios.put(
+      const response = await axios.put(
         "http://127.0.0.1:8000/auth/volunteer/update",
-        dataToSend,
+        formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      // Refresh user data
-      await refreshUser();
-
+      // Handle success
       toast.success("Profile updated successfully!");
       // Reset password fields
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         current_password: "",
         new_password: "",
         password_confirmation: "",
-      });
+      }));
     } catch (error) {
       console.error("Update failed:", error);
       toast.error(error.response?.data?.detail || "Failed to update profile");
