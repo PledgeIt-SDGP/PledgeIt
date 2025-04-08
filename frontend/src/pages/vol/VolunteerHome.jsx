@@ -155,7 +155,7 @@ function VolunteerHome() {
                   Top Volunteers
                 </h2>
               </div>
-              <div className="h-80 overflow-y-auto">
+              <div className="h-100 overflow-y-auto">
                 <TopVolunteers />
               </div>
             </div>

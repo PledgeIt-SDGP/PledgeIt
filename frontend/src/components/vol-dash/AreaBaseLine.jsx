@@ -1,44 +1,52 @@
 import * as React from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useUser } from "../../hooks/UserContext";
-import { Typography, Box, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 
 export default function AreaBaseline() {
   const { user } = useUser();
   const totalPoints = user?.points || 0;
 
-  // Months data - all points assigned to April (index 3)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const xpData = [0, 0, 0, totalPoints, 0, 0, 0, 0, 0, 0, 0, 0];
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
+    <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       width: '100%',
-      p: 2
+      height: '100%',
+      p: 3
     }}>
-      <Box sx={{ 
-        width: '100%', 
-        maxWidth: '500px', 
-        margin: '0 auto' 
+      <Box sx={{
+        width: '100%',
+        maxWidth: '700px',
+        height: '380px',
+        position: 'relative'
       }}>
         <LineChart
           xAxis={[{
             data: months,
             scaleType: 'point',
+            tickLabelStyle: {
+              fill: '#6B7280',
+              fontSize: 12
+            }
           }]}
           yAxis={[{
+            tickLabelStyle: {
+              fill: '#6B7280',
+              fontSize: 12
+            }
           }]}
           series={[{
             data: xpData,
             area: true,
-            showMark: ({ index }) => index === 3, // Only show marker for April
+            showMark: ({ index }) => index === 3,
             color: '#E74C3C',
+            curve: 'natural'
           }]}
-          width={400}
-          height={300}
           margin={{ top: 30, bottom: 50, left: 50, right: 30 }}
           sx={{
             "& .MuiLineElement-root": {
@@ -53,14 +61,20 @@ export default function AreaBaseline() {
             },
             "& .MuiAreaElement-root": {
               fill: 'url(#xpGradient)',
-              opacity: 0.3,
+              opacity: 0.2,
+            },
+            "& .MuiChartsAxis-line": {
+              stroke: '#E5E7EB',
+            },
+            "& .MuiChartsAxis-tick": {
+              stroke: '#E5E7EB',
             },
           }}
         >
           <defs>
             <linearGradient id="xpGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#E74C3C" />
-              <stop offset="100%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="transparent" />
             </linearGradient>
           </defs>
         </LineChart>
