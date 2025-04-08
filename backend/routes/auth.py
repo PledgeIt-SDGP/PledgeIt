@@ -359,42 +359,24 @@ async def delete_organization(user: dict = Depends(get_current_user)):
 async def get_current_user_details(user: dict = Depends(get_current_user)):
     if user["role"] == "volunteer":
         user_data = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            "id": str(user_data["_id"]),
+            "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+            "points": user_data.get("points", 0),
+            "registered_events": user_data.get("registered_events", []),
+            "total_events": len(user_data.get("registered_events", []))
+        }
+    
     elif user["role"] == "organization":
         user_data = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
-    
-    if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get events based on role
-    events = []
-    if user["role"] == "organization":
-        # Fetch events created by this organization
-        events = list(db.events.find({"organization_id": str(user_data["_id"])}))
-    elif user["role"] == "volunteer":
-        # Fetch events this volunteer has registered for
-        registered_event_ids = user_data.get("registered_events", [])
-        valid_event_ids = []
-        for eid in registered_event_ids:
-            try:
-                # Try to convert to ObjectId to validate
-                ObjectId(eid)
-                valid_event_ids.append(eid)
-            except:
-                logging.warning(f"Invalid event ID found in registered_events: {eid}")
-                continue
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
         
-        if valid_event_ids:
-            events = list(db.events.find({"_id": {"$in": [ObjectId(eid) for eid in valid_event_ids]}}))
-    
-    # Convert ObjectId to string for each event
-    events_data = []
-    for event in events:
-        event_data = dict(event)
-        event_data["_id"] = str(event["_id"])
-        events_data.append(event_data)
-    
-    # Return all fields for organizations
-    if user["role"] == "organization":
         return {
             "id": str(user_data["_id"]),
             "name": user_data.get("name"),
@@ -407,7 +389,6 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "causes_supported": user_data.get("causes_supported"),
             "contact_number": user_data.get("contact_number"),
             "address": user_data.get("address"),
-            "events": events_data
         }
     else:
         # Return basic fields for volunteers
@@ -416,7 +397,6 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
             "email": user_data.get("email"),
             "role": user_data.get("role"),
-            "events": events_data
         }
     
 @router.get("/auth/total-users")
