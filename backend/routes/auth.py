@@ -418,6 +418,11 @@ async def update_volunteer_details(
     if user["role"] != "volunteer":
         raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can update their details.")
 
+    # Get the volunteer document
+    volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    if not volunteer:
+        raise HTTPException(status_code=404, detail="Volunteer not found")
+
     update_data = {}
     if first_name:
         update_data["first_name"] = first_name
@@ -433,7 +438,6 @@ async def update_volunteer_details(
             )
         
         # Verify current password
-        volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
         if not pwd_context.verify(current_password, volunteer.get("password", "")):
             raise HTTPException(
                 status_code=400,
@@ -462,7 +466,20 @@ async def update_volunteer_details(
     if result.modified_count == 0:
         raise HTTPException(status_code=400, detail="No changes were made.")
 
-    return {"message": "Volunteer details updated successfully"}
+    # Return updated user data
+    updated_user = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    return {
+        "message": "Volunteer details updated successfully",
+        "user": {
+            "id": str(updated_user["_id"]),
+            "first_name": updated_user.get("first_name"),
+            "last_name": updated_user.get("last_name"),
+            "email": updated_user.get("email"),
+            "role": updated_user.get("role"),
+            "points": updated_user.get("points", 0),
+            "registered_events": updated_user.get("registered_events", [])
+        }
+    }
 
 @router.put('/auth/organization/update')
 async def update_organization_details(

@@ -80,7 +80,7 @@ function VolunteerHome() {
             </div>
             <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 bg-image: url('assests/bg4.png') ">
               <div className=" text-gray-800 ">
-                <p>Total Volunteer Point: </p>
+                <p>Total Volunteer Points: </p>
                 <p className="font-bold text-4xl">{totalPoints}</p>
               </div>
 

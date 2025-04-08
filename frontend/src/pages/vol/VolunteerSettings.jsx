@@ -49,24 +49,24 @@ const ProfileSettings = () => {
 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("first_name", formData.first_name);
-      formData.append("last_name", formData.last_name);
-
+      const formDataToSend = new FormData();
+      formDataToSend.append("first_name", formData.first_name);
+      formDataToSend.append("last_name", formData.last_name);
+  
       if (formData.new_password) {
-        formData.append("current_password", formData.current_password);
-        formData.append("new_password", formData.new_password);
-        formData.append("password_confirmation", formData.password_confirmation);
+        formDataToSend.append("current_password", formData.current_password);
+        formDataToSend.append("new_password", formData.new_password);
+        formDataToSend.append("password_confirmation", formData.password_confirmation);
       }
-
+  
       const response = await axios.put(
         "http://127.0.0.1:8000/auth/volunteer/update",
-        formData,
+        formDataToSend,
         {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -74,9 +74,15 @@ const ProfileSettings = () => {
           },
         }
       );
-
-      // Handle success
-      toast.success("Profile updated successfully!");
+  
+      // Update user context with new data
+      setUser(prev => ({
+        ...prev,
+        first_name: response.data.user.first_name,
+        last_name: response.data.user.last_name,
+        // Include other fields if needed
+      }));
+  
       // Reset password fields
       setFormData(prev => ({
         ...prev,
@@ -84,9 +90,28 @@ const ProfileSettings = () => {
         new_password: "",
         password_confirmation: "",
       }));
+  
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Update failed:", error);
-      toast.error(error.response?.data?.detail || "Failed to update profile");
+      let errorMessage = "Failed to update profile";
+      
+      if (error.response) {
+        if (error.response.status === 400) {
+          // Handle validation errors
+          if (error.response.data.detail === "Current password is incorrect") {
+            setErrors({ current_password: "Current password is incorrect" });
+          } else if (error.response.data.detail === "New password and confirmation do not match") {
+            setErrors({ password_confirmation: "Passwords do not match" });
+          } else {
+            errorMessage = error.response.data.detail || errorMessage;
+          }
+        } else {
+          errorMessage = error.response.data.detail || errorMessage;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
