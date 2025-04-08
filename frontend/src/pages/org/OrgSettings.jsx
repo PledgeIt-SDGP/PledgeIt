@@ -112,7 +112,6 @@ const Settings = () => {
             formDataToSend.append("address", formData.address);
             formDataToSend.append("causes_supported", JSON.stringify(formData.causes_supported));
 
-            // Password fields should be appended separately if they exist
             if (formData.new_password) {
                 formDataToSend.append("current_password", formData.current_password);
                 formDataToSend.append("password", formData.new_password);
@@ -137,13 +136,9 @@ const Settings = () => {
             await refreshUser();
             toast.success("Organization details updated successfully!");
 
-            // Reset password fields
-            setFormData(prev => ({
-                ...prev,
-                current_password: "",
-                new_password: "",
-                password_confirmation: "",
-            }));
+            // Redirect to orgprofile page after successful update
+            window.location.href = "/orgprofile";
+
         } catch (error) {
             console.error("Update failed:", error);
             toast.error(error.response?.data?.detail || "Failed to update organization details");
@@ -191,8 +186,8 @@ const Settings = () => {
             localStorage.removeItem("token");
             localStorage.removeItem("userRole");
             setUser(null);
-            window.location.href = "/";
             toast.success("Account deleted successfully");
+            window.location.href = "/"; // Redirect to home page after deletion
         } catch (error) {
             console.error("Delete failed:", error);
             toast.error(error.response?.data?.detail || "Failed to delete account");
@@ -302,7 +297,7 @@ const Settings = () => {
 
                                 {/* Delete Account Button */}
                                 <button
-                                    onClick={() => setShowDeleteConfirm(true)}
+                                    onClick={() => handleDeleteAccount(true)}
                                     className="flex items-center bg-red-50 text-red-500 font-semibold border border-red-500 px-4 py-2 rounded hover:bg-red-50"
                                 >
                                     <Trash2 size={18} className="mr-2" />
