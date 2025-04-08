@@ -105,12 +105,12 @@ const AppRoutes = () => {
       {/* Organization routes */}
       {user?.role === 'organization' && (
         <>
-          <Route path="/OrgHome" element={<OrganizationHome />} />
+          <Route path="/orgHome" element={<OrganizationHome />} />
           <Route path="/eventform" element={<EventForm />} />
-          <Route path="/OrgEvents" element={<OrganizationEvents />} />
-          <Route path="/OrgEventsUpdate/:eventId" element={<OrganizationEventsUpdate />} />
-          <Route path="/OrgProfile" element={<OrganizationProfile />} />
-          <Route path="/OrgSettings" element={<OrganizationSettings />} />
+          <Route path="/orgEvents" element={<OrganizationEvents />} />
+          <Route path="/orgEventsUpdate/:eventId" element={<OrganizationEventsUpdate />} />
+          <Route path="/orgProfile" element={<OrganizationProfile />} />
+          <Route path="/orgSettings" element={<OrganizationSettings />} />
         </>
       )}
 

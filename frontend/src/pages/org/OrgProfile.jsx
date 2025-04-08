@@ -42,6 +42,13 @@ const OrgProfile = () => {
         }
     };
 
+    const cleanCauses = organization.causesSupported
+        .join(',')
+        .replace(/[\[\]\\"]/g, '')
+        .split(',')
+        .map(cause => cause.trim())
+        .filter((cause, index, self) => cause && self.indexOf(cause) === index);
+
     useEffect(() => {
         const fetchOrganizationEvents = async () => {
             try {
@@ -66,14 +73,6 @@ const OrgProfile = () => {
 
         fetchOrganizationEvents();
     }, [user]);
-
-    // Clean up causesSupported array
-    const cleanCauses = organization.causesSupported
-        .join(',')
-        .replace(/[\[\]\\"]/g, '')
-        .split(',')
-        .map(cause => cause.trim())
-        .filter((cause, index, self) => cause && self.indexOf(cause) === index);
 
     return (
         <OrganizationDashboard>

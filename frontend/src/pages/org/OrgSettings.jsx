@@ -6,14 +6,14 @@ import { toast } from "react-toastify";
 import OrganizationDashboard from "./OrganizationDashboard";
 
 const VALID_CAUSES = [
-  "Environmental",
-  "Community Service",
-  "Education",
-  "Healthcare",
-  "Animal Welfare",
-  "Disaster Relief",
-  "Lifestyle & Culture",
-  "Fundraising & Charity"
+    "Environmental",
+    "Community Service",
+    "Education",
+    "Healthcare",
+    "Animal Welfare",
+    "Disaster Relief",
+    "Lifestyle & Culture",
+    "Fundraising & Charity"
 ];
 
 const Settings = () => {
@@ -55,7 +55,7 @@ const Settings = () => {
                 setErrors({ ...errors, logo: "File size must be less than 5MB" });
                 return;
             }
-            
+
             const reader = new FileReader();
             reader.onload = () => setPreviewImage(reader.result);
             reader.readAsDataURL(file);
@@ -67,13 +67,13 @@ const Settings = () => {
         const updatedCauses = formData.causes_supported.includes(cause)
             ? formData.causes_supported.filter((c) => c !== cause)
             : [...formData.causes_supported, cause];
-        
+
         setFormData({ ...formData, causes_supported: updatedCauses });
     };
 
     const validateForm = () => {
         const newErrors = {};
-        
+
         if (activeTab === "organization") {
             if (!formData.name) newErrors.name = "Organization name is required";
             if (!formData.website_url) newErrors.website_url = "Website URL is required";
@@ -82,7 +82,7 @@ const Settings = () => {
             if (!formData.address) newErrors.address = "Address is required";
             if (formData.causes_supported.length === 0) newErrors.causes_supported = "At least one cause must be selected";
         }
-        
+
         // Password validation if changing password
         if (formData.new_password || formData.password_confirmation) {
             if (!formData.current_password) newErrors.current_password = "Current password is required";
@@ -98,7 +98,7 @@ const Settings = () => {
 
     const handleUpdateOrganizationDetails = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) return;
 
         setIsLoading(true);
@@ -111,15 +111,15 @@ const Settings = () => {
             formDataToSend.append("contact_number", formData.contact_number);
             formDataToSend.append("address", formData.address);
             formDataToSend.append("causes_supported", JSON.stringify(formData.causes_supported));
-            
-            // Only include password fields if they're being changed
+
+            // Password fields should be appended separately if they exist
             if (formData.new_password) {
                 formDataToSend.append("current_password", formData.current_password);
                 formDataToSend.append("password", formData.new_password);
                 formDataToSend.append("password_confirmation", formData.password_confirmation);
             }
-            
-            if (e.target.image_url.files[0]) {
+
+            if (e.target.image_url?.files[0]) {
                 formDataToSend.append("logo", e.target.image_url.files[0]);
             }
 
@@ -134,18 +134,16 @@ const Settings = () => {
                 }
             );
 
-            // Refresh user data
             await refreshUser();
-            
             toast.success("Organization details updated successfully!");
-            
+
             // Reset password fields
-            setFormData({
-                ...formData,
+            setFormData(prev => ({
+                ...prev,
                 current_password: "",
                 new_password: "",
                 password_confirmation: "",
-            });
+            }));
         } catch (error) {
             console.error("Update failed:", error);
             toast.error(error.response?.data?.detail || "Failed to update organization details");
@@ -180,6 +178,7 @@ const Settings = () => {
             return;
         }
 
+        setIsLoading(true);
         try {
             await axios.delete(
                 "http://127.0.0.1:8000/auth/organization/delete",
@@ -197,6 +196,8 @@ const Settings = () => {
         } catch (error) {
             console.error("Delete failed:", error);
             toast.error(error.response?.data?.detail || "Failed to delete account");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -340,10 +341,10 @@ const Settings = () => {
                                     {/* Image Preview */}
                                     {(previewImage || user?.logo) && (
                                         <div className="flex justify-center mt-4">
-                                            <img 
-                                                src={previewImage || user?.logo} 
-                                                alt="Organization logo" 
-                                                className="w-32 h-32 object-cover rounded-full shadow-md border" 
+                                            <img
+                                                src={previewImage || user?.logo}
+                                                alt="Organization logo"
+                                                className="w-32 h-32 object-cover rounded-full shadow-md border"
                                             />
                                         </div>
                                     )}
@@ -360,7 +361,8 @@ const Settings = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className={`w-full p-2 border rounded ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                        disabled
+                                        className={`w-full p-2 border rounded ${errors.name ? 'border-red-500' : 'border-gray-300'} bg-gray-100`}
                                     />
                                     {errors.name && (
                                         <p className="text-red-500 text-xs mt-1">{errors.name}</p>

@@ -5,7 +5,7 @@ import {
   HeartHandshake,
   Plus,
   Target,
-  PieChart,
+  PieChart as PieChartIcon,
   BarChart3,
   ChevronRight,
 } from "lucide-react";
@@ -16,20 +16,18 @@ import { useUser } from "../../hooks/UserContext";
 import axios from "axios";
 
 const OrgHome = () => {
-  const { user } = useUser(); // Access the user object from UserContext
+  const { user } = useUser();
   const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Use the user object to populate the organization details
   const organization = {
     name: user?.name || "Organization Name",
-    logo: user?.logo || "default-logo.png", // Default logo if none is provided
+    logo: user?.logo || "default-logo.png",
     eventsCompleted: user?.events_completed || 0,
     volunteerHours: user?.volunteer_hours || 0,
     communityImpact: user?.community_impact || 0,
-    causesSupported: user?.causes_supported || ["Default Cause 1", "Default Cause 2"],
+    causesSupported: user?.causes_supported || [],
   };
 
   useEffect(() => {
@@ -47,7 +45,6 @@ const OrgHome = () => {
             },
           }
         );
-
         setEvents(response.data);
       } catch (err) {
         setError(err.message || "Error loading events");
@@ -59,8 +56,10 @@ const OrgHome = () => {
     fetchOrganizationEvents();
   }, [user]);
 
-  // Use either the API events or user events if API fails
-  const displayEvents = events.length > 0 ? events : user?.events || [];
+  const displayEvents = events.length > 0 ? events : [];
+
+  // Get unique categories from events
+  const eventCategories = [...new Set(displayEvents.map(event => event.category))].filter(Boolean);
 
   return (
     <OrganizationDashboard>
@@ -163,117 +162,112 @@ const OrgHome = () => {
           {/* Middle Section: Impact Sectors & Top Volunteers */}
           <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
             {/* Impact Sectors */}
-          
-          <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">
-            <div className="flex justify-between items-center mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
-                <PieChart size={18} className="mr-2 text-orange-500" />
-                Impact Sectors
-              </h2>
-            </div>
-            <div className="mt-2 overflow-hidden">
-              <div className="h-48 sm:h-64 md:h-72">
-                {organization.causesSupported && organization.causesSupported.length > 0 ? (
-                  <CausesChart causesData={organization.causesSupported} />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-500">No causes supported yet</p>
-                  </div>
-                )}
+            <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
+                  <PieChartIcon size={18} className="mr-2 text-orange-500" />
+                  Impact Sectors
+                </h2>
               </div>
-              {/* Add a simple list view of causes below the chart */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {organization.causesSupported && organization.causesSupported.map((cause, index) => (
-                  <span
-                    key={index}
-                    className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm"
-                  >
-                    {cause}
-                  </span>
-                ))}
+              <div className="mt-2 overflow-hidden">
+                <div className="h-48 sm:h-64 md:h-72">
+                  {displayEvents.length > 0 ? (
+                    <CausesChart eventsData={displayEvents} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">No events data available</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Top Volunteers Section */}
-          <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">
-            <div className="flex justify-between items-center mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
+            {/* Top Volunteers Section */}
+            <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-5">
+              <div className="flex items-center mb-3">
                 <BarChart3 size={18} className="mr-2 text-orange-500" />
-                Top Volunteers
-              </h2>
-            </div>
-            <div className="mt-2">
-              <TopVolunteers />
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-lg transition-all p-4 sm:p-6 overflow-hidden">
-          <div className="flex justify-between items-center mb-3 sm:mb-4">
-            <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
-              <Calendar size={18} className="mr-2 text-orange-500" />
-              Upcoming Events
-            </h2>
-            <a href="/orgevents" className="text-orange-500 text-xs sm:text-sm font-medium hover:text-orange-700 flex items-center">
-              View All <ChevronRight size={16} />
-            </a>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center items-center h-32">
-              <p>Loading events...</p>
-            </div>
-          ) : error ? (
-            <div className="text-red-500 text-center p-4">
-              Error loading events: {error.message}
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3 sm:space-y-4 overflow-y-auto max-h-64 sm:max-h-80 md:max-h-96 pr-1">
-                {displayEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="p-3 sm:p-4 border border-gray-100 rounded-lg sm:rounded-xl hover:border-red-200 hover:bg-red-50 transition-all transform hover:-translate-y-1 hover:shadow-sm"
-                  >
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{event.event_name}</h3>
-                    <div className="mt-2 flex flex-col sm:flex-row sm:justify-between text-xs sm:text-sm text-gray-500">
-                      <div className="flex items-center mb-1 sm:mb-0">
-                        <Calendar size={12} className="mr-1 text-orange-500" />
-                        <span>{event.date}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <HeartHandshake size={12} className="mr-1 text-orange-500" />
-                        <span>{event.total_registered_volunteers || 0}/{event.volunteer_requirements || 0}</span>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-xs sm:text-sm text-gray-500 flex items-center">
-                      <Target size={12} className="mr-1 text-orange-500" />
-                      <span className="truncate">{event.venue}, {event.city}</span>
-                    </div>
-                    <div className="mt-2 sm:mt-3 w-full bg-gray-100 rounded-full h-1.5">
-                      <div
-                        className={`h-1.5 rounded-full bg-green-500`}
-                        style={{ width: `50%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                  Top Volunteers
+                </h2>
               </div>
+              <div className="h-80 overflow-y-auto">
+                <TopVolunteers compactMode={true} />
+              </div>
+            </div>
+          </div>
 
-              <a
-                href="/eventForm"
-                className="block text-center mt-3 sm:mt-4 px-3 py-2 sm:px-4 sm:py-3 border border-dashed border-orange-300 rounded-lg sm:rounded-xl text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors"
-              >
-                <Plus size={14} className="inline mr-1" /> Schedule New Event
+          {/* Upcoming Events */}
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-lg transition-all p-4 sm:p-6 overflow-hidden">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
+                <Calendar size={18} className="mr-2 text-orange-500" />
+                Upcoming Events
+              </h2>
+              <a href="/orgevents" className="text-orange-500 text-xs sm:text-sm font-medium hover:text-orange-700 flex items-center">
+                View All <ChevronRight size={16} />
               </a>
-            </>
-          )}
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center items-center h-32">
+                <p>Loading events...</p>
+              </div>
+            ) : error ? (
+              <div className="text-red-500 text-center p-4">
+                Error loading events: {error.message}
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3 sm:space-y-4 overflow-y-auto max-h-64 sm:max-h-80 md:max-h-96 pr-1">
+                  {displayEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="p-3 sm:p-4 border border-gray-100 rounded-lg sm:rounded-xl hover:border-red-200 hover:bg-red-50 transition-all transform hover:-translate-y-1 hover:shadow-sm"
+                    >
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{event.event_name}</h3>
+                        {event.category && (
+                          <span className="inline-block bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full text-xs ml-2">
+                            {event.category}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex flex-col sm:flex-row sm:justify-between text-xs sm:text-sm text-gray-500">
+                        <div className="flex items-center mb-1 sm:mb-0">
+                          <Calendar size={12} className="mr-1 text-orange-500" />
+                          <span>{event.date}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <HeartHandshake size={12} className="mr-1 text-orange-500" />
+                          <span>{event.total_registered_volunteers || 0}/{event.volunteer_requirements || 0}</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs sm:text-sm text-gray-500 flex items-center">
+                        <Target size={12} className="mr-1 text-orange-500" />
+                        <span className="truncate">{event.venue}, {event.city}</span>
+                      </div>
+                      <div className="mt-2 sm:mt-3 w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full bg-green-500`}
+                          style={{ width: `50%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <a
+                  href="/eventForm"
+                  className="block text-center mt-3 sm:mt-4 px-3 py-2 sm:px-4 sm:py-3 border border-dashed border-orange-300 rounded-lg sm:rounded-xl text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors"
+                >
+                  <Plus size={14} className="inline mr-1" /> Schedule New Event
+                </a>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-    </OrganizationDashboard >
+    </OrganizationDashboard>
   );
 };
 
