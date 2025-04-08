@@ -23,7 +23,6 @@ Create a `.env` file in the `backend` directory with the following variables:
 
 ```ini
 # MongoDB Configuration
-# MongoDB Configuration
 MONGO_URI=mongodb+srv://pledgeit_user_1:Haapuw3TFSmaO9Ts@pledgeit.purpn.mongodb.net/?retryWrites=true&w=majority&appName=pledgeit
 DB_NAME=pledgeit_database
 EVENTS_COLLECTION=events
