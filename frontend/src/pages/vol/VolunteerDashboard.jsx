@@ -7,7 +7,7 @@ const VolunteerDashboard = ({ children }) => {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 overflow-auto bg-gray-100">{children}</main>
+      <main className="flex-1 overflow-auto bg-gray-100">{children}</main>
     </div>
   );
 };

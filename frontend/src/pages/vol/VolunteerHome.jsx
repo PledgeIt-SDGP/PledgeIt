@@ -4,11 +4,16 @@ import VolunteerDashboard from "./VolunteerDashboard";
 import HomeEvent from "../../components/home/HomeEvent";
 import DailyQuotes from "../../components/vol-dash/DailyQuotes";
 import { useUser } from "../../hooks/UserContext";
-import { LineChart, PieChart, Users } from "lucide-react";
+import { LineChart, PieChart, Users, BarChart3 } from "lucide-react";
 import TopVolunteers from "../../components/org-dash/TopVolunteers";
+import BarChart from "../../components/vol-dash/AreaBaseLine";
+import PieAnimation from "../../components/vol-dash/PieAnimation";
 
 function VolunteerHome() {
   const { user, setUser } = useUser();
+  const totalEventsParticipated = user?.registered_events?.length || 0;
+  const totalPoints = user?.points || 0;
+  const eventCategories = user?.event_categories || [];
 
   return (
     <>
@@ -50,7 +55,7 @@ function VolunteerHome() {
             <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 bg-image: url('assests/bg4.png') ">
               <div className=" text-gray-800 ">
                 <p>Total Events Participated: </p>
-                <p className="font-bold text-4xl">0</p>
+                <p className="font-bold text-4xl">{totalEventsParticipated}</p>
               </div>
 
               <div className="bg-orange-100 text-orange-500 rounded-lg p-3">
@@ -74,12 +79,13 @@ function VolunteerHome() {
                 </svg>
               </div>
             </div>
-            <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 ">
+            <div className="flex items-center justify-between p-10 bg-white/90 backdrop-blur-sm rounded-2xl  shadow-lg cursor-pointer border border-gray-100 lg:p-5 bg-image: url('assests/bg4.png') ">
               <div className=" text-gray-800 ">
-                <p>Total Hours Volunteered</p>
-                <p className="font-bold text-4xl">0</p>
+                <p>Total Volunteer Points: </p>
+                <p className="font-bold text-4xl">{totalPoints}</p>
               </div>
-              <div className="bg-red-100 text-red-500 rounded-lg p-3">
+
+              <div className="bg-orange-100 text-orange-500 rounded-lg p-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -87,13 +93,13 @@ function VolunteerHome() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-clock"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-award"
                 >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
+                  <circle cx="12" cy="8" r="6" />
+                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
                 </svg>
               </div>
             </div>
@@ -125,10 +131,7 @@ function VolunteerHome() {
               <h3 className="text-lg font-semibold">
                 Categories You Have Contributed
               </h3>
-              {/* <PieAnimation /> */}
-              <p className="flex justify-center text-orange-600 text-center border border-dashed p-8 m-14">
-                Participate in events to earn XP points!
-              </p>
+              <PieAnimation categories={eventCategories}/>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
@@ -137,24 +140,26 @@ function VolunteerHome() {
                 <LineChart size={20} color="black" className="text-green-500" />
                 Monthly XP Points Earned
               </h3>{" "}
-              {/* <BarChart /> */}
-              <p className="flex justify-center text-orange-600 text-center border border-dashed p-8 m-14">
-                Participate in events to earn XP points!
-              </p>
+              <BarChart />
             </div>
-            <div className="bg-red-50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 overflow-x-auto h-96">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-6">
-                <Users size={20} color="black" className="text-blue-500" />
-                Top Volunteers
-              </h3>
-              <TopVolunteers />
+            {/* Top Volunteers Section */}
+            <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800 flex items-center">
+                  <BarChart3 size={18} className="mr-2 text-orange-500" />
+                  Top Volunteers
+                </h2>
+              </div>
+              <div className="h-100 overflow-y-auto">
+                <TopVolunteers />
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0  ">
             <h2 className="flex justify-center pt-10 text-xl font-bold text-gray-800">
               Latest Volunteer Events
             </h2>
-                        <HomeEvent />
+            <HomeEvent />
           </div>
         </div>
         <Footer1 />

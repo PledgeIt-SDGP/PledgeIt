@@ -20,17 +20,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-origins = [
-    "http://localhost:5173",  # Allow the frontend on localhost:5173
-]
-
 # Configure CORS (adjust allowed origins in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow only the frontend origin
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],  
 )
 
 # Configure SessionMiddleware

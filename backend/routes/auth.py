@@ -37,6 +37,7 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 # MongoDB setup
 client = MongoClient(os.getenv('MONGO_URI'))
 db = client[os.getenv('DB_NAME')]
+events_collection = db[os.getenv('EVENTS_COLLECTION')]
 volunteers_collection = db[os.getenv('VOLUNTEERS_COLLECTION')]
 organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
 refresh_tokens_collection = db[os.getenv('REFRESH_TOKENS_COLLECTION')]
@@ -114,7 +115,7 @@ class OrganizationRegister(BaseModel):
     causes_supported: list[str] = Field(..., min_items=1, max_items=8)
     password: str
     password_confirmation: str
-    created_events: list[str] = Field(default_factory=list)  # New field for event IDs
+    created_events: list[str] = Field(default_factory=list)
 
     @validator("causes_supported")
     def validate_causes(cls, values):
@@ -131,7 +132,8 @@ class VolunteerRegister(BaseModel):
     email: str
     password: str
     password_confirmation: str
-    registered_events: list[str] = Field(default_factory=list)  # New field for event IDs
+    registered_events: list[str] = Field(default_factory=list)
+    points: int = Field(default=0)
 
 # Register Volunteer
 @router.post('/auth/volunteer/register')
@@ -358,42 +360,43 @@ async def delete_organization(user: dict = Depends(get_current_user)):
 async def get_current_user_details(user: dict = Depends(get_current_user)):
     if user["role"] == "volunteer":
         user_data = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get categories from registered events
+        event_categories = []
+        if user_data.get("registered_events"):
+            # Convert event IDs to integers (they might be stored as strings)
+            try:
+                event_ids = [int(eid) if isinstance(eid, str) else eid 
+                for eid in user_data["registered_events"]]
+                
+                # Fetch categories for all registered events
+                events = events_collection.find(
+                    {"event_id": {"$in": event_ids}},
+                    {"category": 1}
+                )
+                event_categories = [event["category"] for event in events if "category" in event]
+            except Exception as e:
+                logging.error(f"Error fetching event categories: {e}")
+                event_categories = []
+
+        return {
+            "id": str(user_data["_id"]),
+            "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
+            "email": user_data.get("email"),
+            "role": user_data.get("role"),
+            "points": user_data.get("points", 0),
+            "registered_events": user_data.get("registered_events", []),
+            "event_categories": event_categories,
+            "total_events": len(user_data.get("registered_events", []))
+        }
+    
     elif user["role"] == "organization":
         user_data = organizations_collection.find_one({"_id": ObjectId(user["user_id"])})
-    
-    if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get events based on role
-    events = []
-    if user["role"] == "organization":
-        # Fetch events created by this organization
-        events = list(db.events.find({"organization_id": str(user_data["_id"])}))
-    elif user["role"] == "volunteer":
-        # Fetch events this volunteer has registered for
-        registered_event_ids = user_data.get("registered_events", [])
-        valid_event_ids = []
-        for eid in registered_event_ids:
-            try:
-                # Try to convert to ObjectId to validate
-                ObjectId(eid)
-                valid_event_ids.append(eid)
-            except:
-                logging.warning(f"Invalid event ID found in registered_events: {eid}")
-                continue
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
         
-        if valid_event_ids:
-            events = list(db.events.find({"_id": {"$in": [ObjectId(eid) for eid in valid_event_ids]}}))
-    
-    # Convert ObjectId to string for each event
-    events_data = []
-    for event in events:
-        event_data = dict(event)
-        event_data["_id"] = str(event["_id"])
-        events_data.append(event_data)
-    
-    # Return all fields for organizations
-    if user["role"] == "organization":
         return {
             "id": str(user_data["_id"]),
             "name": user_data.get("name"),
@@ -406,7 +409,6 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "causes_supported": user_data.get("causes_supported"),
             "contact_number": user_data.get("contact_number"),
             "address": user_data.get("address"),
-            "events": events_data
         }
     else:
         # Return basic fields for volunteers
@@ -415,7 +417,6 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
             "email": user_data.get("email"),
             "role": user_data.get("role"),
-            "events": events_data
         }
     
 @router.get("/auth/total-users")
@@ -430,11 +431,17 @@ async def update_volunteer_details(
     user: dict = Depends(get_current_user),
     first_name: str = Form(None),
     last_name: str = Form(None),
-    password: str = Form(None),
+    current_password: str = Form(None),
+    new_password: str = Form(None),
     password_confirmation: str = Form(None),
 ):
     if user["role"] != "volunteer":
         raise HTTPException(status_code=403, detail="Permission denied. Only volunteers can update their details.")
+
+    # Get the volunteer document
+    volunteer = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    if not volunteer:
+        raise HTTPException(status_code=404, detail="Volunteer not found")
 
     update_data = {}
     if first_name:
@@ -443,13 +450,34 @@ async def update_volunteer_details(
         update_data["last_name"] = last_name
 
     # Handle password update
-    if password and password_confirmation:
-        verify_passwords(password, password_confirmation)
-        update_data["password"] = hash_password(password)
-    elif password or password_confirmation:
-        raise HTTPException(status_code=400, detail="Both password and password confirmation are required.")
+    if new_password or password_confirmation:
+        if not current_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Current password is required when changing password"
+            )
+        
+        # Verify current password
+        if not pwd_context.verify(current_password, volunteer.get("password", "")):
+            raise HTTPException(
+                status_code=400,
+                detail="Current password is incorrect"
+            )
+        
+        if new_password != password_confirmation:
+            raise HTTPException(
+                status_code=400,
+                detail="New password and confirmation do not match"
+            )
+        
+        update_data["password"] = hash_password(new_password)
 
-    # Update the volunteer's details in the database
+    if not update_data:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid fields provided for update"
+        )
+
     result = volunteers_collection.update_one(
         {"_id": ObjectId(user["user_id"])},
         {"$set": update_data}
@@ -458,7 +486,20 @@ async def update_volunteer_details(
     if result.modified_count == 0:
         raise HTTPException(status_code=400, detail="No changes were made.")
 
-    return {"message": "Volunteer details updated successfully"}
+    # Return updated user data
+    updated_user = volunteers_collection.find_one({"_id": ObjectId(user["user_id"])})
+    return {
+        "message": "Volunteer details updated successfully",
+        "user": {
+            "id": str(updated_user["_id"]),
+            "first_name": updated_user.get("first_name"),
+            "last_name": updated_user.get("last_name"),
+            "email": updated_user.get("email"),
+            "role": updated_user.get("role"),
+            "points": updated_user.get("points", 0),
+            "registered_events": updated_user.get("registered_events", [])
+        }
+    }
 
 @router.put('/auth/organization/update')
 async def update_organization_details(
@@ -510,3 +551,22 @@ async def update_organization_details(
     organizations_collection.update_one({"_id": ObjectId(user["user_id"])}, {"$set": update_data})
 
     return {"message": "Organization details updated successfully"}
+
+@router.get("/volunteers/leaderboard")
+async def get_leaderboard(limit: int = 10):
+    """
+    Returns top volunteers by points
+    """
+    top_volunteers = list(volunteers_collection.find(
+        {},
+        {"first_name": 1, "last_name": 1, "points": 1, "attended_events": 1}
+    ).sort("points", -1).limit(limit))
+    
+    return [
+        {
+            "name": f"{v['first_name']} {v['last_name']}",
+            "points": v.get("points", 0),
+            "events_attended": len(v.get("attended_events", []))
+        }
+        for v in top_volunteers
+    ]
