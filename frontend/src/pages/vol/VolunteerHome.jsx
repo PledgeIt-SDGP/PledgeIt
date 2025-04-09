@@ -13,6 +13,7 @@ function VolunteerHome() {
   const { user, setUser } = useUser();
   const totalEventsParticipated = user?.registered_events?.length || 0;
   const totalPoints = user?.points || 0;
+  const eventCategories = user?.event_categories || [];
 
   return (
     <>
@@ -130,10 +131,7 @@ function VolunteerHome() {
               <h3 className="text-lg font-semibold">
                 Categories You Have Contributed
               </h3>
-              <PieAnimation />
-              {/* <p className="flex justify-center text-orange-600 text-center border border-dashed p-8 m-14">
-                Participate in events to earn XP points!
-              </p> */}
+              <PieAnimation categories={eventCategories}/>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 lg:mt-0 lg:grid-cols-1 xl:grid-cols-2 ">
@@ -143,9 +141,6 @@ function VolunteerHome() {
                 Monthly XP Points Earned
               </h3>{" "}
               <BarChart />
-              {/* <p className="flex justify-center text-orange-600 text-center border border-dashed p-8 m-14">
-                Participate in events to earn XP points!
-              </p> */}
             </div>
             {/* Top Volunteers Section */}
             <div className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl md:rounded-2xl p-4 sm:p-6 overflow-hidden">

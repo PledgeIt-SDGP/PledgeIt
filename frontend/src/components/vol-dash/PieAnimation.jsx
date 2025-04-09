@@ -1,130 +1,73 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { useUser } from "../../hooks/UserContext";
 
-export default function PieAnimation() {
-  const { user } = useUser();
-  const [radius] = React.useState(120);
-  const [skipAnimation] = React.useState(false);
-  const [activeItem, setActiveItem] = React.useState(null);
+export default function PieAnimation({ categories }) {
+  const [radius] = React.useState(100);
 
   // Custom color palette
   const pieColors = [
-    "#ff6600", // Bright orange
-    "#ffdca5", // Light peach
-    "#ffc26d", // Light orange
-    "#ff9d32", // Medium orange
-    "#ff7f0a", // Dark orange
-    "#cc4902", // Deep orange
-    "#a1390b", // Brown-orange
-    "#8f2e14", // Dark brown
+    "#ff6600", "#ffdca5", "#ffc26d", "#ff9d32", 
+    "#ff7f0a", "#cc4902", "#a1390b", "#8f2e14"
   ];
 
-  // Process user's registered events to count categories
-  const getCategoryData = () => {
-    if (!user?.registered_events || user.registered_events.length === 0) {
-      return [{
-        id: 0,
-        value: 1,
-        label: 'No events',
-        color: '#cccccc'
-      }];
+  // Process categories data
+  const processCategories = (categories) => {
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      return [];
     }
 
-    const categoryCounts = {
-      'Environmental': 0,
-      'Community Service': 0,
-      'Education': 0,
-      'Healthcare': 0,
-      'Animal Welfare': 0,
-      'Disaster Relief': 0,
-      'Fundraising & Charity': 0
-    };
+    // Count category occurrences
+    const categoryCounts = categories.reduce((acc, category) => {
+      if (category) {
+        acc[category] = (acc[category] || 0) + 1;
+      }
+      return acc;
+    }, {});
 
-    Object.keys(categoryCounts).forEach((cat, index) => {
-      categoryCounts[cat] = Math.floor(Math.random() * 5) + 1;
-    });
-
-    return Object.entries(categoryCounts)
-      .filter(([_, count]) => count > 0)
-      .map(([category, count], index) => ({
-        id: index,
-        value: count,
-        label: category,
-        color: pieColors[index % pieColors.length]
-      }));
+    // Convert to pie chart data format
+    return Object.entries(categoryCounts).map(([label, value], index) => ({
+      id: index,
+      value,
+      label,
+    }));
   };
 
-  const categoryData = getCategoryData();
+  const pieData = processCategories(categories);
 
   return (
-    <Box sx={{ 
-      width: "100%", 
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      position: 'relative'
-    }}>
-      {categoryData.length > 0 ? (
-        <>
-          <PieChart
-            height={400}
-            width={400}
-            series={[
-              {
-                data: categoryData,
-                innerRadius: radius * 0.6,
-                outerRadius: radius,
-                paddingAngle: 2,
-                cornerRadius: 4,
-                highlightScope: { faded: 'global', highlighted: 'item' },
-                faded: { innerRadius: radius * 0.6, additionalRadius: -10, color: 'gray' },
-              },
-            ]}
-            skipAnimation={skipAnimation}
-            slotProps={{
-              legend: { hidden: true },
-              pieArc: {
-                onMouseEnter: (_, { id }) => setActiveItem(id),
-                onMouseLeave: () => setActiveItem(null),
-              },
-            }}
-            margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
-          />
-          {activeItem !== null && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                zIndex: 1,
-                pointerEvents: 'none',
-              }}
-            >
-              <div>
-                <strong>{categoryData[activeItem]?.label}</strong>
-                <div>Count: {categoryData[activeItem]?.value}</div>
-              </div>
-            </Box>
-          )}
-        </>
+    <Box sx={{ width: "100%" }}>
+      {pieData.length > 0 ? (
+        <PieChart
+          height={300}
+          series={[{
+            data: pieData.map((item, index) => ({
+              ...item,
+              color: pieColors[index % pieColors.length],
+            })),
+            innerRadius: radius,
+            arcLabel: null, // Remove all labels
+            arcLabelMinAngle: 20,
+          }]}
+          slotProps={{
+            legend: {
+              hidden: true, // Hide the legend/color boxes
+            },
+            tooltip: { 
+              // Customize tooltip to show category and count
+              formatter: (params) => {
+                if (params.label && params.value) {
+                  return `${params.label}: ${params.value} event${params.value !== 1 ? 's' : ''}`;
+                }
+                return null;
+              }
+            }
+          }}
+        />
       ) : (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100%',
-          color: 'text.secondary'
-        }}>
-          No event categories to display
-        </Box>
+        <p className="flex justify-center text-orange-600 text-center border border-dashed p-8 m-14">
+          Participate in events to see your contributions by category!
+        </p>
       )}
     </Box>
   );

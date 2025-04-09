@@ -632,3 +632,15 @@ async def scan_qr_code(
         "points_added": points_to_add,
         "total_points": volunteer_data.get("points", 0) + points_to_add
     }
+
+@router.post("/events/batch")
+async def get_events_batch(event_ids: List[int]):
+    """Returns multiple events by their IDs"""
+    try:
+        events = list(events_collection.find({
+            "event_id": {"$in": event_ids}
+        }))
+        return [event_serializer(event) for event in events]
+    except Exception as e:
+        logging.error(f"Error fetching batch events: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch events")

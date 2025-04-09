@@ -37,6 +37,7 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 # MongoDB setup
 client = MongoClient(os.getenv('MONGO_URI'))
 db = client[os.getenv('DB_NAME')]
+events_collection = db[os.getenv('EVENTS_COLLECTION')]
 volunteers_collection = db[os.getenv('VOLUNTEERS_COLLECTION')]
 organizations_collection = db[os.getenv('ORGANIZATIONS_COLLECTION')]
 refresh_tokens_collection = db[os.getenv('REFRESH_TOKENS_COLLECTION')]
@@ -362,6 +363,24 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
         
+        # Get categories from registered events
+        event_categories = []
+        if user_data.get("registered_events"):
+            # Convert event IDs to integers (they might be stored as strings)
+            try:
+                event_ids = [int(eid) if isinstance(eid, str) else eid 
+                for eid in user_data["registered_events"]]
+                
+                # Fetch categories for all registered events
+                events = events_collection.find(
+                    {"event_id": {"$in": event_ids}},
+                    {"category": 1}
+                )
+                event_categories = [event["category"] for event in events if "category" in event]
+            except Exception as e:
+                logging.error(f"Error fetching event categories: {e}")
+                event_categories = []
+
         return {
             "id": str(user_data["_id"]),
             "name": f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
@@ -369,6 +388,7 @@ async def get_current_user_details(user: dict = Depends(get_current_user)):
             "role": user_data.get("role"),
             "points": user_data.get("points", 0),
             "registered_events": user_data.get("registered_events", []),
+            "event_categories": event_categories,
             "total_events": len(user_data.get("registered_events", []))
         }
     
