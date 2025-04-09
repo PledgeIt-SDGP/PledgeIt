@@ -32,9 +32,6 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Create a TTL index on the "expireAt" field for automatic event cleanup
-events_collection.create_index("expireAt", expireAfterSeconds=0)
-
 def get_current_organization(x_org_email: str = Header(None)):
     if not x_org_email:
         raise HTTPException(status_code=401, detail="Missing authentication header")
