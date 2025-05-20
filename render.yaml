@@ -1,19 +1,20 @@
-# render.yaml
-# Configuration file for rendering settings
+services:
+  - type: web
+    name: pledgeit-backend
+    env: python
+    plan: free
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
 
-version: "1.0"
-
-render:
-  engine: "default"  # Specify the rendering engine
-  resolution:
-    width: 1920      # Width of the output
-    height: 1080     # Height of the output
-  quality: "high"    # Options: low, medium, high
-  output:
-    format: "png"    # Output file format
-    directory: "./output"  # Directory to save rendered files
-
-settings:
-  enable_shadows: true
-  enable_reflections: true
-  anti_aliasing: 4  # Anti-aliasing level (e.g., 2, 4, 8)
+  - type: web
+    name: pledgeit-frontend
+    env: node
+    plan: free
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "npm install -g serve && serve -s frontend/dist"
+    envVars:
+      - key: NODE_VERSION
+        value: 18
