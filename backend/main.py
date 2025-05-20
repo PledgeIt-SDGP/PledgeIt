@@ -7,6 +7,7 @@ from routes.events import router as event_router
 from routes.auth import router as auth_router  # Import the auth router
 import os
 from dotenv import load_dotenv
+import uvicorn  # ✅ You forgot this import
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +21,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS (adjust allowed origins in production)
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,17 +31,16 @@ app.add_middleware(
 )
 
 # Configure SessionMiddleware
-app.add_middleware(
-    SessionMiddleware, secret_key=SECRET_KEY
-)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# Ensure the uploads directory exists for serving event images
+# Ensure the uploads directory exists
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# Include event routes
+# Include routers
 app.include_router(event_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def root():
@@ -52,5 +52,7 @@ def root():
         "organization_register": "/auth/organization/register",
     }
 
-# Include OAuth routes (auth_router)
-app.include_router(auth_router)
+# ✅ Only runs when started directly
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
