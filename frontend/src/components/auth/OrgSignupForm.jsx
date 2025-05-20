@@ -140,7 +140,7 @@ const OrgSignupForm = () => {
 
         try {
             const response = await axios.post(
-                "http://127.0.0.1:8000/auth/organization/register",
+                "https://pledgeit-backend-ihkh.onrender.com/auth/organization/register",
                 formDataToSend,
                 {
                     headers: { "Content-Type": "multipart/form-data" },

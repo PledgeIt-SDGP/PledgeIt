@@ -186,7 +186,7 @@ const EventForm = () => {
                 headers["X-Org-Email"] = user.email;
             }
 
-            const response = await axios.post("http://127.0.0.1:8000/events", formDataToSend, {
+            const response = await axios.post("https://pledgeit-backend-ihkh.onrender.com/events", formDataToSend, {
                 headers: headers
             });
 

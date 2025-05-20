@@ -55,7 +55,7 @@ const OrgProfile = () => {
                 if (!user || user.role !== "organization") return;
 
                 const response = await axios.get(
-                    "http://127.0.0.1:8000/organization/events",
+                    "https://pledgeit-backend-ihkh.onrender.com/organization/events",
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("token")}`,

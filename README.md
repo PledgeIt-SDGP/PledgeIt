@@ -79,8 +79,8 @@ npm run dev
 
 ### Backend and Frontend links
 
-- [PledgeIt BackEnd](http://127.0.0.1:8000/)  
+- [PledgeIt BackEnd](https://pledgeit-backend-ihkh.onrender.com/)  
 - [PledgeIt FrontEnd](https://pledgeit-frontend-production-production.up.railway.app/VolHome)
-- [PledgeIt BackEnd documentation](http://127.0.0.1:8000/docs)
+- [PledgeIt BackEnd documentation](https://pledgeit-backend-ihkh.onrender.com/docs)
 
 

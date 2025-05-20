@@ -12,7 +12,7 @@ const TopVolunteers = () => {
     const fetchTopVolunteers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://127.0.0.1:8000/volunteers/leaderboard');
+        const response = await axios.get('https://pledgeit-backend-ihkh.onrender.com/volunteers/leaderboard');
         setVolunteers(response.data);
       } catch (err) {
         setError('Failed to load leaderboard data');

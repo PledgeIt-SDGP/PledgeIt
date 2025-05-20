@@ -30,7 +30,7 @@ Icon.Default.mergeOptions({
 });
 
 // API + Default position
-const API_URL = "http://127.0.0.1:8000/events";
+const API_URL = "https://pledgeit-backend-ihkh.onrender.com/events";
 const CENTER_POSITION = [7.8731, 80.7718]; // Example: Sri Lanka
 
 const EventMap = () => {

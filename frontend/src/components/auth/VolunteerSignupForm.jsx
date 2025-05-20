@@ -82,7 +82,7 @@ const VolunteerSignupForm = () => {
         setMessage({ text: '', type: '' });
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/auth/volunteer/register", {
+            const response = await axios.post("https://pledgeit-backend-ihkh.onrender.com/auth/volunteer/register", {
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 email: formData.email,

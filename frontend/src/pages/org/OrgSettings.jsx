@@ -123,7 +123,7 @@ const Settings = () => {
             }
 
             const response = await axios.put(
-                "http://127.0.0.1:8000/auth/organization/update",
+                "https://pledgeit-backend-ihkh.onrender.com/auth/organization/update",
                 formDataToSend,
                 {
                     headers: {
@@ -150,7 +150,7 @@ const Settings = () => {
     const handleLogout = async () => {
         try {
             await axios.post(
-                "http://127.0.0.1:8000/auth/logout",
+                "https://pledgeit-backend-ihkh.onrender.com/auth/logout",
                 {},
                 {
                     headers: {
@@ -176,7 +176,7 @@ const Settings = () => {
         setIsLoading(true);
         try {
             await axios.delete(
-                "http://127.0.0.1:8000/auth/organization/delete",
+                "https://pledgeit-backend-ihkh.onrender.com/auth/organization/delete",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,

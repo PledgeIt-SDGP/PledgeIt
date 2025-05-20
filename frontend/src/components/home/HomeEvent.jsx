@@ -33,7 +33,7 @@ const HomeEvent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/events");
+        const response = await fetch("https://pledgeit-backend-ihkh.onrender.com/events");
         if (!response.ok) throw new Error(`Failed to load events. Status: ${response.status}`);
 
         const data = await response.json();

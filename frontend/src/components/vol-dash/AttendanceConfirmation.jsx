@@ -21,10 +21,10 @@ const AttendanceConfirmation = () => {
                     return;
                 }
 
-                const eventRes = await axios.get(`http://127.0.0.1:8000/events/${eventId}`);
+                const eventRes = await axios.get(`https://pledgeit-backend-ihkh.onrender.com/events/${eventId}`);
                 setEvent(eventRes.data);
 
-                const confirmRes = await axios.post(`http://127.0.0.1:8000/events/${eventId}/scan`);
+                const confirmRes = await axios.post(`https://pledgeit-backend-ihkh.onrender.com/events/${eventId}/scan`);
                 setPointsEarned(confirmRes.data.points_added);
                 setTotalPoints(confirmRes.data.total_points);
                 setSuccess(true);

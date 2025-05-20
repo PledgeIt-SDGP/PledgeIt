@@ -36,7 +36,7 @@ const AppRoutes = () => {
     if (token && userRole) {
       const fetchUserData = async () => {
         try {
-          const response = await axios.get("http://127.0.0.1:8000/auth/me", {
+          const response = await axios.get("https://pledgeit-backend-ihkh.onrender.com/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },

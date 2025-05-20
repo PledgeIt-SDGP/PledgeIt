@@ -20,7 +20,7 @@ const AllEvents = () => {
         }
 
         const response = await axios.get(
-          "http://127.0.0.1:8000/organization/events",
+          "https://pledgeit-backend-ihkh.onrender.com/organization/events",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -42,7 +42,7 @@ const AllEvents = () => {
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/events/${eventId}`, {
+        await axios.delete(`https://pledgeit-backend-ihkh.onrender.com/events/${eventId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             'x-org-email': user.email // Add this line
