@@ -1,0 +1,19 @@
+# render.yaml
+# Configuration file for rendering settings
+
+version: "1.0"
+
+render:
+  engine: "default"  # Specify the rendering engine
+  resolution:
+    width: 1920      # Width of the output
+    height: 1080     # Height of the output
+  quality: "high"    # Options: low, medium, high
+  output:
+    format: "png"    # Output file format
+    directory: "./output"  # Directory to save rendered files
+
+settings:
+  enable_shadows: true
+  enable_reflections: true
+  anti_aliasing: 4  # Anti-aliasing level (e.g., 2, 4, 8)
