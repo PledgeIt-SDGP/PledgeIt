@@ -4,16 +4,16 @@ from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
 from fastapi.staticfiles import StaticFiles
 from routes.events import router as event_router
-from routes.auth import router as auth_router  # Import the auth router
+from routes.auth import router as auth_router
 import os
 from dotenv import load_dotenv
-import uvicorn  # ✅ You forgot this import
 
 # Load environment variables
 load_dotenv()
 
-# Get secret key from environment variables
-SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')  # Default for development
+# Get secret key and port from environment variables
+SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
+PORT = int(os.environ.get("PORT", 8000))  # Render provides PORT
 
 app = FastAPI(
     title="PledgeIt Volunteer Events API",
@@ -21,7 +21,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS
+# Configure CORS (adjust allowed origins in production)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,7 +31,9 @@ app.add_middleware(
 )
 
 # Configure SessionMiddleware
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+app.add_middleware(
+    SessionMiddleware, secret_key=SECRET_KEY
+)
 
 # Ensure the uploads directory exists
 UPLOAD_DIR = "uploads"
@@ -52,7 +54,7 @@ def root():
         "organization_register": "/auth/organization/register",
     }
 
-# ✅ Only runs when started directly
+# Add this block to run Uvicorn programmatically
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
